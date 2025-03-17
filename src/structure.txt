@@ -1,0 +1,51 @@
+src/
+├── assets/                  # Chứa hình ảnh, icons, và các tài nguyên tĩnh
+│   └── images/              # Chứa các hình ảnh
+│       └── logo.png         # Logo BK
+├── components/              # Components tái sử dụng
+│   ├── Layout/              # Layout components
+│   │   ├── MainLayout.jsx   # Layout chính
+│   │   └── index.js
+│   ├── Sidebar/             # Sidebar component
+│   │   ├── Sidebar.jsx      # Component sidebar
+│   │   └── index.js
+│   ├── UI/                  # UI components
+│   │   ├── Button.jsx       # Component nút
+│   │   ├── Dropdown.jsx     # Component dropdown
+│   │   ├── DatePicker.jsx   # Component date picker
+│   │   ├── Table.jsx        # Component bảng
+│   │   ├── Tabs.jsx         # Component tabs
+│   │   └── index.js
+│   └── Warehouse/           # Components liên quan đến kho
+│       ├── InventoryForm.jsx  # Form nhập kho
+│       ├── InventoryList.jsx  # Danh sách nhập kho
+│       └── index.js
+├── pages/                   # Các trang chính
+│   ├── Dashboard/           # Trang tổng quan
+│   │   ├── Dashboard.jsx
+│   │   └── index.js
+│   ├── Inventory/           # Trang lưu trữ
+│   │   ├── Inventory.jsx
+│   │   └── index.js
+│   ├── StockIn/             # Trang nhập kho
+│   │   ├── CreateStockIn.jsx  # Tạo phiếu nhập kho
+│   │   ├── ManageStockIn.jsx  # Quản lý nhập kho
+│   │   ├── StockInPage.jsx    # Trang nhập kho chính
+│   │   └── index.js
+│   ├── StockOut/            # Trang xuất kho
+│   │   └── index.js
+│   ├── Inventory/           # Trang kiểm kê
+│   │   └── index.js
+│   ├── History/             # Trang lịch sử
+│   │   └── index.js
+│   └── Categories/          # Trang danh mục
+│       └── index.js
+├── context/                 # Context API cho quản lý state
+│   └── WarehouseContext.jsx
+├── hooks/                   # Custom hooks
+│   └── useWarehouse.js
+├── utils/                   # Tiện ích
+│   └── helpers.js
+├── App.jsx                  # Thành phần ứng dụng chính
+├── index.css                # CSS và cấu hình Tailwind
+└── main.jsx                 # Entry point 
