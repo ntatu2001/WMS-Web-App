@@ -1,7 +1,10 @@
+import clsx from 'clsx';
+import styles from './DropdownIcon.module.scss';
+
 const DropdownIcon = ({ className = "", children }) => {
     return (
       <div
-        className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${className}`}
+        className={clsx(styles.dropDownIcon, className)}
       >
         {children}
       </div>

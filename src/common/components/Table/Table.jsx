@@ -1,6 +1,10 @@
+import clsx from 'clsx';
+import styles from './Table.module.scss';
+
+
 const Table = ({ children, className = "" }) => {
     return (
-      <table className={`w-full border-collapse shadow-md text-xs ${className}`}>
+      <table className={clsx(styles.table, className)}>
         {children}
       </table>
     );

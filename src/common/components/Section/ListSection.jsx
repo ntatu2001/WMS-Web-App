@@ -1,6 +1,9 @@
+import clsx from 'clsx';
+import styles from './Section.module.scss';
+
 const ListSection = ({ className = "", children }) => {
     return (
-      <div className={`flex-[2] ml-5 border-b border-gray-300 shadow-md p-5 relative ${className}`}>
+      <div className={clsx(styles.listSection, className)}>
         {children}
       </div>
     );

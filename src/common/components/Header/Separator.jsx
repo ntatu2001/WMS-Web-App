@@ -1,5 +1,8 @@
+import clsx from 'clsx';
+import styles from './Header.module.scss';
+
 const Separator = ({ className = "" }) => {
-    return <div className={`h-5 w-px bg-gray-800 mx-4 ${className}`} />;
+    return <div className={clsx(styles.separator, className)} />;
   };
   
   export default Separator;

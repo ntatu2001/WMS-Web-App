@@ -1,6 +1,9 @@
+import clsx from 'clsx';
+import styles from './Text.module.scss';
+
 const SectionTitle = ({ children, className = "" }) => {
     return (
-      <h2 className={`text-center text-xl font-bold mb-5 text-[#333] ${className}`}>
+      <h2 className={clsx(styles.sectionTitle, className)}>
         {children}
       </h2>
     );

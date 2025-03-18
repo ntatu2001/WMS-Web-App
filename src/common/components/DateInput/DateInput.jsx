@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
+import clsx from 'clsx';
+import styles from './DateInput.module.scss'
 const DateInput = ({ 
   selectedDate, 
   onChange, 
@@ -43,20 +44,20 @@ const DateInput = ({
   };
 
   return (
-    <div className={`relative w-full ${className}`}>
+    <div className={clsx(styles.div, className)}>
       <input
         type="text"
         placeholder={placeholder}
         value={formatDate(selectedDate)}
         readOnly
-        className="w-full p-2 border border-gray-300 rounded-md text-sm"
+        className={clsx(styles.input)}
       />
-      <div 
-        className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer" 
+      <button 
+        className={clsx(styles.button)}
         onClick={toggleCalendar}
       >
         <FaCalendarAlt size={16} />
-      </div>
+      </button>
       {isCalendarOpen && (
         <DatePicker
           ref={datePickerRef}

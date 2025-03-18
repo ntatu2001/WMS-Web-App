@@ -1,0 +1,21 @@
+.dateInput {
+    position: relative;
+    width: 100%;
+}
+
+.input {
+    width: 100%;
+    padding: 0.5rem;
+    border-width: 1px;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.button {
+    position: absolute;
+    right: 0.5rem;
+    top: 30%;
+    transform: translateY(-5%);
+    cursor: pointer;
+}

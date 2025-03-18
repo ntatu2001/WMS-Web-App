@@ -1,7 +1,10 @@
+import clsx from 'clsx';
+import styles from './Selection.module.scss';
+
 const Select = ({ children, className = "", ...props }) => {
     return (
       <select
-        className={`w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm appearance-none ${className}`}
+        className={clsx(styles.select, className)}
         {...props}
       >
         {children}

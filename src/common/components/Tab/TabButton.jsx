@@ -1,11 +1,11 @@
+import clsx from 'clsx';
+import styles from './Tab.module.scss';
+
+
 const TabButton = ({ children, active, className = "", ...props }) => {
     return (
       <div
-        className={`
-          py-3 text-xl font-bold text-center cursor-pointer border border-gray-300 w-1/2 
-          ${active ? "bg-[#005F73] text-white" : "bg-white text-black"} 
-          ${className}
-        `}
+        className={clsx(styles.tabButton, active ? styles.tabButton_active : styles.tabButton_inactive, className)}
         {...props}
       >
         {children}

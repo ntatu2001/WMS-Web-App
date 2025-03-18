@@ -1,7 +1,9 @@
+import clsx from 'clsx';
+import styles from './ContentContainer.module.scss'
 const ContentContainer = ({ children, className = "" }) => {
     return (
       <div
-        className={`w-[98%] bg-white flex p-5 ml-5 shadow-md ${className}`}
+        className={clsx(styles.contentContainer, className)}
       >
         {children}
       </div>

@@ -1,6 +1,9 @@
+import clsx from 'clsx';
+import styles from './Table.module.scss';
+
 const TableCell = ({ children, className = "" }) => {
     return (
-      <td className={`border-b border-[#ddd] px-2 py-2 font-medium text-center ${className}`}>
+      <td className={clsx(styles.tableCell, className)}>
         {children}
       </td>
     );
