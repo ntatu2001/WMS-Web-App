@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import MenuItem from './MenuItem';
-
+import MenuItem from '../MenuItem/MenuItem';
+import clsx from 'clsx';
+import styles from './Sidebar.module.scss';
 // Import các icon
 import { AiOutlineHome, AiOutlineDatabase, AiOutlineImport, 
          AiOutlineExport, AiOutlineCheckSquare, AiOutlineHistory, 
@@ -21,25 +22,25 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-screen w-[200px] bg-[#001f2f] text-white flex flex-col">
+    <div className={clsx(styles.sidebar)}>
       
       {/* Logo và tiêu đề */}
-      <div className="bg-[#001f2f] p-8 flex flex-col items-center justify-center">
-        <div className="text-[#a887f3] text-[0.9rem] text-center mb-2">
-          <img src="/bk_logo.png" alt="BK Logo" className="w-full h-auto" />
+      <div className={clsx(styles.sidebarHeader)}>
+        <div className={clsx(styles.sidebarLogo)}>
+          <img src="/bk_logo.png" alt="BK Logo" className={clsx(styles.sidebarImg)} />
         </div >
-        <h1 className="text-2xl font-bold text-center">WMS Portal</h1>
+        <h1 className={clsx(styles.sidebarTitle)}>WMS Portal</h1>
       </div >
       
       {/* Menu items */}
-      <nav className="flex-1 bg-[#005F73]">
+      <nav className={clsx(styles.sidebarNav)}>
         {menuItems.map((item) => (
           <MenuItem 
             key={item.id} 
             to={item.path}
             active={location.pathname === item.path ? 1 : 0}
           >
-            <span className="mr-3 text-[1.2rem] flex items-center">{item.icon}</span>
+            <span className={clsx(styles.sidebarIcon)}>{item.icon}</span>
             <span>{item.title}</span>
           </MenuItem>
         ))}

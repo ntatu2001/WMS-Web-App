@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import clsx from 'clsx';
+import styles from './MenuItem.module.scss';
 
 const MenuItem = ({ to, children }) => {
   const location = useLocation();
@@ -14,10 +16,7 @@ const MenuItem = ({ to, children }) => {
   return (
     <Link
       to={to}
-      className={`flex items-center px-4 py-4 font-bold text-xl transition-colors
-      ${isActive 
-        ? "bg-white text-black" 
-        : "bg-transparent text-white hover:bg-white/10"}`}
+      className={clsx(styles.link, isActive ? styles.link_active : styles.link_inactive)}
     >
       {children}
     </Link>

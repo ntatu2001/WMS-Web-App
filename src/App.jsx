@@ -7,14 +7,15 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Components
-import LoadingPage from "./common/constants/LoadingPage/LoadingPage.jsx";
-import MainLayout from "./common/constants/layout/MainLayout.jsx";
+import LoadingPage from "./common/components/LoadingPage/LoadingPage";
+import MainLayout from "./common/components/layout/MainLayout";
 
 // Features
 import LoginScreen from "./features/Login/LoginScreen.jsx";
 import Dashboard from "./features/Dashboard/presentation/Dashboard.jsx";
 import LoginGuard from "./features/LoginGuard/LoginGuard.jsx";
 import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt.jsx";
+
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
