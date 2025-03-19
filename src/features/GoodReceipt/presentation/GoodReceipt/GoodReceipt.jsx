@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
-import HeaderContainer from '../../../common/components/Header/HeaderContainer.jsx';
-import HeaderItem from '../../../common/components/Header/HeaderItem.jsx';
-import TabContainer from '../../../common/components/Tab/TabContainer.jsx';
-import TabButton from '../../../common/components/Tab/TabButton.jsx';
-import Separator from '../../../common/components/Header/Separator.jsx';
-import CreateGoodReceipt from './CreateGoodReceipt.jsx';
-import ManageGoodReceipt from './ManageGoodReceipt.jsx';
+import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
+import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
+import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
+import TabButton from '../../../../common/components/Tab/TabButton.jsx';
+import Separator from '../../../../common/components/Header/Separator.jsx';
+import CreateGoodReceipt from '../CreateGoodReceipt/CreateGoodReceipt.jsx';
+import ManageGoodReceipt from '../ManageGoodReceipt/ManageGoodReceipt.jsx';
 
 const GoodReceipt = () => {
   const [activeTab, setActiveTab] = useState('create');
 
   return (
-    <div className="p-0 bg-[#f5f5f5]">
+    <div style = {{padding: 0, backgroundColor: '#f5f5f5'}}>
       <HeaderContainer>
         <HeaderItem>Nhập kho</HeaderItem>
         <Separator />

@@ -14,7 +14,7 @@ import MainLayout from "./common/components/layout/MainLayout";
 import LoginScreen from "./features/Login/LoginScreen.jsx";
 import Dashboard from "./features/Dashboard/presentation/Dashboard.jsx";
 import LoginGuard from "./features/LoginGuard/LoginGuard.jsx";
-import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt.jsx";
+import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt/GoodReceipt.jsx";
 
 
 function App() {

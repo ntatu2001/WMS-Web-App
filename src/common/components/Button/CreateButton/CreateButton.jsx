@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import styles from './Button.module.scss';
+import styles from './CreateButton.module.scss';
 const CreateButton = ({ children, onClick, className}) => {
     return (
       <button

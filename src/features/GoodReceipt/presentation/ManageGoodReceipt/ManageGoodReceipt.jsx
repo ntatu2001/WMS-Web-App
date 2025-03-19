@@ -1,13 +1,12 @@
 import React from 'react';
-import TabContainer from '../../../common/components/Tab/TabContainer';
-import TabButton from '../../../common/components/Tab/TabButton';
 import { FaEye } from 'react-icons/fa';
-import ContentContainer from '../../../common/components/ContentContainer/ContentContainer';
-import ListSection from '../../../common/components/Section/ListSection';
-import HeaderItem from '../../../common/components/Header/HeaderItem';
-import Table from '../../../common/components/Table/Table';
-import TableHeader from '../../../common/components/Table/TableHeader';
-import TableCell from '../../../common/components/Table/TableCell';
+import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer';
+import ListSection from '../../../../common/components/Section/ListSection';
+import HeaderItem from '../../../../common/components/Header/HeaderItem';
+import Table from '../../../../common/components/Table/Table';
+import TableHeader from '../../../../common/components/Table/TableHeader';
+import TableCell from '../../../../common/components/Table/TableCell';
+import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton';
 
 const ManageGoodReceipt = () => {
 
@@ -25,12 +24,12 @@ const ManageGoodReceipt = () => {
   ];
 
   return (
-    <div>
+    <>
       <ContentContainer>
-        <div className="w-full">
+        <div style = {{width: '100%'}}>
           <ListSection>
-        <HeaderItem className="text-2xl">Lô nhập kho trong ngày</HeaderItem>
-            <div className="mt-4 overflow-x-auto">
+        <HeaderItem style = {{fontsize: '1.5rem',lineheight: '2rem'}}>Lô nhập kho trong ngày</HeaderItem>
+            <div style={{margintop: '1rem', overflowX: 'auto'}}>
               <Table>
                 <thead>
                   <tr>
@@ -66,9 +65,9 @@ const ManageGoodReceipt = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <button className="text-[#006373] bg-transparent border-none cursor-pointer text-lg">
+                        <FaEyeButton>
                           <FaEye size={25} color="#000" /> 
-                        </button>
+                        </FaEyeButton>
                       </TableCell>
                     </tr>
                   ))}
@@ -76,9 +75,9 @@ const ManageGoodReceipt = () => {
               </Table>
             </div>
           </ListSection>
-          <ListSection className="mt-6">
-          <HeaderItem className="mt-2.5">Lô nhập kho gần đây</HeaderItem>
-            <div className="mt-4 overflow-x-auto">
+          <ListSection style ={{margintop: '1.5rem'}}>
+          <HeaderItem style ={{margintop: '0.625rem'}}>Lô nhập kho gần đây</HeaderItem>
+            <div style={{margintop: '1rem', overflowX: 'auto'}}>
               <Table>
                 <thead>
                   <tr>
@@ -107,9 +106,9 @@ const ManageGoodReceipt = () => {
                       <TableCell>{item.date}</TableCell>
                       <TableCell>{item.type}</TableCell>
                       <TableCell>
-                        <button className="text-[#006373] bg-transparent border-none cursor-pointer text-lg">
+                        <FaEyeButton>
                           <FaEye size={25} color="#000" />
-                        </button>
+                        </FaEyeButton>
                       </TableCell>
                     </tr>
                   ))}
@@ -119,7 +118,7 @@ const ManageGoodReceipt = () => {
           </ListSection>
         </div>
       </ContentContainer>
-    </div>
+    </>
   );
 };
 

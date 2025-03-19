@@ -1,0 +1,18 @@
+
+.createButton {
+    background-color: #003f5c;
+    color: white;
+    border: none;
+    border-radius: 6px; 
+    padding: 6px 8px; 
+    font-size: 12px; 
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px; 
+
+    &:hover {
+        opacity: 0.9; 
+    }
+}

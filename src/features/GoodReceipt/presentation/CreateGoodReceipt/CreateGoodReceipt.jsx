@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { FaEye, FaChevronDown } from 'react-icons/fa';
-import SectionTitle from '../../../common/components/Text/SectionTitle.jsx';
-import Table from '../../../common/components/Table/Table.jsx';
-import TableHeader from '../../../common/components/Table/TableHeader.jsx';
-import TableCell from '../../../common/components/Table/TableCell.jsx';
-import SelectContainer from '../../../common/components/Selection/SelectContainer.jsx';
-import Select from '../../../common/components/Selection/Select.jsx';
-import FormGroup from '../../../common/components/FormGroup/FormGroup.jsx';
-import CreateButton from '../../../common/components/Button/CreateButton.jsx';
-import ActionButton from '../../../common/components/Button/ActionButton.jsx';
-import ContentContainer from '../../../common/components/ContentContainer/ContentContainer.jsx';
-import DropdownIcon from '../../../common/components/Icon/DropdownIcon.jsx';
-import DateInput from '../../../common/components/DateInput/DateInput.jsx';
-import Label from '../../../common/components/Label/Label.jsx';
-import FormSection from '../../../common/components/Section/FormSection.jsx';
-import ListSection from '../../../common/components/Section/ListSection.jsx';
+import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
+import Table from '../../../../common/components/Table/Table.jsx';
+import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
+import TableCell from '../../../../common/components/Table/TableCell.jsx';
+import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
+import Select from '../../../../common/components/Selection/Select.jsx';
+import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
+import CreateButton from '../../../../common/components/Button/CreateButton/CreateButton.jsx';
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer.jsx';
+import DropdownIcon from '../../../../common/components/Icon/DropdownIcon.jsx';
+import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
+import Label from '../../../../common/components/Label/Label.jsx';
+import FormSection from '../../../../common/components/Section/FormSection.jsx';
+import ListSection from '../../../../common/components/Section/ListSection.jsx';
+import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -61,7 +62,7 @@ const CreateGoodReceipt = () => {
             <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
-
+        
         <FormGroup>
           <Label>Nhà cung cấp:</Label>
           <SelectContainer>
@@ -96,7 +97,11 @@ const CreateGoodReceipt = () => {
           </SelectContainer>
         </FormGroup>
         
-        <ActionButton className='w-3/4 py-2.5 mt-10'>Tạo phiếu</ActionButton>
+        <ActionButton style={{
+          width: '75%',
+          padding: '0.625rem 0',
+          marginTop: '2.5rem'
+        }}>Tạo phiếu</ActionButton>
       </FormSection>
       
       {/* Right Section - Import List */}
@@ -133,16 +138,16 @@ const CreateGoodReceipt = () => {
                     </CreateButton>
                 </TableCell>
                 <TableCell>
-                  <button className="bg-transparent border-none cursor-pointer flex justify-center items-center">
+                  <FaEyeButton>
                     <FaEye size={25} color="#000" />
-                  </button>
+                  </FaEyeButton>
                 </TableCell>
               </tr>
             ))}
           </tbody>
         </Table>
         
-        <ActionButton className="mt-11">Duyệt danh sách nhập kho</ActionButton>
+        <ActionButton style = {{ marginTop: '2.75rem'}}>Duyệt danh sách nhập kho</ActionButton>
       </ListSection>
     </ContentContainer>
   );

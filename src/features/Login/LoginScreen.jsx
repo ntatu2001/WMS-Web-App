@@ -3,7 +3,8 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { login } from '../../store/slices/authSlice';
-import ActionButton from '../../common/components/Button/ActionButton.jsx';
+import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
+
 const LoginContainer = styled.div`
   display: flex;
   justify-content: center;

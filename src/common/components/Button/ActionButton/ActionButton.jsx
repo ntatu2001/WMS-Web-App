@@ -1,4 +1,4 @@
-import styles from './Button.module.scss';
+import styles from './ActionButton.module.scss';
 import clsx from 'clsx';
 
 const ActionButton = ({ children, onClick, className }) => {
