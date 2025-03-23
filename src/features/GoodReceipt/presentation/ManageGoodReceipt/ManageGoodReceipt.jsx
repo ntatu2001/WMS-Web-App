@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEye } from 'react-icons/fa';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer';
 import ListSection from '../../../../common/components/Section/ListSection';
@@ -7,13 +7,13 @@ import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
 import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton';
-
+import Select from '../../../../common/components/Selection/Select';
+import ProgressOption from '../ProgressOption/ProgressOption';
 const ManageGoodReceipt = () => {
-
-  const todayReceipts = [
+  const [receipts, setReceipts] = useState([
     { id: 1, name: 'Keo chemiok 250', code: 'AO01001', unit: 'Kg', poNumber: 'NVL205', quantity: 15, receiver: 'Anh Tú', note: '--', status: 'Đang kiểm tra' },
     { id: 2, name: 'Hạt nhựa PP AY161', code: 'PLPP001', unit: 'Kg', poNumber: 'NAM104', quantity: 100, receiver: 'Văn Bảo', note: '--', status: 'Đang lấy hàng' },
-  ];
+  ]);
 
   const recentReceipts = [
     { id: 1, name: 'Cao Su EPDM 512F', code: 'RB01004', unit: 'Kg', poNumber: 'CS202', quantity: 200, receiver: 'Hoàng Thành', date: '26/02/2025', type: 'Vật tư' },
@@ -23,13 +23,21 @@ const ManageGoodReceipt = () => {
     { id: 5, name: 'Sứ Block lớn Tấc', code: 'CR04001', unit: 'PCS', poNumber: 'R6120', quantity: 80, receiver: 'Hùng Vạn', date: '24/02/2025', type: 'Bao Bì' },
   ];
 
+  const handleStatusChange = (id, newStatus) => {
+    setReceipts(
+      receipts.map((item) => 
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
+  };
+
   return (
     <>
       <ContentContainer>
         <div style = {{width: '100%'}}>
-          <ListSection>
-        <HeaderItem style = {{fontsize: '1.5rem',lineheight: '2rem'}}>Lô nhập kho trong ngày</HeaderItem>
-            <div style={{margintop: '1rem', overflowX: 'auto'}}>
+        <ListSection>
+        <HeaderItem>Lô nhập kho trong ngày</HeaderItem>
+            <div style={{marginTop: '1rem', overflowX: 'auto'}}>
               <Table>
                 <thead>
                   <tr>
@@ -46,7 +54,7 @@ const ManageGoodReceipt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {todayReceipts.map((item) => (
+                  {receipts.map((item) => (
                     <tr key={item.id}>
                       <TableCell>{item.id}</TableCell>
                       <TableCell>{item.name}</TableCell>
@@ -57,12 +65,10 @@ const ManageGoodReceipt = () => {
                       <TableCell>{item.receiver}</TableCell>
                       <TableCell>{item.note}</TableCell>
                       <TableCell>
-                        <span className={`
-                          px-2 py-1 rounded-md text-white font-bold text-xs
-                          ${item.status === 'Đang kiểm tra' ? 'bg-[#0052cc]' : 'bg-[#ff9800]'}
-                        `}>
-                          {item.status}
-                        </span>
+                        <ProgressOption 
+                          item={item}
+                          handleStatusChange={handleStatusChange}
+                        />
                       </TableCell>
                       <TableCell>
                         <FaEyeButton>
@@ -75,9 +81,9 @@ const ManageGoodReceipt = () => {
               </Table>
             </div>
           </ListSection>
-          <ListSection style ={{margintop: '1.5rem'}}>
-          <HeaderItem style ={{margintop: '0.625rem'}}>Lô nhập kho gần đây</HeaderItem>
-            <div style={{margintop: '1rem', overflowX: 'auto'}}>
+        <ListSection style = {{marginTop: '2rem'}}>
+          <HeaderItem>Lô nhập kho gần đây</HeaderItem>
+            <div style={{marginTop: '1rem', overflowX: 'auto'}}>
               <Table>
                 <thead>
                   <tr>

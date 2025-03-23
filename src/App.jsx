@@ -28,7 +28,7 @@ function App() {
   }, [isLogin, isLoading]);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5]">
+    <div className="appContainer">
       <GlobalStyle />
       {isLoading && <LoadingPage />}
       <ToastContainer />
@@ -38,8 +38,8 @@ function App() {
           isLogin ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <div className="p-5 max-w-2xl mx-auto bg-white rounded-lg shadow-md mt-12">
-              <h1 className="text-center text-[#333] mb-5 font-bold text-2xl">Warehouse Management System</h1>
+            <div className="loginContainer">
+              <h1 className="loginTitle">Warehouse Management System</h1>
               <LoginScreen />
             </div>
           )

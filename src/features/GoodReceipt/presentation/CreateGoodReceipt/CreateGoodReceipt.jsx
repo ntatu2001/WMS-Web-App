@@ -16,9 +16,13 @@ import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
 import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
+import clsx from 'clsx';
+import styles from './CreateGoodReceipt.module.scss';
+import InforModal from '../InforModal/InforModal.jsx';
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Mock data for the table
   const importItems = [
@@ -30,6 +34,14 @@ const CreateGoodReceipt = () => {
     { id: 6, name: 'Chất hóa dẻo', code: 'PA02001', unit: 'Kg', lotPo: 'HCD41', quantity: 50 },
     { id: 7, name: 'Dây dại xanh 2.0', code: 'SD01B20', unit: 'Met', lotPo: 'STD17', quantity: 150 },
   ];
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <ContentContainer>
@@ -98,9 +110,7 @@ const CreateGoodReceipt = () => {
         </FormGroup>
         
         <ActionButton style={{
-          width: '75%',
-          padding: '0.625rem 0',
-          marginTop: '2.5rem'
+
         }}>Tạo phiếu</ActionButton>
       </FormSection>
       
@@ -131,11 +141,9 @@ const CreateGoodReceipt = () => {
                 <TableCell>{item.lotPo}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>
-                  <CreateButton className='bg-[#003f5c]
-                  hover:bg-[#000c5c]'
-                  >
+                  <CreateButton className={clsx(styles.createButton)} onClick={openModal}>
                     Thêm thông tin
-                    </CreateButton>
+                  </CreateButton>
                 </TableCell>
                 <TableCell>
                   <FaEyeButton>
@@ -147,7 +155,10 @@ const CreateGoodReceipt = () => {
           </tbody>
         </Table>
         
-        <ActionButton style = {{ marginTop: '2.75rem'}}>Duyệt danh sách nhập kho</ActionButton>
+        {/* Modal for additional information */}
+        <InforModal isModalOpen = {isModalOpen} closeModal = {closeModal} style={{width: '50%'}}/>
+
+        <ActionButton style={{ marginTop: '2.75rem'}}>Duyệt danh sách nhập kho</ActionButton>
       </ListSection>
     </ContentContainer>
   );
