@@ -19,21 +19,14 @@ import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeB
 import clsx from 'clsx';
 import styles from './CreateGoodReceipt.module.scss';
 import InforModal from '../InforModal/InforModal.jsx';
+import { listReceiptMaterials } from '../../../../app/mockData/InventoryReceiptData.js';
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   // Mock data for the table
-  const importItems = [
-    { id: 1, name: 'Keo chemtok 250', code: 'AD01001', unit: 'Kg', lotPo: 'NVL02', quantity: 15 },
-    { id: 2, name: 'Hạt nhựa PP AV161', code: 'PLPP001', unit: 'Kg', lotPo: 'NAM104', quantity: 100 },
-    { id: 3, name: 'Dầu Tuclalen 13W', code: 'PO04001', unit: 'Kg', lotPo: 'PETRO21', quantity: 30 },
-    { id: 4, name: 'Cao Su EPDM 512F', code: 'RB01004', unit: 'Kg', lotPo: 'CS202', quantity: 200 },
-    { id: 5, name: 'Nhựa thông', code: 'PA01003', unit: 'Kg', lotPo: 'NT331', quantity: 5 },
-    { id: 6, name: 'Chất hóa dẻo', code: 'PA02001', unit: 'Kg', lotPo: 'HCD41', quantity: 50 },
-    { id: 7, name: 'Dây dại xanh 2.0', code: 'SD01B20', unit: 'Met', lotPo: 'STD17', quantity: 150 },
-  ];
+
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -48,7 +41,7 @@ const CreateGoodReceipt = () => {
       {/* Left Section - Import Form */}
       <FormSection>
         <SectionTitle>Phiếu nhập kho</SectionTitle>
-        
+
         <FormGroup>
           <Label>Kho hàng:</Label>
           <SelectContainer>
@@ -56,12 +49,12 @@ const CreateGoodReceipt = () => {
               <option value="" disabled>Chọn loại kho hàng</option>
               <option value="warehouse1">Kho nguyên liệu</option>
               <option value="warehouse2">Kho thành phẩm</option>
-              
+
             </Select>
             <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Khu vực:</Label>
           <SelectContainer>
@@ -74,7 +67,7 @@ const CreateGoodReceipt = () => {
             <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Nhà cung cấp:</Label>
           <SelectContainer>
@@ -86,7 +79,7 @@ const CreateGoodReceipt = () => {
             <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Nhân viên:</Label>
           <SelectContainer>
@@ -98,41 +91,41 @@ const CreateGoodReceipt = () => {
             <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
-        
+
         <FormGroup>
           <Label>Ngày nhập kho:</Label>
           <SelectContainer>
-            <DateInput 
+            <DateInput
               selectedDate={selectedDate}
               onChange={setSelectedDate}
             />
           </SelectContainer>
         </FormGroup>
-        
+
         <ActionButton style={{
 
         }}>Tạo phiếu</ActionButton>
       </FormSection>
-      
+
       {/* Right Section - Import List */}
       <ListSection>
         <SectionTitle>Danh sách nhập kho</SectionTitle>
-        
+
         <Table>
           <thead>
             <tr>
-              <TableHeader style={{width: '40px'}}>STT</TableHeader>
+              <TableHeader style={{ width: '40px' }}>STT</TableHeader>
               <TableHeader>Tên sản phẩm</TableHeader>
               <TableHeader>Mã sản phẩm</TableHeader>
-              <TableHeader style={{width: '60px'}}>ĐVT</TableHeader>
+              <TableHeader style={{ width: '60px' }}>ĐVT</TableHeader>
               <TableHeader>Mã lô/Số PO</TableHeader>
               <TableHeader>Số lượng nhập</TableHeader>
-              <TableHeader style={{width: '120px'}}>Chi tiết nhập kho</TableHeader>
-              <TableHeader style={{width: '50px'}}></TableHeader>
+              <TableHeader style={{ width: '120px' }}>Chi tiết nhập kho</TableHeader>
+              <TableHeader style={{ width: '50px' }}></TableHeader>
             </tr>
           </thead>
           <tbody>
-            {importItems.map(item => (
+            {listReceiptMaterials.map(item => (
               <tr key={item.id}>
                 <TableCell>{item.id}</TableCell>
                 <TableCell>{item.name}</TableCell>
@@ -154,11 +147,11 @@ const CreateGoodReceipt = () => {
             ))}
           </tbody>
         </Table>
-        
-        {/* Modal for additional information */}
-        <InforModal isModalOpen = {isModalOpen} closeModal = {closeModal} style={{width: '50%'}}/>
 
-        <ActionButton style={{ marginTop: '2.75rem'}}>Duyệt danh sách nhập kho</ActionButton>
+        {/* Modal for additional information */}
+        <InforModal isModalOpen={isModalOpen} closeModal={closeModal} style={{ width: '50%' }} />
+
+        <ActionButton style={{ marginTop: '2.75rem' }}>Duyệt danh sách nhập kho</ActionButton>
       </ListSection>
     </ContentContainer>
   );
