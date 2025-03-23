@@ -1,12 +1,48 @@
 .modal {
     width: 50%;
-    max-width: 600px;
-    height: auto;
-    max-height: 80%;
+    max-width: 50%;
+    height: 80%;
     overflow-y: auto;
-    margin: 500px;
+    left: 30%;
+    top: 10%;
     padding: 20px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    animation: modalFadeIn ease .5s;
+}
+
+@keyframes modalFadeIn {
+    from {
+        transform: translateY(-10%);
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.modalClose {
+    background-color: #ff000f;
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    color: #fff;
+    padding: 8px 16px;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.modalClose:hover {
+    opacity: 1;
+    background-color: #ccc;
+    color: #000;
 }
