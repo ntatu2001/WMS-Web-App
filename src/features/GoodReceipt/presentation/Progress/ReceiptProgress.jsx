@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ProgressOption = ({ item, handleStatusChange }) => {
+const ReceiptProgress = ({ item, handleStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false); // State để kiểm soát hiển thị dropdown
 
   // Hàm xử lý khi chọn một option
@@ -50,7 +50,7 @@ const ProgressOption = ({ item, handleStatusChange }) => {
               padding: '8px',
               cursor: 'pointer',
               backgroundColor: "#0052cc",
-              color:  "white",
+              color: "white",
               fontWeight: "bold",
             }}
           >
@@ -62,7 +62,7 @@ const ProgressOption = ({ item, handleStatusChange }) => {
               padding: '8px',
               cursor: 'pointer',
               backgroundColor: "#ff9800",
-              color:"white",
+              color: "white",
               fontWeight: "bold",
             }}
           >
@@ -74,4 +74,4 @@ const ProgressOption = ({ item, handleStatusChange }) => {
   );
 };
 
-export default ProgressOption;
+export default ReceiptProgress;

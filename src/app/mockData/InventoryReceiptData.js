@@ -1,0 +1,39 @@
+//#region Mock data for Create Good Receipt
+
+export const listReceiptMaterials = [
+    { id: 1, name: 'Keo chemtok 250', code: 'AD01001', unit: 'Kg', lotPo: 'NVL02', quantity: 15 },
+    { id: 2, name: 'Hạt nhựa PP AV161', code: 'PLPP001', unit: 'Kg', lotPo: 'NAM104', quantity: 100 },
+    { id: 3, name: 'Dầu Tuclalen 13W', code: 'PO04001', unit: 'Kg', lotPo: 'PETRO21', quantity: 30 },
+    { id: 4, name: 'Cao Su EPDM 512F', code: 'RB01004', unit: 'Kg', lotPo: 'CS202', quantity: 200 },
+    { id: 5, name: 'Nhựa thông', code: 'PA01003', unit: 'Kg', lotPo: 'NT331', quantity: 5 },
+    { id: 6, name: 'Chất hóa dẻo', code: 'PA02001', unit: 'Kg', lotPo: 'HCD41', quantity: 50 },
+    { id: 7, name: 'Dây dại xanh 2.0', code: 'SD01B20', unit: 'Met', lotPo: 'STD17', quantity: 150 },
+];
+
+//#endregion
+
+//#region Mock data for Infor Receipt Modal
+
+export const listReceiptStorageMaterials = [
+    { id: 1, location: "VT01.1.5.1", quantity: 70 },
+    { id: 2, location: "VT01.1.5.2", quantity: 30 }
+];
+
+//#endregion
+
+//#region Mock Data for Manage Good Receipt
+
+export const listTodayReceipts = [
+    { id: 1, name: 'Keo chemiok 250', code: 'AO01001', unit: 'Kg', poNumber: 'NVL205', quantity: 15, receiver: 'Anh Tú', note: '--', status: 'Đang kiểm tra' },
+    { id: 2, name: 'Hạt nhựa PP AY161', code: 'PLPP001', unit: 'Kg', poNumber: 'NAM104', quantity: 100, receiver: 'Văn Bảo', note: '--', status: 'Đang lấy hàng' },
+];
+
+export const listRecentReceipts = [
+    { id: 1, name: 'Cao Su EPDM 512F', code: 'RB01004', unit: 'Kg', poNumber: 'CS202', quantity: 200, receiver: 'Hoàng Thành', date: '26/02/2025', type: 'Vật tư' },
+    { id: 2, name: 'Chất hóa dẻo', code: 'PA02001', unit: 'Kg', poNumber: 'NT331', quantity: 350, receiver: 'Văn Khang', date: '25/02/2025', type: 'Nguyên vật liệu' },
+    { id: 3, name: 'Dầu Tuolein 13W', code: 'PO04001', unit: 'Kg', poNumber: 'HCD41', quantity: 50, receiver: 'Phát Huy', date: '25/02/2025', type: 'Nguyên vật liệu' },
+    { id: 4, name: 'Medium Drive Ceramic', code: 'NLSQ097', unit: 'Cuộn', poNumber: '690912', quantity: 500, receiver: 'Phát Huy', date: '24/02/2025', type: 'Thành phẩm' },
+    { id: 5, name: 'Sứ Block lớn Tấc', code: 'CR04001', unit: 'PCS', poNumber: 'R6120', quantity: 80, receiver: 'Hùng Vạn', date: '24/02/2025', type: 'Bao Bì' },
+];
+
+//#endregion

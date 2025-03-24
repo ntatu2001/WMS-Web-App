@@ -10,30 +10,31 @@ import ManageGoodReceipt from '../ManageGoodReceipt/ManageGoodReceipt.jsx';
 
 const GoodReceipt = () => {
   const [activeTab, setActiveTab] = useState('create');
+  const headerText = activeTab === 'create' ? "Tạo phiếu nhập kho" : "Quản lý nhập kho";
 
   return (
-    <div style = {{padding: 0, backgroundColor: '#f5f5f5'}}>
+    <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
       <HeaderContainer>
         <HeaderItem>Nhập kho</HeaderItem>
         <Separator />
-        <HeaderItem> {activeTab === 'create' ? "Tạo phiếu nhập kho" : "Quản lý nhập kho"} </HeaderItem>
+        <HeaderItem>{headerText}</HeaderItem>
       </HeaderContainer>
-      
+
       <TabContainer>
-        <TabButton 
-          active={activeTab === 'create'} 
+        <TabButton
+          active={activeTab === 'create'}
           onClick={() => setActiveTab('create')}
         >
           Tạo phiếu nhập kho
         </TabButton>
-        <TabButton 
-          active={activeTab === 'manage'} 
+        <TabButton
+          active={activeTab === 'manage'}
           onClick={() => setActiveTab('manage')}
         >
           Quản lý nhập kho
         </TabButton>
       </TabContainer>
-      
+
       {activeTab === 'create' ? <CreateGoodReceipt /> : <ManageGoodReceipt />}
     </div>
   );
