@@ -1,21 +1,33 @@
 .dateInput {
-    position: relative;
+    position:  relative;
     width: 100%;
 }
 
 .input {
     width: 100%;
-    padding: 0.5rem;
-    border-width: 1px;
-    border-radius: 0.375rem;
+    padding: 8px 12px;
+    border: 1px solid #767676;
+    border-radius: 6px;
     font-size: 0.875rem;
     line-height: 1.25rem;
 }
 
 .button {
     position: absolute;
-    right: 0.5rem;
+    right: 0;
     top: 30%;
     transform: translateY(-5%);
     cursor: pointer;
+}
+
+
+.datePicker {
+    z-index: 1;
+    top: 20%;
+    position: fixed;
+}
+
+.react-datepicker {
+    position: fixed;
+    z-index: 1;
 }

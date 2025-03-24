@@ -7,7 +7,6 @@ import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
 import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton';
-import Select from '../../../../common/components/Selection/Select';
 import ProgressOption from '../ProgressOption/ProgressOption';
 const ManageGoodReceipt = () => {
   const [receipts, setReceipts] = useState([

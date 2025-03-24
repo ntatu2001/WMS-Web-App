@@ -16,7 +16,7 @@ const GoodReceipt = () => {
       <HeaderContainer>
         <HeaderItem>Nhập kho</HeaderItem>
         <Separator />
-        <HeaderItem>Tạo phiếu nhập kho</HeaderItem>
+        <HeaderItem> {activeTab === 'create' ? "Tạo phiếu nhập kho" : "Quản lý nhập kho"} </HeaderItem>
       </HeaderContainer>
       
       <TabContainer>

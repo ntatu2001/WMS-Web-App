@@ -1,36 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+// import 'react-datepicker/dist/react-datepicker.css';
 import clsx from 'clsx';
 import styles from './DateInput.module.scss'
 const DateInput = ({ 
   selectedDate, 
-  onChange, 
+  onChange = () => {}, 
   placeholder = "Chọn ngày", 
   className = "", 
-  dateFormat 
+  style
 }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const datePickerRef = useRef(null);
-  
-  // Format date as dd/MM/yyyy with weekday name
-  const formatDate = (date) => {
-    if (!date) return '';
-    
-    if (dateFormat) {
-      return dateFormat(date);
-    }
-    
-    const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-    const day = days[date.getDay()];
-    
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = date.getFullYear();
-    
-    return `${day} - ${dd}/${mm}/${yyyy}`;
-  };
   
   // Toggle calendar visibility
   const toggleCalendar = () => {
@@ -44,30 +25,15 @@ const DateInput = ({
   };
 
   return (
-    <div className={clsx(styles.div, className)}>
+    <div className={clsx(styles.dateInput, className)} style={style}>
       <input
-        type="text"
+        type="datetime-local"
         placeholder={placeholder}
-        value={formatDate(selectedDate)}
-        readOnly
+        value={selectedDate ? selectedDate.toISOString().slice(0, 16) : ''}
+        onChange={(e) => handleDateChange(new Date(e.target.value))}
         className={clsx(styles.input)}
-      />
-      <button 
-        className={clsx(styles.button)}
         onClick={toggleCalendar}
-      >
-        <FaCalendarAlt size={16} />
-      </button>
-      {isCalendarOpen && (
-        <DatePicker
-          ref={datePickerRef}
-          selected={selectedDate}
-          onChange={handleDateChange}
-          inline
-          popperPlacement="bottom-end"
-          onClickOutside={() => setIsCalendarOpen(false)}
-        />
-      )}
+      />
     </div>
   );
 };

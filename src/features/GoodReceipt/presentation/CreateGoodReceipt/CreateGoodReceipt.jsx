@@ -109,9 +109,7 @@ const CreateGoodReceipt = () => {
           </SelectContainer>
         </FormGroup>
         
-        <ActionButton style={{
-
-        }}>Tạo phiếu</ActionButton>
+        <ActionButton>Tạo phiếu</ActionButton>
       </FormSection>
       
       {/* Right Section - Import List */}
