@@ -20,6 +20,7 @@ import DateInput from '../../../../common/components/DateInput/DateInput';
 import TextNote from '../../../../common/components/Text/TextNote';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
 import { FaChevronDown } from 'react-icons/fa';
+import QRicon from '../../../../assets/QRicon.png';
 
 const InforModal = ({isModalOpen, closeModal}) => {
     const [selectedDate1, setSelectedDate1] = useState(null);
@@ -59,7 +60,7 @@ const InforModal = ({isModalOpen, closeModal}) => {
                         position: "absolute",
                         right: "0",
                         marginRight: "10%"}}>
-                        <img src="/QRicon.png" alt=""/>
+                        <img src={QRicon} alt="QR Icon"/>
                     </button>
                     
                 </FormGroup>

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
+import BKlogo from '../../../assets/bk_logo.png'
 // Import các icon
 import { AiOutlineHome, AiOutlineDatabase, AiOutlineImport, 
          AiOutlineExport, AiOutlineCheckSquare, AiOutlineHistory, 
@@ -27,7 +28,7 @@ const Sidebar = () => {
       {/* Logo và tiêu đề */}
       <div className={clsx(styles.sidebarHeader)}>
         <div className={clsx(styles.sidebarLogo)}>
-          <img src="/bk_logo.png" alt="BK Logo" className={clsx(styles.sidebarImg)} />
+          <img src={BKlogo} alt="BK Logo" className={clsx(styles.sidebarImg)} />
         </div >
         <h1 className={clsx(styles.sidebarTitle)}>WMS Portal</h1>
       </div >
