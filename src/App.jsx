@@ -16,6 +16,7 @@ import Dashboard from "./features/Dashboard/presentation/Dashboard.jsx";
 import LoginGuard from "./features/LoginGuard/LoginGuard.jsx";
 import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt/GoodReceipt.jsx";
 import GoodIssue from "./features/GoodIssue/presentation/GoodIssue/GoodIssue.jsx";
+import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 
 
 function App() {
@@ -53,7 +54,7 @@ function App() {
             <Route path="/storage" element={<div>Lưu trữ</div>} />
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
-            <Route path="/inventory" element={<div>Kiểm kê</div>} />
+            <Route path="/inventory" element={<LotAdjustment />} />
             <Route path="/history" element={<div>Lịch sử</div>} />
             <Route path="/catalogue" element={<div>Danh mục</div>} />
           </Route>

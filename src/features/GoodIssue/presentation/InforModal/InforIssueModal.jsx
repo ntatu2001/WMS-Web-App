@@ -22,7 +22,7 @@ import ActionButton from '../../../../common/components/Button/ActionButton/Acti
 import { FaChevronDown } from 'react-icons/fa';
 import QRicon from '../../../../assets/QRicon.png';
 import { listIssueStorageMaterials } from '../../../../app/mockData/InventoryIssueData.js';
-import { listUnitOfMeasures } from '../../../../app/mockData/UnitOfMeasure.js';
+import { UnitOfMeasure } from '../../../../common/constants/UnitOfMeasure/UnitOfMeasure.js';
 import { listCustomers } from '../../../../app/mockData/CustomerData.js';
 import { listMaterials } from '../../../../app/mockData/MaterialData.js';
 
@@ -136,7 +136,7 @@ const InforIssueModal = ({ isModalOpen, closeModal }) => {
                             <SelectContainer>
                                 <Select defaultValue="" style={{ width: "88.5%" }}>
                                     <option value="" disabled>Chọn ĐVT</option>
-                                    {listUnitOfMeasures.map((unitOfMeasure, index) => (
+                                    {Object.values(UnitOfMeasure).map((unitOfMeasure, index) => (
                                         <option value={`unitOfMeasures${index}`}>
                                             {unitOfMeasure}
                                         </option>
