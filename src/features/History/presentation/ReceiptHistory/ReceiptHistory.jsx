@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaChevronDown } from 'react-icons/fa';
+import { FaEye } from 'react-icons/fa';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
@@ -21,7 +21,8 @@ import styles from './ReceiptHistory.module.scss';
 const ReceiptHistory = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
   const [selectedDate2, setSelectedDate2] = useState(null);
-  
+  const [selectedItem, setSelectedItem] = useState(null);
+
   return (
     <div style={{display: "flex", height: "100vh"}}>
       
@@ -66,7 +67,11 @@ const ReceiptHistory = () => {
         <SectionTitle style={{fontSize: "24px", padding: "10px", marginBottom: 0}} >Danh sách lô nhập kho</SectionTitle>
             <div style={{height: "50%", overflow: "auto"}}> 
                 {listReceiptHistory.map((item) => (
-                    <div className={clsx(styles.divOfList)}>
+                    <div className={clsx(styles.divOfList)}
+                         key={item.lotPo}
+                         onClick={() => setSelectedItem(item)}
+                         style={{backgroundColor: selectedItem === item ? '#ccc' : '#FFF'}}
+                    >
                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                             <LabelSmallSize>Mã lô/ Số PO:</LabelSmallSize>
                              <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.lotPo}</span>
@@ -118,53 +123,59 @@ const ReceiptHistory = () => {
         <SectionTitle style={{ textAlign: 'left', fontSize: "18px", margin: "10px 0px" }}>Thông tin lô nhập kho</SectionTitle>
         
         <FormSection style={{ margin: "0px 10px 30px", backgroundColor: "#F5F5F5", height: "190px", padding: "10px", display: "flex"}}>
-            <div style={{ flexDirection: "column", width: "50%", marginTop: "10px", marginLeft: "15px"}}>
-                <FormGroup>
+        <div style={{ flexDirection: "column", width: "50%", marginTop: "10px", marginLeft: "15px"}}>
+                <FormGroup style={{justifyContent: "space-between", marginRight: "15%"}}>
                     <Label style={{width: "30%"}}>Kho hàng:</Label>
-                    
+                    <span>{selectedItem?.warehouse}</span>
                 </FormGroup>
 
-                <FormGroup>
-                    <Label style={{width: "20%"}}>Khu vực:</Label>
-
-
-                </FormGroup>
-
-                <FormGroup> 
-                    <Label style={{width: "50%"}}>Nhân viên nhập kho:</Label>
+                <FormGroup style={{justifyContent: "space-between", marginRight: "15%"}}>
+                    <Label style={{width: "30%"}}>Khu vực:</Label>
+                    <span>{selectedItem?.zone}</span>
 
                 </FormGroup>
 
-                <FormGroup>
+                <FormGroup style={{justifyContent: "space-between", marginRight: "15%"}}>
+                    <Label style={{width: "60%"}}>Nhân viên nhập kho:</Label>
+                    <span>{selectedItem?.receiver}</span>
+                </FormGroup>
+
+                <FormGroup style={{justifyContent: "space-between", marginRight: "15%"}}>
                     <Label style={{width: "50%"}}>Tổng sản phẩm:</Label>
-
-
+                    <span>{selectedItem?.quantity}</span>
                 </FormGroup>
 
             </div>
         
 
             <div style={{ flexDirection: "column", width: "50%", marginTop: "10px", marginLeft: "15px"}}>
-            <FormGroup>
-                    <Label style={{width: "30%"}}>Mã lô/ Số PO:</Label>
-                    
+                <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
+                    <Label style={{width: "40%"}}>Mã lô/ Số PO:</Label>
+                    <span>{selectedItem?.lotPo}</span>
                 </FormGroup>
 
-                <FormGroup>
-                    <Label style={{width: "30%"}}>Nhà cung cấp:</Label>
-
-
-                </FormGroup>
-
-                <FormGroup> 
-                    <Label style={{width: "50%"}}>Ngày nhập kho:</Label>
+                <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
+                    <Label style={{width: "40%"}}>Nhà cung cấp:</Label>
+                    <span>{selectedItem?.supplier}</span>
 
                 </FormGroup>
 
-                <FormGroup>
+                <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
+                    <Label style={{width: "40%"}}>Ngày nhập kho:</Label>
+                    <span>{selectedItem?.date}</span>
+                </FormGroup>
+
+                <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
                     <Label style={{width: "50%"}}>Trạng thái:</Label>
-
-
+                    <span style={{
+                                backgroundColor: selectedItem?.status === "Đang kiểm tra" ? "#081BB0" : "#E5B009",
+                                color: "white",
+                                fontWeight: "bold",
+                                fontSize: "12px",
+                                padding: selectedItem?.status ? "4px 8px" : 0,
+                                borderRadius: "4px",
+                                }}>{selectedItem?.status}
+                    </span>
                 </FormGroup>
 
             </div>
@@ -172,7 +183,7 @@ const ReceiptHistory = () => {
 
         <SectionTitle style={{ textAlign: 'left', fontSize: "18px", margin: "10px 0px" }}>Bảng phân bố vị trí lưu trữ</SectionTitle>
 
-         <ListSection style={{ padding: 0 }}>
+         <ListSection style={{ padding: 0, margin: "0px 10px" }}>
                 <div style={{ overflowX: 'auto' }}>
                     <Table>
                         <thead>
