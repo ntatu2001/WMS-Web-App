@@ -74,7 +74,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                             <Select defaultValue="" style={{ width: "88.5%" }}>
                                 <option value="" disabled>Chọn nhà cung cấp</option>
                                 {listSuppliers.map((supplier, index) => (
-                                    <option value={`supplier${index}`}>
+                                    <option key = {`supplier-${index}`} value={`supplier${index}`}>
                                         {supplier}
                                     </option>
                                 ))}
@@ -122,7 +122,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                                 <Select defaultValue="" style={{ width: "88.5%" }}>
                                     <option value="" disabled>Chọn sản phẩm</option>
                                     {listMaterials.map((material, index) => (
-                                        <option value={`material${index}`}>
+                                        <option key = {`marterial-${index}`} value={`material${index}`}>
                                             {material.name}
                                         </option>
                                     ))}
@@ -137,7 +137,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                                 <Select defaultValue="" style={{ width: "88.5%" }}>
                                     <option value="" disabled>Chọn ĐVT</option>
                                     {listUnitOfMeasures.map((unitOfMeasure, index) => (
-                                        <option value={`unitOfMeasures${index}`}>
+                                        <option key = {`unitOfMeasure-${index}`} value={`unitOfMeasures${index}`}>
                                             {unitOfMeasure}
                                         </option>
                                     ))}
@@ -149,7 +149,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                         <FormGroup style={{ marginLeft: "10px" }}>
                             <Label style={{ width: "36.6%" }}>Ngày sản xuất:</Label>
                             <SelectContainer>
-                                <DateInput style={{ width: "86.5%", left: "2%" }}
+                                <DateInput style={{ width: "84.5%", left: "4.7%" }}
                                     selectedDate={selectedDate2}
                                     onChange={setSelectedDate2}
                                 />
@@ -165,7 +165,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                                 <Select defaultValue="" style={{ width: "96.5%" }}>
                                     <option value="" disabled>Chọn mã sản phẩm</option>
                                     {listMaterials.map((material, index) => (
-                                        <option value={`material${index}`}>
+                                        <option key = {`material-${index}`} value={`material${index}`}>
                                             {material.code}
                                         </option>
                                     ))}
@@ -186,9 +186,9 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
                         </FormGroup>
 
                         <FormGroup>
-                            <Label style={{ width: "36.5%", marginLeft: "10px" }}>Hạn sử dụng:</Label>
+                            <Label style={{ width: "36.5%", marginLeft: "3%" }}>Hạn sử dụng:</Label>
                             <SelectContainer>
-                                <DateInput style={{ width: "95%", left: "2%" }}
+                                <DateInput style={{ width: "91%", left: "1.5%" }}
                                     selectedDate={selectedDate3}
                                     onChange={setSelectedDate3}
                                 />
@@ -200,7 +200,7 @@ const InforReceiptModal = ({ isModalOpen, closeModal }) => {
 
             <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Phân bố vị trí lưu trữ</SectionTitle>
 
-            <ListSection style={{ padding: 0 }}>
+            <ListSection style={{ padding: 0, width: "97%", left: "1.6%" }}>
                 <div style={{ overflowX: 'auto' }}>
                     <Table>
                         <thead>

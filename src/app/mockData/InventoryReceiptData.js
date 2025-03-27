@@ -37,3 +37,10 @@ export const listRecentReceipts = [
 ];
 
 //#endregion
+
+
+//#region Mock Data for Import History 
+
+export const listReceiptsHistory = {
+    
+}

@@ -19,7 +19,7 @@ export const listIssueStorageMaterials = [
 
 //#region  Mock data for Manage Good Issue
 export const listTodayIssues = [
-    { id: 1, name: 'Tấm bọc cao su Crematic', code: 'Z75SRCF1', unit: 'Tâm', poNumber: '42699', quantity: 500, receiver: 'Phát Huy', note: '--', status: 'Đang kiểm tra' },
+    { id: 1, name: 'Tấm bọc cao su Crematic', code: 'Z75SRCF1', unit: 'Tấm', poNumber: '42699', quantity: 500, receiver: 'Phát Huy', note: '--', status: 'Đang kiểm tra' },
     { id: 2, name: 'U-Blade Belt Cleaner', code: 'UFRAS0600', unit: 'Cái', poNumber: '16122', quantity: 100, receiver: 'Phát Huy', note: '--', status: 'Đang lấy hàng' },
 ];
 

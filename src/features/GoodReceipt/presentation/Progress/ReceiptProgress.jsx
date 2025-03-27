@@ -15,7 +15,7 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          backgroundColor: item.status === "Đang kiểm tra" ? "#0052cc" : "#ff9800",
+          backgroundColor: item.status === "Đang kiểm tra" ? "#081BB0" : "#E5B009",
           color: "white",
           fontWeight: "bold",
           fontSize: "12px",

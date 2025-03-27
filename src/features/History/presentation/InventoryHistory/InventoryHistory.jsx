@@ -16,26 +16,14 @@ import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
 import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
-import clsx from 'clsx';
-import styles from './CreateGoodReceipt.module.scss';
-import InforReceiptModal from '../InforModal/InforReceiptModal.jsx';
-import { listReceiptMaterials } from '../../../../app/mockData/InventoryReceiptData.js';
-import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
-import { listZones } from '../../../../app/mockData/ZoneData.js';
-import { listPersons } from '../../../../app/mockData/PersonData.js';
-import { listSuppliers } from '../../../../app/mockData/SupplierData.js';
+import {listWarehouses} from '../../../../app/mockData/WarehouseData.js';
+import {listZones} from '../../../../app/mockData/ZoneData.js';
+import {listSuppliers} from '../../../../app/mockData/SupplierData.js';
+import {listPersons} from '../../../../app/mockData/PersonData.js';
+import {listReceiptMaterials} from '../../../../app/mockData/InventoryReceiptData.js';
 
-const CreateGoodReceipt = () => {
+const InventoryHistory = () => {
   const [selectedDate, setSelectedDate] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
 
   return (
     <ContentContainer>
@@ -49,7 +37,7 @@ const CreateGoodReceipt = () => {
             <Select defaultValue="">
               <option value="" disabled>Chọn loại kho hàng</option>
               {listWarehouses.map((warehouse, index) => (
-                <option key = {`warehouse-${index}`} value={`warehouse${index}`}>
+                <option value={`warehouse${index}`}>
                   {warehouse}
                 </option>
               ))}
@@ -64,7 +52,7 @@ const CreateGoodReceipt = () => {
             <Select defaultValue="">
               <option value="" disabled>Chọn loại khu vực</option>
               {listZones.map((zone, index) => (
-                <option key = {`zone-${index}`} value={`zone${index}`}>
+                <option value={`zone${index}`}>
                   {zone}
                 </option>
               ))}
@@ -79,7 +67,7 @@ const CreateGoodReceipt = () => {
             <Select defaultValue="">
               <option value="" disabled>Chọn nhà cung cấp</option>
               {listSuppliers.map((supplier, index) => (
-                <option key = {`supplier-${index}`} value={`supplier${index}`}>
+                <option value={`supplier${index}`}>
                   {supplier}
                 </option>
               ))}
@@ -94,7 +82,7 @@ const CreateGoodReceipt = () => {
             <Select defaultValue="">
               <option value="" disabled>Chọn nhân viên</option>
               {listPersons.map((person, index) => (
-                <option key = {`person-${index}`} value={`person${index}`}>
+                <option value={`person${index}`}>
                   {person}
                 </option>
               ))}
@@ -143,7 +131,7 @@ const CreateGoodReceipt = () => {
                 <TableCell>{item.lotPo}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
                 <TableCell>
-                  <CreateButton className={clsx(styles.createButton)} onClick={openModal}>
+                  <CreateButton className="">
                     Thêm thông tin
                   </CreateButton>
                 </TableCell>
@@ -157,8 +145,7 @@ const CreateGoodReceipt = () => {
           </tbody>
         </Table>
 
-        {/* Modal for additional information */}
-        <InforReceiptModal isModalOpen={isModalOpen} closeModal={closeModal} style={{ width: '50%' }} />
+
 
         <ActionButton style={{ marginTop: '2.75rem' }}>Duyệt danh sách nhập kho</ActionButton>
       </ListSection>
@@ -166,4 +153,4 @@ const CreateGoodReceipt = () => {
   );
 };
 
-export default CreateGoodReceipt; 
+export default InventoryHistory; 
