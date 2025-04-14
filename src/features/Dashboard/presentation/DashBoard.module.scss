@@ -1,0 +1,15 @@
+// .actionbutton {
+//     transition: background-color 0.3s ease;
+// }
+
+// .actionbutton:hover {
+//     background-color: #09306f; /* Darker shade for hover effect */
+// }
+.actionButton {
+    // background-color: #4b5563;
+    transition: background-color 0.3s ease;
+}
+
+.hoverEffect:hover {
+    background-color: #09306f; /* Màu tối hơn khi hover */
+}

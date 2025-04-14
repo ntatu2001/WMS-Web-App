@@ -17,6 +17,7 @@ import LoginGuard from "./features/LoginGuard/LoginGuard.jsx";
 import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt/GoodReceipt.jsx";
 import GoodIssue from "./features/GoodIssue/presentation/GoodIssue/GoodIssue.jsx";
 import History from "./features/History/presentation/History/History.jsx";
+import Storage from "./features/Storage/presentation/Storage/Storage.jsx";
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
@@ -50,7 +51,7 @@ function App() {
         <Route element={<LoginGuard />}>
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/storage" element={<div>Lưu trữ</div>} />
+            <Route path="/storage" element={<Storage/>} />
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
             <Route path="/inventory" element={<div>Kiểm kê</div>} />
