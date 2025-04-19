@@ -18,6 +18,7 @@ import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt/GoodRec
 import GoodIssue from "./features/GoodIssue/presentation/GoodIssue/GoodIssue.jsx";
 import History from "./features/History/presentation/History/History.jsx";
 import Storage from "./features/Storage/presentation/Storage/Storage.jsx";
+import Catalogue from "./features/Catalogue/presentation/Catalogue/Catalogue.jsx";
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
@@ -56,7 +57,7 @@ function App() {
             <Route path="/goodissue" element={<GoodIssue />} />
             <Route path="/inventory" element={<div>Kiểm kê</div>} />
             <Route path="/history" element={<History />} />
-            <Route path="/catalogue" element={<div>Danh mục</div>} />
+            <Route path="/catalogue" element={<Catalogue />} />
           </Route>
         </Route>
 
