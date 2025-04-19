@@ -17,6 +17,7 @@ import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import LabelSmallSize from '../../../../common/components/Label/LabelSmallSize.jsx';
 import clsx from 'clsx';
 import styles from './InventoryHistory.module.scss';
+import { lotStatusData } from '../../../../app/mockData/LotStatusData.js';
 
 const InventoryHistory = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
@@ -90,12 +91,12 @@ const InventoryHistory = () => {
                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                             <LabelSmallSize>Kho hàng:</LabelSmallSize>
                              <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.warehouse}</span>
-                        </div>
+                        </div>  
 
                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                             <LabelSmallSize>Trạng thái:</LabelSmallSize>
                              <span style={{
-                                backgroundColor: item.status === "Đang kiểm kê" ? "#68310A" : "#149117",
+                                backgroundColor: lotStatusData[item.status],
                                 color: "white",
                                 fontWeight: "bold",
                                 fontSize: "12px",
@@ -168,7 +169,7 @@ const InventoryHistory = () => {
                 <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
                     <Label style={{width: "50%"}}>Trạng thái:</Label>
                     <span style={{
-                                backgroundColor: selectedItem?.status === "Đang kiểm kê" ? "#68310A" : "#149117",
+                                backgroundColor: lotStatusData[selectedItem?.status],
                                 color: "white",
                                 fontWeight: "bold",
                                 fontSize: "12px",

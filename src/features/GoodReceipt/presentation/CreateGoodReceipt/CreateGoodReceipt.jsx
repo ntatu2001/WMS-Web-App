@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaEye, FaChevronDown } from 'react-icons/fa';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
@@ -19,16 +19,27 @@ import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeB
 import clsx from 'clsx';
 import styles from './CreateGoodReceipt.module.scss';
 import InforReceiptModal from '../InforModal/InforReceiptModal.jsx';
-import { listReceiptMaterials } from '../../../../app/mockData/InventoryReceiptData.js';
 import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
 import { listZones } from '../../../../app/mockData/ZoneData.js';
 import { listPersons } from '../../../../app/mockData/PersonData.js';
 import { listSuppliers } from '../../../../app/mockData/SupplierData.js';
+import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
+import {AiOutlineDelete} from 'react-icons/ai'
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [receiptList, setReceiptList] = useState([]);
+  useEffect(() => {
+    const fetchReceipt = async() => {
+      const receiptList = await inventoryReceiptEntryApi.getAllReceiptEntries();
+      setReceiptList(receiptList);
+      
+    }
 
+    fetchReceipt();
+  }, []);
+  
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -120,47 +131,49 @@ const CreateGoodReceipt = () => {
       <ListSection>
         <SectionTitle>Danh sách nhập kho</SectionTitle>
 
-        <Table>
-          <thead>
-            <tr>
-              <TableHeader style={{ width: '40px' }}>STT</TableHeader>
-              <TableHeader>Tên sản phẩm</TableHeader>
-              <TableHeader>Mã sản phẩm</TableHeader>
-              <TableHeader style={{ width: '60px' }}>ĐVT</TableHeader>
-              <TableHeader>Mã lô/Số PO</TableHeader>
-              <TableHeader>Số lượng nhập</TableHeader>
-              <TableHeader style={{ width: '120px' }}>Chi tiết nhập kho</TableHeader>
-              <TableHeader style={{ width: '50px' }}></TableHeader>
-            </tr>
-          </thead>
-          <tbody>
-            {listReceiptMaterials.map(item => (
-              <tr key={item.id}>
-                <TableCell>{item.id}</TableCell>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>{item.code}</TableCell>
-                <TableCell>{item.unit}</TableCell>
-                <TableCell>{item.lotPo}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
-                <TableCell>
-                  <CreateButton className={clsx(styles.createButton)} onClick={openModal}>
-                    Thêm thông tin
-                  </CreateButton>
-                </TableCell>
-                <TableCell>
-                  <FaEyeButton>
-                    <FaEye size={25} color="#000" />
-                  </FaEyeButton>
-                </TableCell>
+        <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+          <Table>
+            <thead>
+              <tr>
+                <TableHeader style={{ width: '40px' }}>STT</TableHeader>
+                <TableHeader>Tên sản phẩm</TableHeader>
+                <TableHeader>Mã sản phẩm</TableHeader>
+                <TableHeader style={{ width: '60px' }}>ĐVT</TableHeader>
+                <TableHeader>Mã lô/Số PO</TableHeader>
+                <TableHeader>Số lượng nhập</TableHeader>
+                <TableHeader style={{ width: '120px' }}>Chi tiết nhập kho</TableHeader>
+                <TableHeader style={{ width: '50px' }}></TableHeader>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {receiptList.map((item, index) => (
+                <tr key={index}>
+                  <TableCell>{++index}</TableCell>
+                  <TableCell>{item.materialName}</TableCell>
+                  <TableCell>{item.materialId}</TableCell>
+                  <TableCell>{item.note}</TableCell>
+                  <TableCell>{item.lotNumber}</TableCell>
+                  <TableCell>{item.receiptLot.importedQuantity}</TableCell>
+                  <TableCell>
+                    <CreateButton className={clsx(styles.createButton)} onClick={openModal}>
+                      Thêm thông tin
+                    </CreateButton>
+                  </TableCell>
+                  <TableCell>
+                    <FaEyeButton>
+                      <AiOutlineDelete size={25} color="#000" />
+                    </FaEyeButton>
+                  </TableCell>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
 
         {/* Modal for additional information */}
         <InforReceiptModal isModalOpen={isModalOpen} closeModal={closeModal} style={{ width: '50%' }} />
 
-        <ActionButton style={{ marginTop: '2.75rem' }}>Duyệt danh sách nhập kho</ActionButton>
+        <ActionButton style={{ marginTop: '2rem' }}>Duyệt danh sách nhập kho</ActionButton>
       </ListSection>
     </ContentContainer>
   );

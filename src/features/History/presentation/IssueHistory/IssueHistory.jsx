@@ -17,6 +17,8 @@ import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import LabelSmallSize from '../../../../common/components/Label/LabelSmallSize.jsx';
 import clsx from 'clsx';
 import styles from './IssueHistory.module.scss';
+import { lotStatusData } from '../../../../app/mockData/LotStatusData.js';
+
 
 const IssueHistory = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
@@ -95,7 +97,7 @@ const IssueHistory = () => {
                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                             <LabelSmallSize>Trạng thái:</LabelSmallSize>
                              <span style={{
-                                backgroundColor: item.status === "Đang đóng gói" ? "#65049A" : "#149117",
+                                backgroundColor: lotStatusData[item.status],
                                 color: "white",
                                 fontWeight: "bold",
                                 fontSize: "12px",
@@ -168,7 +170,7 @@ const IssueHistory = () => {
                 <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
                     <Label style={{width: "50%"}}>Trạng thái:</Label>
                     <span style={{
-                                backgroundColor: selectedItem?.status === "Đang đóng gói" ? "#65049A" : "#149117",
+                                backgroundColor: lotStatusData[selectedItem?.status],
                                 color: "white",
                                 fontWeight: "bold",
                                 fontSize: "12px",

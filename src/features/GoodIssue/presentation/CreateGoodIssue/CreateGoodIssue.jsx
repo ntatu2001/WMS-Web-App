@@ -24,6 +24,7 @@ import { listCustomers } from '../../../../app/mockData/CustomerData.js';
 import { listPersons } from '../../../../app/mockData/PersonData.js';
 import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
 import { listZones } from '../../../../app/mockData/ZoneData.js';
+import {AiOutlineDelete} from 'react-icons/ai'
 
 const CreateGoodIssue = () => {
     const [selectedDate, setSelectedDate] = useState(null);
@@ -38,7 +39,7 @@ const CreateGoodIssue = () => {
     };
 
     return (
-        <ContentContainer>
+        <ContentContainer >
             {/* Left Section - Import Form */}
             <FormSection>
                 <SectionTitle>Phiếu xuất kho</SectionTitle>
@@ -120,9 +121,11 @@ const CreateGoodIssue = () => {
 
             {/* Right Section - Import List */}
             <ListSection>
+           
                 <SectionTitle>Danh sách xuất kho</SectionTitle>
 
-                <Table>
+                <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+               <Table>
                     <thead>
                         <tr>
                             <TableHeader style={{ width: '40px' }}>STT</TableHeader>
@@ -151,7 +154,7 @@ const CreateGoodIssue = () => {
                                 </TableCell>
                                 <TableCell>
                                     <FaEyeButton>
-                                        <FaEye size={25} color="#000" />
+                                        <AiOutlineDelete size={25} color="#000" />
                                     </FaEyeButton>
                                 </TableCell>
                             </tr>
@@ -159,10 +162,12 @@ const CreateGoodIssue = () => {
                     </tbody>
                 </Table>
 
+               </div>
+
                 {/* Modal for additional information */}
                 <InforIssueModal isModalOpen={isModalOpen} closeModal={closeModal} style={{ width: '50%' }} />
 
-                <ActionButton style={{ marginTop: '2.75rem' }}>Duyệt danh sách xuất kho</ActionButton>
+                <ActionButton style={{ marginTop: '2rem' }}>Duyệt danh sách xuất kho</ActionButton>
             </ListSection>
         </ContentContainer>
     );
