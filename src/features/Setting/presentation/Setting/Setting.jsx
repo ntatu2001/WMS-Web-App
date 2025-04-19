@@ -9,44 +9,6 @@ import Account from '../Account/Account.jsx';
 import Update from '../Update/Update.jsx';
 import Logout from '../Logout/Logout.jsx';
 
-const Setting = () => {
-  const [activeTab, setActiveTab] = useState('account');
-  const headerText = activeTab === 'account' ? "Tài khoản" :
-                     activeTab === 'update' ? "Cập nhật" : "Đăng xuất";
 
-  return (
-    <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
-      <HeaderContainer>
-        <HeaderItem>Cài đặt</HeaderItem>
-        <Separator />
-        <HeaderItem>{headerText}</HeaderItem>
-      </HeaderContainer>
 
-      <TabContainer>
-        <TabButton
-          active={activeTab === 'account'}
-          onClick={() => setActiveTab('account')}
-        >
-          Tài khoản
-        </TabButton>
-        <TabButton
-          active={activeTab === 'update'}
-          onClick={() => setActiveTab('update')}
-        >
-          Cập nhật
-        </TabButton>
-        <TabButton
-          active={activeTab === 'logout'}
-          onClick={() => setActiveTab('logout')}
-        >
-          Đăng xuất
-        </TabButton>
-      </TabContainer>
-
-      {activeTab === 'account' ? <Account /> :
-       activeTab === 'update' ? <Update /> : <Logout />}
-    </div>
-  );
-};
-
-export default Setting;
+export default <Setting></Setting>;
