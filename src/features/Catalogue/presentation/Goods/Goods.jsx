@@ -19,7 +19,8 @@ import clsx from 'clsx';
 import styles from './Goods.module.scss';
 import {AiOutlineDelete} from 'react-icons/ai';
 import { FaTrashCan } from 'react-icons/fa6';
-// Mock data for warehouses (if not imported)
+import { FaTrash } from 'react-icons/fa';
+
 const InventoryHistory = () => {
   const [formData, setFormData] = useState({
       employeeName: "",

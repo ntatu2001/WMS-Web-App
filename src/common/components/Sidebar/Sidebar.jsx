@@ -3,9 +3,9 @@ import { useLocation } from 'react-router-dom';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
-import BKlogo from '../../../assets/bk_logo.png'
+import BKlogo from '../../../assets/bk_logo.png';
 // Import các icon
-import { AiOutlineHome, AiOutlineDatabase, AiOutlineImport, 
+import { AiOutlineSetting, AiOutlineHome, AiOutlineDatabase, AiOutlineImport, 
          AiOutlineExport, AiOutlineCheckSquare, AiOutlineHistory, 
          AiOutlineUnorderedList } from 'react-icons/ai';
 
@@ -20,6 +20,7 @@ const Sidebar = () => {
     { id: 5, title: 'Kiểm kê', icon: <AiOutlineCheckSquare />, path: '/inventory' },
     { id: 6, title: 'Lịch sử', icon: <AiOutlineHistory />, path: '/history' },
     { id: 7, title: 'Danh mục', icon: <AiOutlineUnorderedList />, path: '/catalogue' },
+    { id: 8, title: 'Cài đặt', icon: <AiOutlineSetting />, path: '/setting' },
   ];
 
   return (
@@ -50,4 +51,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;
