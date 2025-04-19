@@ -13,7 +13,7 @@ const GoodIssue = () => {
     const headerText = activeTab === 'create' ? 'Tạo phiếu xuất kho' : 'Quản lý xuất kho';
 
     return (
-        <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
+        <div style={{ backgroundColor: '#f5f5f5'}}>
             <HeaderContainer>
                 <HeaderItem>Xuất kho</HeaderItem>
                 <Separator />

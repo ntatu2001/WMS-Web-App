@@ -13,7 +13,7 @@
     "@popperjs/core": "^2.11.8",
     "@reduxjs/toolkit": "^2.2.1",
     "apexcharts": "^4.5.0",
-    "axios": "^1.6.7",
+    "axios": "^1.8.4",
     "classnames": "^2.5.1",
     "react": "^18.2.0",
     "react-apexcharts": "^1.7.0",

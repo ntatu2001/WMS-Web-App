@@ -4,6 +4,18 @@ export const listIssueMaterials = [
     { id: 2, name: "U-Blade Belt Cleaner", code: "UFRAS0600", unit: "Cái", lotPo: "16122", quantity: 100 },
     { id: 3, name: "ACE Rubber Lagging FRAS", code: "ACEELARL", unit: "Mét", lotPo: "76511", quantity: 100 },
     { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    { id: 4, name: "Elastotec NEOPRENE FDA", code: "ELASRC12K", unit: "Tấm", lotPo: "56512", quantity: 300 },
+    
 ]
 
 //#endregion
