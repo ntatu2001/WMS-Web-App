@@ -41,6 +41,10 @@ const InventoryHistory = () => {
   };
 
   const handleSave = () => {
+    if (!formData.employeeCode) {
+      
+      return; // Prevent updating information
+    }
     console.log("New Employee Data:", formData);
     setSavedData((prev) => [...prev, formData]);
     setFormData({

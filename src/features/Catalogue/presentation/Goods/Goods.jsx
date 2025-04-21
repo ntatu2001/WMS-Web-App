@@ -46,6 +46,10 @@ const InventoryHistory = () => {
   };
 
   const handleSave = () => {
+    if (!formData.goodCode) {
+      
+      return; // Prevent updating information
+    }
     console.log("New Product Data:", formData); // Log the form data to the console
     setSavedData((prev) => [...prev, formData]);
     setFormData({

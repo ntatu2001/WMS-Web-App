@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-=======
-import React, { useState } from 'react';
 import { FaEye } from 'react-icons/fa';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
@@ -19,8 +16,7 @@ import DeleteButton from '../../../../common/components/Button/DeleteButton/Dele
 import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import LabelSmallSize from '../../../../common/components/Label/LabelSmallSize.jsx';
 import clsx from 'clsx';
-import styles from './Logout.module.scss';
->>>>>>> c39329097598eaaaf4cea085e0f33b089de91575
+
 
 const Logout = () => {
   const navigate = useNavigate();
