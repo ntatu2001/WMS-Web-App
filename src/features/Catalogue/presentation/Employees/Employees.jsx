@@ -41,6 +41,7 @@ const InventoryHistory = () => {
   };
 
   const handleSave = () => {
+    console.log("New Employee Data:", formData);
     setSavedData((prev) => [...prev, formData]);
     setFormData({
       employeeName: "",

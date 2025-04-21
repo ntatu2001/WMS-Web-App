@@ -1,6 +1,9 @@
 .settingContainer {
-  position: relative;
-  display: inline-block;
+  position: absolute;
+  right: 88.4%;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .settingButton {
@@ -9,12 +12,12 @@
   cursor: pointer;
   padding: 10px;
   background-color: #fff;
-  border: 1px solid #ccc;
+
   border-radius: 4px;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #f0f0f0;
+    background-color: #fff;
   }
 
   span {
@@ -28,35 +31,255 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background-color: #000; // Set background to black
+  color: #fff; // Set text color to white
+
+  border-radius: 0; // Remove rounded corners
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
-  width: 150px;
-}
-
-.dropdownItem {
+  width: 200px;
   display: flex;
-  align-items: center;
-  padding: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  flex-direction: column;
+  gap: 10px;
 
-  &:hover {
-    background-color: #f0f0f0;
-  }
-
-  span {
-    margin-left: 8px;
-    font-size: 14px;
-  }
-
-  &.logout {
-    color: #ff4d4f;
+  .dropdownItem {
+    height: 60px; // Set height to 60px
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 0; // Remove rounded corners
+    background-color: #000; // Set background to black
+    color: #fff; // Set text color to white
+    cursor: pointer;
+    transition: background-color 0.3s;
 
     &:hover {
-      background-color: #ffecec;
+      background-color: #fff; // Set background to white on hover
+      color: #000; // Set text color to black on hover
+
+      .icon {
+        color: #000; // Ensure icons are black on hover
+      }
+
+      span {
+        color: #000; // Ensure text is black on hover
+      }
+    }
+
+    &.active {
+      background-color: #fff; // Keep background white when active
+      color: #000; // Keep text black when active
+
+      .icon {
+        color: #000; // Ensure icons are black when active
+      }
+
+      span {
+        color: #000; // Ensure text is black when active
+      }
+    }
+
+    .icon {
+      margin-right: 12px;
+      font-size: 24px; // Increase icon size
+      color: #fff; // Ensure icons are white
+    }
+
+    span {
+      margin-left: 10px;
+      font-size: 16px; // Increase text size
+      color: #fff; // Ensure text is white
     }
   }
+
+  .logout {
+    color: #ff4d4d; // Red text for logout
+    border-radius: 0; // Remove rounded corners
+    height: 60px; // Set height to 60px
+
+    &:hover {
+      background-color: #fff; // Set background to white on hover
+      color: #ff4d4d; // Keep red text for logout
+    }
+
+    .icon {
+      font-size: 24px; // Increase icon size for logout
+    }
+
+    span {
+      font-size: 16px; // Increase text size for logout
+    }
+  }
+}
+
+.accountInfoModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 89.52%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0);
+}
+
+.modalContent {
+  position: relative;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 0; // Set corners to square
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 400px; // Ensure modalContent has a fixed width
+  z-index: 1001;
+
+  > div {
+    width: 100%; // Ensure all child divs match the width of modalContent
+    box-sizing: border-box; // Include padding and borders in the width calculation
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.closeIcon {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.modalBody {
+  font-size: 14px;
+}
+
+.accountName {
+  text-align: center;
+  font-size: 1.5rem; // Increase font size
+  font-weight: bold; // Make the text bold
+  margin-bottom: 10px; // Add spacing below
+  background-color: #000; // Set background to black
+  color: #fff; // Set text color to white
+  padding: 10px; // Add padding for better spacing
+  border-radius: 4px; // Optional: Add slight rounding to corners
+  width: 100%; // Match the width of the parent container
+  box-sizing: border-box; // Ensure padding is included in the width
+}
+
+.accountDetails p {
+  margin: 5px 0;
+}
+
+.centerText {
+  text-align: center;
+  flex: 1;
+  font-size: 25px;
+}
+
+.updateAccountModal {
+  background-color: #f9f9f9; // Light gray background
+  padding: 20px;
+  border-radius: 8px; // Rounded corners
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Subtle shadow
+  width: 400px; // Fixed width
+  box-sizing: border-box; // Include padding in width calculation
+}
+
+.updateAccountHeader {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.updateAccountBody {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333; // Dark text color
+}
+
+.updateAccountField {
+  margin-bottom: 15px;
+
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc; // Light border
+    border-radius: 4px; // Rounded corners
+    font-size: 14px;
+  }
+}
+
+.updateAccountActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &.save {
+      background-color: #4caf50; // Green background
+      color: #fff;
+
+      &:hover {
+        background-color: #45a049; // Darker green on hover
+      }
+    }
+
+    &.cancel {
+      background-color: #f44336; // Red background
+      color: #fff;
+
+      &:hover {
+        background-color: #d32f2f; // Darker red on hover
+      }
+    }
+  }
+}
+
+.dateSelection {
+  display: flex;
+  gap: 10px; // Add spacing between the dropdowns
+}
+
+.dateField {
+  position: relative; // Position relative for icon alignment
+  flex: 1; // Ensure all dropdowns take equal space
+}
+
+.dropdown {
+  width: 100%; // Ensure the dropdown fills the parent container
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  appearance: none; // Remove default dropdown arrow
+  background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 10px center; // Add custom arrow
+  background-size: 12px; // Adjust arrow size
+  cursor: pointer;
 }

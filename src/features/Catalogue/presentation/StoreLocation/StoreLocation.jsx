@@ -20,13 +20,8 @@ import styles from './StoreLocation.module.scss';
 
 const InventoryHistory = () => {
   const [formData, setFormData] = useState({
-    employeeName: "",
-    employeeCode: "",
-    position: "--",
-    birthday: "",
-    email: "",
-    startTime: "",
-    endTime: "",
+    componentName: "",
+    positionCode: "",
     description: "",
     warehouse: "",
     area: "",
@@ -45,15 +40,11 @@ const InventoryHistory = () => {
   };
 
   const handleSave = () => {
+    console.log("New Storage Location Data:", formData); // Log the form data to the console
     setSavedData((prev) => [...prev, formData]);
     setFormData({
-      employeeName: "",
-      employeeCode: "",
-      position: "--",
-      birthday: "",
-      email: "",
-      startTime: "",
-      endTime: "",
+      componentName: "",
+      positionCode: "",
       description: "",
       warehouse: "",
       area: "",
@@ -62,13 +53,13 @@ const InventoryHistory = () => {
   };
 
   const handleSearch = () => {
-    const result = savedData.filter((item) => item.employeeCode.includes(searchCode));
+    const result = savedData.filter((item) => item.positionCode.includes(searchCode));
     setFilteredData(result);
   };
 
-  const handleDelete = (employeeCode) => {
-    setSavedData((prev) => prev.filter((item) => item.employeeCode !== employeeCode));
-    setFilteredData((prev) => prev.filter((item) => item.employeeCode !== employeeCode));
+  const handleDelete = (positionCode) => {
+    setSavedData((prev) => prev.filter((item) => item.positionCode !== positionCode));
+    setFilteredData((prev) => prev.filter((item) => item.positionCode !== positionCode));
   };
 
   return (
@@ -117,8 +108,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input
                     type="text"
-                    name="employeeName"
-                    value={formData.employeeName}
+                    name="componentName"
+                    value={formData.componentName}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
                   />
@@ -129,8 +120,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input
                     type="text"
-                    name="employeeCode"
-                    value={formData.employeeCode}
+                    name="positionCode"
+                    value={formData.positionCode}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
                   />
@@ -199,13 +190,13 @@ const InventoryHistory = () => {
             <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
               <ActionButton
                 onClick={handleSave}
-                disabled={!formData.employeeCode}
+                disabled={!formData.positionCode}
                 style={{
                   marginTop: "-10px",
                   padding: "10px 20px",
                   width: "240px",
-                  backgroundColor: formData.employeeCode ? "#007bff" : "#ccc",
-                  cursor: formData.employeeCode ? "pointer" : "not-allowed",
+                  backgroundColor: formData.positionCode ? "#007bff" : "#ccc",
+                  cursor: formData.positionCode ? "pointer" : "not-allowed",
                 }}
               >
                 Tạo mới vị trí
@@ -316,15 +307,15 @@ const InventoryHistory = () => {
                   {(searchCode ? filteredData : savedData).map((item, index) => (
                     <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
                       <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeName}</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeCode}</td>
+                      <td style={{ padding: "8px", textAlign: "center" }}>{item.componentName}</td>
+                      <td style={{ padding: "8px", textAlign: "center" }}>{item.positionCode}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.description}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouse}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.area}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.size} mm</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>
                         <button
-                          onClick={() => handleDelete(item.employeeCode)}
+                          onClick={() => handleDelete(item.positionCode)}
                           style={{ padding: "5px", backgroundColor: "transparent", border: "none", cursor: "pointer", color: "#ff4d4f" }}
                         >
                           <FaTrash size={16} />

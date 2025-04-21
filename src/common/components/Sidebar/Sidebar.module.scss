@@ -64,27 +64,44 @@
   width: 200px;
 }
 
+.menuItemWrapper {
+  position: relative;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 0;
+  left: 100%; // Position to the right of the sidebar
+  background-color: #001f3f; // Dark blue background
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  padding: 8px 0;
+  width: 200px;
+}
+
 .dropdownItem {
   display: flex;
   align-items: center;
-  padding: 10px;
+  padding: 10px 16px;
+  color: white;
   cursor: pointer;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #f0f0f0;
+    background-color: #003366; // Slightly lighter blue
   }
 
-  span {
-    margin-left: 8px;
-    font-size: 14px;
+  .icon {
+    margin-right: 8px;
+    font-size: 18px;
   }
+}
 
-  &.logout {
-    color: #ff4d4f;
+.logout {
+  color: red;
 
-    &:hover {
-      background-color: #ffecec;
-    }
+  &:hover {
+    background-color: #660000; // Dark red
   }
 }

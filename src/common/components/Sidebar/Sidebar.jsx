@@ -4,23 +4,23 @@ import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
 import BKlogo from '../../../assets/bk_logo.png';
-// Import các icon
-import { AiOutlineSetting, AiOutlineHome, AiOutlineDatabase, AiOutlineImport, 
-         AiOutlineExport, AiOutlineCheckSquare, AiOutlineHistory, 
-         AiOutlineUnorderedList } from 'react-icons/ai';
+import {
+  AiOutlineSetting,
+  AiOutlineHome,
+  AiOutlineDatabase,
+  AiOutlineImport,
+  AiOutlineExport,
+  AiOutlineCheckSquare,
+  AiOutlineHistory,
+  AiOutlineUnorderedList,
+  AiOutlineUser,
+  AiOutlineEdit,
+  AiOutlineClose,
+} from 'react-icons/ai';
 
 const Sidebar = () => {
   const location = useLocation();
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [overlayVisible, setOverlayVisible] = useState(false);
-
-  const handleSettingClick = () => {
-    setShowDropdown(!showDropdown);
-  };
-
-  const handleOptionClick = () => {
-    setOverlayVisible(true);
-  };
+  const [showSubSidebar, setShowSubSidebar] = useState(false);
 
   const menuItems = [
     { id: 1, title: 'Tổng quan', icon: <AiOutlineHome />, path: '/dashboard' },
@@ -30,37 +30,54 @@ const Sidebar = () => {
     { id: 5, title: 'Kiểm kê', icon: <AiOutlineCheckSquare />, path: '/inventory' },
     { id: 6, title: 'Lịch sử', icon: <AiOutlineHistory />, path: '/history' },
     { id: 7, title: 'Danh mục', icon: <AiOutlineUnorderedList />, path: '/catalogue' },
-    { id: 8, title: 'Cài đặt', icon: <AiOutlineSetting />, path: '/setting', isDropdown: true },
+    {
+      id: 8,
+      title: 'Cài đặt',
+      icon: <AiOutlineSetting />,
+      path: '/setting',
+      isParent: true,
+      subItems: [
+        { id: 8.1, title: 'Tài khoản', icon: <AiOutlineUser />, path: '/setting/account' },
+        { id: 8.2, title: 'Cập nhật', icon: <AiOutlineEdit />, path: '/setting/update' },
+        { id: 8.3, title: 'Đăng xuất', icon: <AiOutlineClose />, path: '/setting/logout' },
+      ],
+    },
   ];
 
   return (
-    <div className={clsx(styles.sidebar, { [styles.overlay]: overlayVisible })}>
-      
-      {/* Logo và tiêu đề */}
+    <div className={clsx(styles.sidebar)}>
+      {/* Logo and Title */}
       <div className={clsx(styles.sidebarHeader)}>
         <div className={clsx(styles.sidebarLogo)}>
           <img src={BKlogo} alt="BK Logo" className={clsx(styles.sidebarImg)} />
-        </div >
+        </div>
         <h1 className={clsx(styles.sidebarTitle)}>WMS Portal</h1>
-      </div >
-      
-      {/* Menu items */}
+      </div>
+
+      {/* Menu Items */}
       <nav className={clsx(styles.sidebarNav)}>
         {menuItems.map((item) => (
-          <div key={item.id}>
-            <MenuItem 
+          <div key={item.id} className={clsx(styles.menuItemWrapper)}>
+            <MenuItem
               to={item.path}
-              active={location.pathname === item.path ? 1 : 0}
-              onClick={item.isDropdown ? handleSettingClick : undefined}
+              active={location.pathname.startsWith(item.path) ? 1 : 0}
+              onClick={() => item.isParent && setShowSubSidebar(!showSubSidebar)}
             >
               <span className={clsx(styles.sidebarIcon)}>{item.icon}</span>
               <span>{item.title}</span>
             </MenuItem>
-            {item.isDropdown && showDropdown && (
-              <div className={clsx(styles.dropdownMenu)}>
-                <div onClick={handleOptionClick} className={clsx(styles.dropdownItem)}>Tài khoản</div>
-                <div onClick={handleOptionClick} className={clsx(styles.dropdownItem)}>Cập nhật</div>
-                <div onClick={handleOptionClick} className={clsx(styles.dropdownItem)}>Đăng xuất</div>
+            {item.isParent && showSubSidebar && (
+              <div className={clsx(styles.subSidebar)}>
+                {item.subItems.map((subItem) => (
+                  <MenuItem
+                    key={subItem.id}
+                    to={subItem.path}
+                    active={location.pathname === subItem.path ? 1 : 0}
+                  >
+                    <span className={clsx(styles.sidebarIcon)}>{subItem.icon}</span>
+                    <span>{subItem.title}</span>
+                  </MenuItem>
+                ))}
               </div>
             )}
           </div>

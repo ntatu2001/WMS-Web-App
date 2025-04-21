@@ -23,18 +23,15 @@ import { FaTrash } from 'react-icons/fa';
 
 const InventoryHistory = () => {
   const [formData, setFormData] = useState({
-      employeeName: "",
-      employeeCode: "",
-      unit: "--",
-      birthday: "",
-      email: "",
-      startTime: "",
-      endTime: "",
-      minimumStock: "",
-      standardRate: "",
-      dimensions: "",
-      price: "",
-      note: "",
+    goodName: "",
+    goodCode: "",
+    unit: "--",
+    goodType: "--",
+    minimumStock: "",
+    standardRate: "",
+    dimensions: "",
+    price: "",
+    note: "",
   });
 
   const [savedData, setSavedData] = useState([]);
@@ -49,15 +46,13 @@ const InventoryHistory = () => {
   };
 
   const handleSave = () => {
+    console.log("New Product Data:", formData); // Log the form data to the console
     setSavedData((prev) => [...prev, formData]);
     setFormData({
-      employeeName: "",
-      employeeCode: "",
+      goodName: "",
+      goodCode: "",
       unit: "--",
-      birthday: "",
-      email: "",
-      startTime: "",
-      endTime: "",
+      goodType: "--",
       minimumStock: "",
       standardRate: "",
       dimensions: "",
@@ -67,13 +62,13 @@ const InventoryHistory = () => {
   };
 
   const handleSearch = () => {
-    const result = savedData.filter((item) => item.employeeCode.includes(searchCode));
+    const result = savedData.filter((item) => item.goodCode.includes(searchCode));
     setFilteredData(result);
   };
 
-  const handleDelete = (employeeCode) => {
-    setSavedData((prev) => prev.filter((item) => item.employeeCode !== employeeCode));
-    setFilteredData((prev) => prev.filter((item) => item.employeeCode !== employeeCode));
+  const handleDelete = (goodCode) => {
+    setSavedData((prev) => prev.filter((item) => item.goodCode !== goodCode));
+    setFilteredData((prev) => prev.filter((item) => item.goodCode !== goodCode));
   };
 
   return (
@@ -123,8 +118,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input 
                     type="text" 
-                    name="employeeName"
-                    value={formData.employeeName}
+                    name="goodName"
+                    value={formData.goodName}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
                   />
@@ -135,8 +130,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input 
                     type="text" 
-                    name="employeeCode"
-                    value={formData.employeeCode}
+                    name="goodCode"
+                    value={formData.goodCode}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
                   />
@@ -155,6 +150,15 @@ const InventoryHistory = () => {
                     <option value="PCS">PCS</option>
                     <option value="Kg">Kg</option>
                     <option value="Mét">Mét</option>
+                    <option value="TAM">TAM</option>
+                    <option value="CAI">CAI</option>
+                    <option value="SET">SET</option>
+                    <option value="Roll">Roll</option>
+                    <option value="Cuon">Cuon</option>
+                    <option value="BO">BO</option>
+                    <option value="CAY">CAY</option>
+
+
                   </select>
                 </SelectContainer>
               </FormGroup>
@@ -162,8 +166,8 @@ const InventoryHistory = () => {
                 <Label>Loại hàng hóa:</Label>
                 <SelectContainer>
                   <select 
-                    name="position"
-                    value={formData.position} 
+                    name="goodType"
+                    value={formData.goodType} 
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc"}}
                   >
@@ -171,6 +175,9 @@ const InventoryHistory = () => {
                     <option value="Bao bì">Bao bì</option>
                     <option value="Nguyên vật liệu">Nguyên vật liệu</option>
                     <option value="Thành phẩm">Thành phẩm</option>
+                    <option value="Vật tư">Vật tư</option>
+                    <option value="Bán thành phẩm">Bán thành phẩm</option>
+
                   </select>
                 </SelectContainer>
               </FormGroup>
@@ -267,13 +274,13 @@ const InventoryHistory = () => {
             <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
               <ActionButton
                 onClick={handleSave} 
-                disabled={!formData.employeeCode} 
+                disabled={!formData.goodCode} 
                 style={{ 
                   marginTop: "-10px",
                   padding: "10px 20px", 
                   width: "240px", 
-                  backgroundColor: formData.employeeCode ? "#007bff" : "#ccc", 
-                  cursor: formData.employeeCode ? "pointer" : "not-allowed",
+                  backgroundColor: formData.goodCode ? "#007bff" : "#ccc", 
+                  cursor: formData.goodCode ? "pointer" : "not-allowed",
                 }}
               >
                 Tạo mới sản phẩm
@@ -374,8 +381,8 @@ const InventoryHistory = () => {
                   {(searchCode ? filteredData : savedData).map((item, index) => (
                     <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
                       <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeName}</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeCode}</td>
+                      <td style={{ padding: "8px", textAlign: "center" }}>{item.goodName}</td>
+                      <td style={{ padding: "8px", textAlign: "center" }}>{item.goodCode}</td>
                       
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.position}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.unit}</td>
@@ -387,7 +394,7 @@ const InventoryHistory = () => {
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.note}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>
                         <button 
-                          onClick={() => handleDelete(item.employeeCode)} 
+                          onClick={() => handleDelete(item.goodCode)} 
                           style={{ padding: "5px", backgroundColor: "transparent", border: "none", cursor: "pointer", color: "#ff4d4f" }}
                         >
                           <FaTrash size={16} />

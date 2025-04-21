@@ -1,0 +1,25 @@
+.accountInfoContainer {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.accountName {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.accountDetails {
+  font-size: 1rem;
+  line-height: 1.5;
+
+  p {
+    margin: 5px 0;
+  }
+
+  strong {
+    color: #333;
+  }
+}
