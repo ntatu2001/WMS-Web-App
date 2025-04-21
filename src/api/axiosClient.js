@@ -2,13 +2,13 @@ import axios from 'axios';
 
 const axiosClient = axios.create ({
     baseURL: 'https://wmsapiproject.azurewebsites.net/WarehouseAPI/',
+    // baseURL: 'https://67cebcbb125cd5af757bc819.mockapi.io/test/van/',
     headers : {
       'Content-Type' : 'application/json',
     },
 });
 
 // Interceptors
-
 
 // Add a request interceptor
 axiosClient.interceptors.request.use(function (config) {

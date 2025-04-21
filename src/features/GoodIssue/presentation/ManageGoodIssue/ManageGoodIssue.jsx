@@ -6,7 +6,7 @@ import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
-import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
+import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import IssueProgress from '../Progress/IssueProgress.jsx';
 import { listTodayIssues, listRecentIssues } from '../../../../app/mockData/InventoryIssueData.js';
 
@@ -62,9 +62,9 @@ const ManageGoodIssue = () => {
                                                 />
                                             </TableCell>
                                             <TableCell>
-                                                <FaEyeButton>
+                                                <DeleteButton>
                                                     <FaEye size={25} color="#000" />
-                                                </FaEyeButton>
+                                                </DeleteButton>
                                             </TableCell>
                                         </tr>
                                     ))}
@@ -103,9 +103,9 @@ const ManageGoodIssue = () => {
                                             <TableCell>{item.date}</TableCell>
                                             <TableCell>{item.type}</TableCell>
                                             <TableCell>
-                                                <FaEyeButton>
+                                                <DeleteButton>
                                                     <FaEye size={25} color="#000" />
-                                                </FaEyeButton>
+                                                </DeleteButton>
                                             </TableCell>
                                         </tr>
                                     ))}

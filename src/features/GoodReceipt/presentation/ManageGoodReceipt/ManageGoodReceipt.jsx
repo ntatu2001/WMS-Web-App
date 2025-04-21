@@ -6,7 +6,7 @@ import HeaderItem from '../../../../common/components/Header/HeaderItem';
 import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
-import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton';
+import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton';
 import ReceiptProgress from '../Progress/ReceiptProgress.jsx';
 import { listTodayReceipts, listRecentReceipts } from '../../../../app/mockData/InventoryReceiptData.js';
 
@@ -61,9 +61,9 @@ const ManageGoodReceipt = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <FaEyeButton>
+                        <DeleteButton>
                           <FaEye size={25} color="#000" />
-                        </FaEyeButton>
+                        </DeleteButton>
                       </TableCell>
                     </tr>
                   ))}
@@ -102,9 +102,9 @@ const ManageGoodReceipt = () => {
                       <TableCell>{item.date}</TableCell>
                       <TableCell>{item.type}</TableCell>
                       <TableCell>
-                        <FaEyeButton>
+                        <DeleteButton>
                           <FaEye size={25} color="#000" />
-                        </FaEyeButton>
+                        </DeleteButton>
                       </TableCell>
                     </tr>
                   ))}

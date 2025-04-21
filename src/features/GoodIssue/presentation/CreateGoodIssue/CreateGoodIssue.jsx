@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaChevronDown } from 'react-icons/fa';
+import { FaTrash, FaChevronDown } from 'react-icons/fa';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
@@ -15,7 +15,7 @@ import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
-import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
+import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import clsx from 'clsx';
 import styles from './CreateGoodIssue.module.scss';
 import InforIssueModal from '../InforModal/InforIssueModal.jsx';
@@ -153,9 +153,9 @@ const CreateGoodIssue = () => {
                                     </CreateButton>
                                 </TableCell>
                                 <TableCell>
-                                    <FaEyeButton>
-                                        <AiOutlineDelete size={25} color="#000" />
-                                    </FaEyeButton>
+                                    <DeleteButton>
+                                        <FaTrash size={15} color="#000" />
+                                    </DeleteButton>
                                 </TableCell>
                             </tr>
                         ))}

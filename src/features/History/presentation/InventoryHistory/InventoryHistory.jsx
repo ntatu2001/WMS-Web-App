@@ -11,7 +11,7 @@ import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
-import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton.jsx';
+import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import {listInventoryStorage, listInventoryHistory} from '../../../../app/mockData/HistoryData.js';
 import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import LabelSmallSize from '../../../../common/components/Label/LabelSmallSize.jsx';
@@ -211,9 +211,9 @@ const InventoryHistory = () => {
                                     <TableCell>{item.actualQuantity}</TableCell>
                                     <TableCell>{item.variance}</TableCell>
                                     <TableCell>
-                                        <FaEyeButton>
+                                        <DeleteButton>
                                             <FaEye size={25} color="#000" />
-                                        </FaEyeButton>
+                                        </DeleteButton>
                                     </TableCell>
                                 </tr>
                             ))}
