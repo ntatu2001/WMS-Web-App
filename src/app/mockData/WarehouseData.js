@@ -5,7 +5,7 @@ export const listWarehouses = [
     'Kho Nguyên vật liệu',
     'Kho vật tư',
     'Kho Bán thành phẩm',
-    'Kho Thành phẩm'
+    'FinishedGood Warehouse'
 ];
 
 

@@ -31,7 +31,20 @@ export const listIssueStorage = [
 //#region Mock data for Inventory History
 export const listInventoryHistory = [
     {warehouse: 'Thành phẩm', zone: 'TP01', receiver: 'Hùng Vạn', quantity: 500, lotNumber: 42699, supplier: 'Công ty CP Tân Tạo', date: '28/02/2025 14:00:00 AM', status: 'Đang thực hiện'},
-    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'}
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+
+    {warehouse: 'Thành phẩm', zone: 'TP02', receiver: 'Hùng Vạn', quantity: 600, lotNumber: 56521, supplier: 'Công ty Sứ Viglacera', date: '28/02/2025 10:00:00 AM', status: 'Hoàn thành'},
+
+    
+
 ];
 
 export const listInventoryStorage = [

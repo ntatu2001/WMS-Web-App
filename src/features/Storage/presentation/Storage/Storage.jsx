@@ -227,7 +227,7 @@ const Storage = () => {
                       <div style={{display: 'flex',justifyContent: "space-between", width: "30%", marginBottom: "5%", alignItems: "center"}}>
                           <div style={{ backgroundColor: '#FFFFFF', height: '40px', width: '40px', borderRadius: "6px" }}></div>
                           <span>Empty</span>
-                      </div>
+                  </div>
                     
                     
               </div>

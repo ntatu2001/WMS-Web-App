@@ -12,7 +12,7 @@ import ListSection from '../../../../common/components/Section/ListSection';
 import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
-import FaEyeButton from '../../../../common/components/Button/FaEyeButton/FaEyeButton';
+import FaEyeButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer';
 import Select from '../../../../common/components/Selection/Select';
 import DropdownIcon from '../../../../common/components/Icon/DropdownIcon';
