@@ -27,13 +27,28 @@ const UpdateAccount = ({ onCancel }) => {
     navigate('/setting'); // Navigate back to the "Setting" sidebar
   };
 
-  const handleCancel = () => {
-    if (onCancel) onCancel(); // Trigger the onCancel callback
-    navigate('/setting'); // Navigate back to the "Setting" sidebar
-  };
-
   return (
     <div className={styles.updateAccountContainer}>
+      <button
+        onClick={onCancel} // Use onCancel to handle the "Hủy" button click
+        style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          border: 'none',
+          borderRadius: '50%',
+          width: '32px',
+          height: '32px',
+          cursor: 'pointer',
+          fontSize: '30px',
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        ×
+      </button>
       <label htmlFor="displayName" className={styles.label}>Tên hiển thị:</label>
       <input
         type="text"
@@ -119,7 +134,7 @@ const UpdateAccount = ({ onCancel }) => {
         </div>
       </div>
       <div className={styles.actions}>
-        <button className={styles.cancelButton} onClick={handleCancel}>Hủy</button>
+        <button className={styles.cancelButton} onClick={onCancel}>Hủy</button>
         <button className={styles.updateButton} onClick={handleSubmit}>Cập nhật</button>
       </div>
     </div>
