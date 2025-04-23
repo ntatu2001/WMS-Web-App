@@ -131,10 +131,10 @@ const CreateGoodReceipt = () => {
         </FormGroup>
 
         <FormGroup>
-          <Label>Khu vực:</Label>
+          <Label>Mã kho hàng:</Label>
           <SelectContainer>
             <Select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)}>
-              <option value="" disabled selected>Chọn loại khu vực</option>
+              <option value="" disabled selected>Chọn mã kho hàng</option>
               {wareHouses.map((wareHouses, index) => (
                 <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
                   {wareHouses.warehouseId}

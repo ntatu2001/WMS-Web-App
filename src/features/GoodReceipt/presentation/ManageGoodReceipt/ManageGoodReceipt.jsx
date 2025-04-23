@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaEye } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { FaTrash } from 'react-icons/fa';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer';
 import ListSection from '../../../../common/components/Section/ListSection';
 import HeaderItem from '../../../../common/components/Header/HeaderItem';
@@ -8,26 +8,63 @@ import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
 import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton';
 import ReceiptProgress from '../Progress/ReceiptProgress.jsx';
-import { listTodayReceipts, listRecentReceipts } from '../../../../app/mockData/InventoryReceiptData.js';
+import { lotStatusData } from '../../../../app/mockData/LotStatusData.js';
+import inventoryReceiptApi from '../../../../api/inventoryReceiptApi.js';
+import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
 
 const ManageGoodReceipt = () => {
-  const [todayReceipts, setTodayReceipts] = useState(listTodayReceipts);
 
-  const handleStatusChange = (id, newStatus) => {
-    setTodayReceipts(
-      todayReceipts.map((item) =>
-        item.id === id ? { ...item, status: newStatus } : item
-      )
-    );
-  };
+  const [receipts, setReceipts] = useState([]);
+  const [todayReceipts, setTodayReceipts] = useState([]);
+  const [receiptEntries, setReceiptEntries] = useState([]);
+  const [todayReceiptEntries, setTodayReceiptEntries] = useState([]);
 
+  
+  useEffect(() => {
+    const GetApi = async() => {
+        const receiptList = await inventoryReceiptApi.getAllReceipts();
+        const receiptEntryList = await inventoryReceiptEntryApi.getAllReceiptEntries();
+        setReceipts(receiptList);
+        setReceiptEntries(receiptEntryList);
+        
+        // Filter receipts for today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const filteredTodayReceipts = receiptList.filter(receipt => {
+          const receiptDate = new Date(receipt.receiptDate);
+          receiptDate.setHours(0, 0, 0, 0);
+          return receiptDate.getTime() === today.getTime();
+        });
+        
+        setTodayReceipts(filteredTodayReceipts);
+        
+        // Filter receiptEntries that match todayReceipts inventoryReceiptId
+        if (filteredTodayReceipts.length > 0) {
+          const todayReceiptIds = filteredTodayReceipts.map(receipt => 
+            receipt.inventoryReceiptId
+          );
+          console.log(todayReceiptIds)
+          const filteredEntries = receiptEntryList.filter(entry => 
+            todayReceiptIds.includes(entry.inventoryReceiptId)
+          );
+          setTodayReceiptEntries(filteredEntries);
+        }
+    };
+
+    GetApi();
+  },[])
+
+  // console.log(todayReceipts)
+  // console.log(receiptEntries)
+  // console.log("Today's Receipt Entries:", todayReceiptEntries)
   return (
     <>
       <ContentContainer>
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', height: "50%"}}>
           <ListSection>
             <HeaderItem>Lô nhập kho trong ngày</HeaderItem>
-            <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
               <Table>
                 <thead>
                   <tr>
@@ -44,25 +81,36 @@ const ManageGoodReceipt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {todayReceipts.map((item) => (
-                    <tr key={item.id}>
-                      <TableCell>{item.id}</TableCell>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.code}</TableCell>
+                  {todayReceiptEntries.map((item, index) => (
+                    <tr key={index}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{item.materialName}</TableCell>
+                      <TableCell>{item.materialId}</TableCell>
                       <TableCell>{item.unit}</TableCell>
-                      <TableCell>{item.poNumber}</TableCell>
+                      <TableCell>{item.lotNumber}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>{item.receiver}</TableCell>
                       <TableCell>{item.note}</TableCell>
-                      <TableCell>
-                        <ReceiptProgress
-                          item={item}
-                          handleStatusChange={handleStatusChange}
-                        />
+                      <TableCell style={{ textAlign: 'center' }}>
+                        <div
+                          style={{
+                            width: '70%',
+                            textAlign: 'center',
+                            borderRadius: '8px',
+                            backgroundColor: lotStatusData[item.status],
+                            padding: '2% 5%',
+                            margin: '0 auto',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                          }}
+                        >
+                          {item.status}  
+                        </div>
                       </TableCell>
                       <TableCell>
                         <DeleteButton>
-                          <FaEye size={25} color="#000" />
+                          <FaTrash size={25} color="#000" />
                         </DeleteButton>
                       </TableCell>
                     </tr>
@@ -73,7 +121,7 @@ const ManageGoodReceipt = () => {
           </ListSection>
           <ListSection style={{ marginTop: '2rem' }}>
             <HeaderItem>Lô nhập kho gần đây</HeaderItem>
-            <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
               <Table>
                 <thead>
                   <tr>
@@ -90,20 +138,20 @@ const ManageGoodReceipt = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {listRecentReceipts.map((item) => (
-                    <tr key={item.id}>
-                      <TableCell>{item.id}</TableCell>
+                  {receiptEntries.filter(item => !todayReceiptEntries.includes(item)).slice(0, 10).map((item, index) => (
+                    <tr key={item.id || index}>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>{item.name}</TableCell>
                       <TableCell>{item.code}</TableCell>
                       <TableCell>{item.unit}</TableCell>
                       <TableCell>{item.poNumber}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell>{item.receiver}</TableCell>
-                      <TableCell>{item.date}</TableCell>
+                      <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                       <TableCell>{item.type}</TableCell>
                       <TableCell>
                         <DeleteButton>
-                          <FaEye size={25} color="#000" />
+                          <FaTrash size={25} color="#000" />
                         </DeleteButton>
                       </TableCell>
                     </tr>

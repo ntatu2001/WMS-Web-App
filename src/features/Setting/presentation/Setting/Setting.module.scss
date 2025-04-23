@@ -1,6 +1,7 @@
 .settingContainer {
   position: absolute;
-  right: 88.4%;
+  right: calc(88.4% - 20px); // Adjust position proportionally to width
+  top: calc(28.4% - 269px); // Adjust position proportionally to height
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

@@ -8,7 +8,7 @@ import Separator from '../../../../common/components/Header/Separator.jsx';
 import CreateGoodReceipt from '../CreateGoodReceipt/CreateGoodReceipt.jsx';
 import ManageGoodReceipt from '../ManageGoodReceipt/ManageGoodReceipt.jsx';
 import InCompleteReceipt from '../InCompleteReceipt/InCompleteReceipt.jsx';
-import ResultDistribution from '../InCompleteReceipt/ResultDistribution/ResultDistribution.jsx';
+import ReceiptDistribution from '../InCompleteReceipt/ReceiptDistribution/ReceiptDistribution.jsx'
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 
 const GoodReceipt = () => {
@@ -82,7 +82,7 @@ const GoodReceipt = () => {
 
       {activeTab === 'create' ? <CreateGoodReceipt /> :
        activeTab === 'manage' ? <ManageGoodReceipt /> :
-       activeTab === 'incomplete' ? <InCompleteReceipt/> : <ResultDistribution/>}
+       activeTab === 'incomplete' ? <InCompleteReceipt/> : <ReceiptDistribution/>}
     </div>
   );
 };

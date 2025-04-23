@@ -96,15 +96,21 @@ const IssueHistory = () => {
 
                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                             <LabelSmallSize>Trạng thái:</LabelSmallSize>
-                             <span style={{
-                                backgroundColor: lotStatusData[item.status],
-                                color: "white",
-                                fontWeight: "bold",
-                                fontSize: "12px",
-                                padding: "4px 8px",
-                                borderRadius: "4px",
-                                }}>{item.status}
-                            </span>
+                                <div
+                                    style={{
+                                        width: '40%',
+                                        textAlign: 'center',
+                                        borderRadius: '8px',
+                                        backgroundColor: lotStatusData[item.status],
+                                        padding: '2%',
+                                        margin: '0',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        fontSize: '12px',
+                                    }}
+                                    >
+                                    {item.status}  
+                                </div>
                         </div>
 
                     </div>
@@ -169,15 +175,21 @@ const IssueHistory = () => {
 
                 <FormGroup style={{justifyContent: "space-between", marginRight: "5%"}}>
                     <Label style={{width: "50%"}}>Trạng thái:</Label>
-                    <span style={{
-                                backgroundColor: lotStatusData[selectedItem?.status],
-                                color: "white",
-                                fontWeight: "bold",
-                                fontSize: "12px",
-                                padding: selectedItem?.status ? "4px 8px" : 0,
-                                borderRadius: "4px",
-                                }}>{selectedItem?.status}
-                    </span>
+                    <div
+                                style={{
+                                    width: '40%',
+                                    textAlign: 'center',
+                                    borderRadius: '8px',
+                                    backgroundColor: lotStatusData[selectedItem?.status],
+                                    padding: '2%',
+                                    margin: '0',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '12px',
+                                }}
+                                >
+                                {selectedItem?.status}  
+                    </div>
                 </FormGroup>
 
             </div>

@@ -304,7 +304,7 @@ const InventoryHistory = () => {
                     <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kho hàng</th>
                     <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Khu vực</th>
                     <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kích thước</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}></th>
+                    
                   </tr>
                 </thead>
                 <tbody>
@@ -317,14 +317,7 @@ const InventoryHistory = () => {
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouse}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.area}</td>
                       <td style={{ padding: "8px", textAlign: "center" }}>{item.size} mm</td>
-                      <td style={{ padding: "8px", textAlign: "center" }}>
-                        <button
-                          onClick={() => handleDelete(item.positionCode)}
-                          style={{ padding: "5px", backgroundColor: "transparent", border: "none", cursor: "pointer", color: "#ff4d4f" }}
-                        >
-                          <FaTrash size={16} />
-                        </button>
-                      </td>
+                      
                     </tr>
                   ))}
                 </tbody>

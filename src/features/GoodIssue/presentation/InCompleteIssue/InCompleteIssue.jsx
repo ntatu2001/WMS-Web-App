@@ -3,7 +3,6 @@ import { FaTrash } from 'react-icons/fa';
 import 'react-datepicker/dist/react-datepicker.css';
 import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
-import ResultDistribution from './ReceiptDistribution/ReceiptDistribution.jsx';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
@@ -21,13 +20,13 @@ import { FaChevronDown } from 'react-icons/fa';
 import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import clsx from 'clsx';
-import styles from './InCompleteReceipt.module.scss'
+import styles from './InCompleteIssue.module.scss'
 import { listIssueMaterials } from '../../../../app/mockData/InventoryIssueData.js';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
 
 
-const InCompleteReceipt = () => {
+const InCompleteIssue = () => {
     
     const [receiptLots, setReceiptLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -164,4 +163,4 @@ const InCompleteReceipt = () => {
     );
 };
 
-export default InCompleteReceipt;
+export default InCompleteIssue;

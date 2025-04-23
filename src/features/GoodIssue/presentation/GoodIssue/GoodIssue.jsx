@@ -7,36 +7,84 @@ import TabButton from '../../../../common/components/Tab/TabButton.jsx';
 import Separator from '../../../../common/components/Header/Separator.jsx';
 import CreateGoodIssue from '../CreateGoodIssue/CreateGoodIssue.jsx';
 import ManageGoodIssue from '../ManageGoodIssue/ManageGoodIssue.jsx';
+import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistribution.jsx';
+import InCompleteIssue from '../InCompleteIssue/InCompleteIssue.jsx';
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+
 
 const GoodIssue = () => {
     const [activeTab, setActiveTab] = useState('create');
-    const headerText = activeTab === 'create' ? 'Tạo phiếu xuất kho' : 'Quản lý xuất kho';
+    const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
+                       activeTab === 'manage' ? "Quản lý xuất kho" :
+                       activeTab === 'viewResult' ? "Kết quả phân bố vị trí lấy hàng" : "Xuất kho chưa hoàn thành"
 
     return (
-        <div style={{ backgroundColor: '#f5f5f5'}}>
+        <div style={{ backgroundColor: '#f5f5f5' }}>
+        <div style={{display: "flex", width: "100%", alignItems: "center"}}>
             <HeaderContainer>
                 <HeaderItem>Xuất kho</HeaderItem>
                 <Separator />
                 <HeaderItem>{headerText}</HeaderItem>
             </HeaderContainer>
-
-            <TabContainer>
-                <TabButton
-                    active={activeTab === 'create'}
-                    onClick={() => setActiveTab('create')}
+           
+          {(activeTab === 'incomplete' || activeTab === 'viewResult') && (
+            <>
+                <ActionButton
+                  active={activeTab === 'incomplete'}
+                  onClick={() => setActiveTab('incomplete')}
+                  style={{ backgroundColor: '#003366', borderRadius: "4px", width: "20%", marginTop: 0, padding: 0, marginRight: "2%"}}
                 >
-                    Tạo phiếu xuất kho
-                </TabButton>
-                <TabButton
-                    active={activeTab === 'manage'}
-                    onClick={() => setActiveTab('manage')}
+                  Phân bố vị trí lấy hàng
+                </ActionButton>
+                <ActionButton
+                  active={activeTab === 'viewResult'}
+                  onClick={() => setActiveTab('viewResult')}
+                  style={{ backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", marginTop: 0, padding: 0, marginLeft: 0}}
                 >
-                    Quản lý xuất kho
-                </TabButton>
-            </TabContainer>
+                  Xem kết quả phân bổ
+                </ActionButton>
+            </>
+          )}
 
-            {activeTab === 'create' ? <CreateGoodIssue /> : <ManageGoodIssue />}
+          
+           
+             
         </div>
+
+          {activeTab !== 'viewResult' && (
+            <>
+                <TabContainer>
+                <TabButton
+                  active={activeTab === 'create'}
+                  onClick={() => setActiveTab('create')}
+                >
+                  Tạo phiếu xuất kho
+                </TabButton>
+                
+                <TabButton
+                  active={activeTab === 'incomplete'}
+                  onClick={() => setActiveTab('incomplete')}
+                >
+                  Xuất kho chưa hoàn thành
+                </TabButton>
+
+
+                <TabButton
+                  active={activeTab === 'manage'}
+                  onClick={() => setActiveTab('manage')}
+                >
+                  Quản lý xuất kho
+                </TabButton>
+
+                
+              </TabContainer>
+            </>
+          )}
+
+      {activeTab === 'create' ? <CreateGoodIssue /> :
+       activeTab === 'manage' ? <ManageGoodIssue /> :
+       activeTab === 'incomplete' ? <InCompleteIssue/> : <IssueDistribution/>}
+    </div>
     );
 };
 

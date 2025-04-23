@@ -4,7 +4,7 @@ import axiosClient from "./axiosClient";
 
 const inventoryReceiptApi = {
     getAllReceipts(params) {
-        const url = 'inventoryReceiptApi';
+        const url = 'InventoryReceipt/GetAllReceipts';
         return axiosClient.get(url, {params});
     },
     
