@@ -19,7 +19,13 @@ const materialApi = {
     createMaterial(data) {
         const url = 'Material/CreateMaterial'; // Ensure this endpoint exists in your backend
         return axiosClient.post(url, data);
-    }
+    },
+
+    getUnitByMaterialId(id) {
+        const url = `Material/GetUnitByMaterialId/${id}`; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url);
+    },
+   
 };
 
 export default materialApi;

@@ -53,7 +53,7 @@ const CreateGoodReceipt = () => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const supplierList = await supplierApi.getAllSupplier();
-        const personList = await personApi.getAllPeople();
+        const personList = await personApi.getAllPerson();
         
         setPeople(personList);
         setWareHouses(wareHouseList);
