@@ -1,11 +1,8 @@
 import axiosClient from "./axiosClient";
-
 const personApi = {
-    getAllPeople(params) {
-        const url = 'Person/GetAllPeople';
+    getAllperson(params) {
+        const url = 'person/GetAllpeople';
         return axiosClient.get(url, {params});
     }
 };
-
-
 export default personApi;

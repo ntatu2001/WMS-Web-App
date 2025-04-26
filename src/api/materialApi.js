@@ -2,10 +2,24 @@ import axiosClient from "./axiosClient";
 
 const materialApi = {
     getAllMaterials(params) {
-        const url = 'Material/GetAllMaterials';
-        return axiosClient.get(url, {params});
+        const url = 'Material/GetAllMaterials'; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url, { params });
+    },
+
+    getMaterialsByWarehouseId(id) {
+        const url = `Material/GetMaterialsByWarehouseId/${id}`; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url);
+    },
+
+    getMaterialById(id) {
+        const url = `Material/GetMaterialById/${id}`; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url);
+    },
+
+    createMaterial(data) {
+        const url = 'Material/CreateMaterial'; // Ensure this endpoint exists in your backend
+        return axiosClient.post(url, data);
     }
 };
-
 
 export default materialApi;
