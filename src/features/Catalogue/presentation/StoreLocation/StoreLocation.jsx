@@ -41,18 +41,16 @@ const InventoryHistory = () => {
 
   const handleSave = () => {
     if (!formData.positionCode) {
-     
-      return; // Prevent updating information
+        return; // Prevent updating information
     }
     console.log("New Storage Location Data:", formData); // Log the form data to the console
-    setSavedData((prev) => [...prev, formData]);
     setFormData({
-      componentName: "",
-      positionCode: "",
-      description: "",
-      warehouse: "",
-      area: "",
-      size: "",
+        componentName: "",
+        positionCode: "",
+        description: "",
+        warehouse: "",
+        area: "",
+        size: "",
     });
   };
 
@@ -160,7 +158,7 @@ const InventoryHistory = () => {
                 </SelectContainer>
               </FormGroup>
               <FormGroup>
-                <Label>Khu vực:</Label>
+                <Label>Khu lưu trữ:</Label>
                 <SelectContainer>
                   <select
                     name="area"

@@ -17,12 +17,13 @@ import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import LabelSmallSize from '../../../../common/components/Label/LabelSmallSize.jsx';
 import clsx from 'clsx';
 import styles from './Employees.module.scss';
+import personApi from '../../../../api/personApi.js';
 
 const InventoryHistory = () => {
   const [formData, setFormData] = useState({
-      employeeName: "",
-      employeeCode: "",
-      position: "--",
+      personName: "",
+      personId: "",
+      employeeType: "--",
       birthday: "",
       email: "",
       startTime: "",
@@ -42,25 +43,37 @@ const InventoryHistory = () => {
 
   const handleSave = () => {
     if (!formData.employeeCode) {
-      
-      return; // Prevent updating information
+        return; // Prevent updating information
     }
-    console.log("New Employee Data:", formData);
-    setSavedData((prev) => [...prev, formData]);
+    console.log("New Employee Data:", formData); // Log the form data to the console
     setFormData({
-      employeeName: "",
-      employeeCode: "",
-      position: "--",
-      birthday: "",
-      email: "",
-      startTime: "",
-      endTime: "",
+        personName: "",
+        personId: "",
+        employeeType: "--",
+        birthday: "",
+        email: "",
+        startTime: "",
+        endTime: "",
     });
   };
 
-  const handleSearch = () => {
-    const result = savedData.filter((item) => item.employeeCode.includes(searchCode));
-    setFilteredData(result);
+  const handleSearch = async () => {
+    if (!searchCode.trim()) {
+      setFilteredData([]); // Clear the table if the input is empty
+      return;
+    }
+    try {
+      // Fetch employee data from the API
+      const response = await personApi.getAllPersons(); // Replace with your API endpoint
+      const employees = response || [];
+
+      // Filter employees based on the search code
+      const result = employees.filter((item) => item.personId.includes(searchCode));
+      setFilteredData(result);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      setFilteredData([]); // Clear the table on error
+    }
   };
 
   const handleDelete = (employeeCode) => {
