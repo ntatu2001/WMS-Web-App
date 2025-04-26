@@ -31,8 +31,13 @@ const ManageGoodReceipt = () => {
           entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
           return entryDate.getTime() === today.getTime();
         });
-        
-        setTodayReceiptEntries(todayEntries);
+
+        // Sort last week entries by date in descending order
+        const sortedTodayEntries = [...todayEntries].sort((a, b) => 
+          new Date(b.issueDate) - new Date(a.issueDate)
+          );
+      
+        setTodayReceiptEntries(sortedTodayEntries);
         
         // Filter entries for last week (keeping existing code structure)
         const lastWeekEntries = receiptEntryList.filter(entry => {

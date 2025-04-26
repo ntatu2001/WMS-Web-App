@@ -32,7 +32,13 @@ const ManageGoodIssue = () => {
           return entryDate.getTime() === today.getTime();
         });
         
-        setTodayIssueEntries(todayEntries);
+        // Sort last week entries by date in descending order
+        const sortedTodayEntries = [...todayEntries].sort((a, b) => 
+          new Date(b.issueDate) - new Date(a.issueDate)
+          );
+
+
+        setTodayIssueEntries(sortedTodayEntries);
         
         // Filter entries for last week (keeping existing code structure)
         const lastWeekEntries = issueEntryList.filter(entry => {
