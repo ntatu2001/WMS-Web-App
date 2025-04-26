@@ -109,6 +109,7 @@ const InventoryHistory = () => {
         return;
       }
 
+      const dimensions = formData.dimensions.split("x");
       const newProduct = {
         materialId: formData.goodCode,
         materialName: formData.goodName,
@@ -117,43 +118,43 @@ const InventoryHistory = () => {
         properties: [
           {
             propertyName: "Height",
-            propertyValue: formData.dimensions.split("x")[2] || "",
+            propertyValue: dimensions[2] || "--",
             unitOfMeasure: "Meter",
             materialId: formData.goodCode,
           },
           {
             propertyName: "Length",
-            propertyValue: formData.dimensions.split("x")[1] || "",
+            propertyValue: dimensions[1] || "--",
             unitOfMeasure: "Meter",
             materialId: formData.goodCode,
           },
           {
             propertyName: "Width",
-            propertyValue: formData.dimensions.split("x")[0] || "",
+            propertyValue: dimensions[0] || "--",
             unitOfMeasure: "Meter",
             materialId: formData.goodCode,
           },
           {
             propertyName: "Price",
-            propertyValue: formData.price,
+            propertyValue: formData.price || "0",
             unitOfMeasure: "VND",
             materialId: formData.goodCode,
           },
           {
             propertyName: "MinimumStockLevel",
-            propertyValue: formData.minimumStock,
+            propertyValue: formData.minimumStock || "0",
             unitOfMeasure: "None",
             materialId: formData.goodCode,
           },
           {
             propertyName: "Unit",
-            propertyValue: formData.unit,
+            propertyValue: formData.unit || "--",
             unitOfMeasure: "None",
             materialId: formData.goodCode,
           },
           {
             propertyName: "Note",
-            propertyValue: formData.note,
+            propertyValue: formData.note || "--",
             unitOfMeasure: "None",
             materialId: formData.goodCode,
           },
@@ -165,7 +166,7 @@ const InventoryHistory = () => {
           },
           {
             propertyName: "Type",
-            propertyValue: formData.goodType,
+            propertyValue: formData.goodType || "--",
             unitOfMeasure: "None",
             materialId: formData.goodCode,
           },
@@ -178,9 +179,7 @@ const InventoryHistory = () => {
       if (response) {
         console.log("New Product Created:", response);
 
-        // Ensure savedData and filteredData are arrays before updating
-        setSavedData((prev) => Array.isArray(prev) ? [...prev, response] : [response]);
-        setFilteredData((prev) => Array.isArray(prev) ? [...prev, response] : [response]);
+        // Do not update savedData or filteredData to prevent showing the new product in the table
       }
 
       setFormData({
@@ -564,21 +563,20 @@ const InventoryHistory = () => {
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.materialId}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.materialClassId}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {unitProperty ? unitProperty.propertyValue : item.Unit}
+                          {unitProperty ? unitProperty.propertyValue : "--"}
                         </td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {priceProperty ? priceProperty.propertyValue : item.Price} VND{" "}
-                          {unitOfMeasureProperty ? `(${unitOfMeasureProperty.propertyValue})` : ""}
+                          {priceProperty ? priceProperty.propertyValue : "0"} VND
                         </td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : item.MinimumStockLevel}
+                          {minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : "0"}
                         </td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : item.DefaultStockLevel}
+                          {defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : "0"}
                         </td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{dimensions}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {noteProperty ? noteProperty.propertyValue : item.Note}
+                          {noteProperty ? noteProperty.propertyValue : "--"}
                         </td>
                       </tr>
                     );
