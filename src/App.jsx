@@ -19,6 +19,7 @@ import Account from "./features/Setting/presentation/Account/Account.jsx";
 import Logout from "./features/Setting/presentation/Logout/Logout.jsx";
 import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
 import UpdateAccount from "./features/Setting/presentation/UpdateAccount/UpdateAccount.jsx";
+import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 import { AiOutlineUser, AiOutlineEdit, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
 
 function App() {
@@ -93,7 +94,7 @@ function App() {
             <Route path="/storage" element={<Storage />} />
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
-            <Route path="/inventory" element={<div>Kiểm kê</div>} />
+            <Route path="/inventory" element={<LotAdjustment />} />
             <Route path="/history" element={<History />} />
             <Route path="/catalogue" element={<Catalogue />} />
             <Route

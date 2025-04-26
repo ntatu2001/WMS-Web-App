@@ -24,7 +24,7 @@ const Storage = () => {
     const [wareHouse,setWareHouse] = useState()
     const [zone,setZone] = useState()
     const [dataTable, setDataTable] = useState([])
-
+    
 
     const handleViewDetails = () => {
       setActiveTab('detail'); // Cập nhật trạng thái tab
@@ -50,13 +50,13 @@ const Storage = () => {
   
     const handleWareHouseChange = (e) =>{
         // setWareHouse(e)
-        console.log(e.target.value);
+        // console.log(e.target.value);
         setWareHouse(e.target.value);
     }
 
     const handleZoneChange = (z) =>{
     
-        console.log(z.target.value);
+        // console.log(z.target.value);
         setZone(z.target.value);
     }
 
@@ -66,12 +66,11 @@ const Storage = () => {
           const foundData = warehouseData.find(item => 
               item.wareHouse === wareHouse && item.zone === zone
           );
-          console.log(foundData)
+          // console.log(foundData)
           // Kiểm tra nếu foundData không phải là undefined
           if (foundData) {
               setDataTable(foundData.data); // Cập nhật trạng thái với dữ liệu tìm thấy
           } else {
-              console.warn('No matching data found for the selected warehouse and zone.');
               setDataTable(null); // Hoặc gán giá trị mặc định nếu cần
           }
       } else {

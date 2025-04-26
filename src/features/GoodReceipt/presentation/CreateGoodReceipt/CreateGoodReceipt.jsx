@@ -22,7 +22,7 @@ import {AiOutlinePlus} from 'react-icons/ai'
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
 import personApi from '../../../../api/personApi.js';
-
+import materialApi from '../../../../api/materialApi.js';
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -41,17 +41,20 @@ const CreateGoodReceipt = () => {
   const [wareHouses, setWareHouses] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [people, setPeople] = useState([]);
-
-  
-  // const createReceipt = async() => {
-  //    const receipt = {}
-  //    await inventoryReceiptApi.createReceipt()
-  // }
+  const [materialOptionNames, setMaterialOptionNames] = useState([]);
+  const [materialOptionIds, setMaterialOptionIds] = useState(null);
+  const [materialOptionUnits, setMaterialOptionUnits] = useState(null); 
+  const [MaterialsList, setMaterialsList] = useState([]);
+  // console.log(materialName);
+  // // console.log(materialOptions)
+  // console.log(materialOptionUnits)
+  console.log(materialOptionIds)
   useEffect(() => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const supplierList = await supplierApi.getAllSupplier();
         const personList = await personApi.getAllPeople();
+        
         setPeople(personList);
         setWareHouses(wareHouseList);
         setSuppliers(supplierList);
@@ -59,6 +62,63 @@ const CreateGoodReceipt = () => {
 
     GetApi();
   }, []);
+  
+  // Separate useEffect to handle material fetching when zone changes
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      if (selectedZone) {
+        try {
+          const materialList = await materialApi.getMaterialsByWarehouseId(selectedZone);
+
+          const optionNameList = materialList.map(material => material.materialName);
+          // const optionIdList = materialList.map(material => material.materialId);
+          // const optionPropertyList = materialList.map(material => material.properties);
+          
+          // Extract unit values from properties where propertyName is "Unit"
+          // const optionUnitList = optionPropertyList.map(properties => {
+          //   const unitProperty = properties.find(prop => prop.propertyName === "Unit");
+          //   return unitProperty ? unitProperty.propertyValue : "";
+          // });
+
+          // Filter unique propertyValues for units
+          // const uniqueUnits = [...new Set(optionUnitList)];
+
+          // console.log(optionPropertyList)
+          setMaterialsList(materialList);
+          setMaterialOptionNames(optionNameList);
+          // setMaterialOptionIds(optionIdList);
+          // setMaterialOptionUnits(uniqueUnits);
+        } catch (error) {
+          console.error('Error fetching materials:', error);
+        }
+      }
+    };
+    const getMaterialIdAndUnit = async() => {
+      if(materialName) {
+        try {
+          const material = MaterialsList.find(material => material.materialName === materialName );
+          const optionMaterialId = material.materialId;
+          const optionMaterialUnit = await materialApi.getUnitByMaterialId(optionMaterialId);
+          setMaterialOptionIds(optionMaterialId);
+          setMaterialOptionUnits(optionMaterialUnit);
+        }
+        catch (error){
+          console.error('Error fetching:', error);
+        }
+       
+      }
+    }
+
+    fetchMaterials();
+    getMaterialIdAndUnit();
+
+  }, [selectedZone, materialName]);
+
+  // Update materialId when materialOptionIds changes
+  useEffect(() => {
+      setMaterialId(materialOptionIds);
+      setUnit(materialOptionUnits);
+  }, [materialOptionIds, materialOptionUnits]);
 
   const createReceipt = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedSupplier || !selectedPerson || !selectedDate) {
@@ -92,6 +152,8 @@ const CreateGoodReceipt = () => {
     // Reset input fields
     setMaterialName('');
     setMaterialId('');
+    setMaterialOptionIds('');
+    setMaterialOptionUnits('');
     setUnit('');
     setLotNumber('');
     setImportedQuantity(0);
@@ -118,60 +180,68 @@ const CreateGoodReceipt = () => {
         <FormGroup>
           <Label>Kho hàng:</Label>
           <SelectContainer>
-            <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
-              <option value="" disabled selected>Chọn loại kho hàng</option>
+            <Select 
+              value={selectedWarehouse} 
+              onChange={(e) => setSelectedWarehouse(e.target.value)}
+              placeholder="Chọn loại kho hàng"
+            >
               {wareHouses.map((warehouse, index) => (
                 <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
                   {warehouse.warehouseName}
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
         <FormGroup>
           <Label>Mã kho hàng:</Label>
           <SelectContainer>
-            <Select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)}>
-              <option value="" disabled selected>Chọn mã kho hàng</option>
+            <Select 
+              value={selectedZone} 
+              onChange={(e) => setSelectedZone(e.target.value)}
+              placeholder="Chọn mã kho hàng"
+            >
               {wareHouses.map((wareHouses, index) => (
                 <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
                   {wareHouses.warehouseId}
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
         <FormGroup>
           <Label>Nhà cung cấp:</Label>
           <SelectContainer>
-            <Select value={selectedSupplier} onChange={(e) => setSelectedSupplier(e.target.value)}>
-              <option value="" disabled selected>Chọn nhà cung cấp</option>
+            <Select 
+              value={selectedSupplier} 
+              onChange={(e) => setSelectedSupplier(e.target.value)}
+              placeholder="Chọn nhà cung cấp"
+            >
               {suppliers.map((supplier, index) => (
                 <option key = {`supplier-${index}`} value= {supplier.supplierName}>
                   {supplier.supplierName}
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
         <FormGroup>
           <Label>Nhân viên:</Label>
           <SelectContainer>
-            <Select value={selectedPerson} onChange={(e) => setSelectedPerson(e.target.value)}>
-              <option value="" disabled selected>Chọn nhân viên</option>
+            <Select 
+              value={selectedPerson} 
+              onChange={(e) => setSelectedPerson(e.target.value)}
+              placeholder="Chọn nhân viên"
+            >
               {people.map((person, index) => (
                 <option key = {`person-${index}`} value={person.personName}>
                   {person.personName}
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
@@ -197,12 +267,12 @@ const CreateGoodReceipt = () => {
           <Table style={{ tableLayout: "fixed", width: "100%"}}> 
             <thead>
               <tr>
-                <TableHeader style={{ width: "10%" }}>STT</TableHeader>
-                <TableHeader style={{ width: "20%" }}>Tên sản phẩm</TableHeader>
-                <TableHeader style={{ width: "15%" }}>Mã sản phẩm</TableHeader>
-                <TableHeader style={{ width: "15%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "15%" }}>Mã lô/Số PO</TableHeader>
-                <TableHeader style={{ width: "20%" }}>Số lượng nhập</TableHeader>
+                <TableHeader style={{ width: "7%" }}>STT</TableHeader>
+                <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
+                <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
+                <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
+                <TableHeader style={{ width: "16%" }}>Mã lô/Số PO</TableHeader>
+                <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
                 <TableHeader style={{ width: "10%" }}></TableHeader>
               </tr>
             </thead>
@@ -225,29 +295,38 @@ const CreateGoodReceipt = () => {
               <tr>
                 <TableCell>{count}</TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="Tên sản phẩm" 
-                    value={materialName}
-                    onChange={(e) => setMaterialName(e.target.value)}
-                  />
+    
+                    <SelectContainer>
+                    <Select 
+                      value={materialName} 
+                      onChange={(e) => setMaterialName(e.target.value)}
+                      placeholder="Tên sản phẩm"
+                    >
+                      {materialOptionNames.map((materialOptionName, index) => (
+                        <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
+                          {materialOptionName}
+                        </option>
+                      ))}
+                    </Select>
+                  </SelectContainer>
+
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="Mã sản phẩm" 
-                    value={materialId}
-                    onChange={(e) => setMaterialId(e.target.value)}
-                  />
+                  <SelectContainer >
+                     <span style={{color: materialOptionIds? "#000" : "#767676"}}>
+                        {materialOptionIds || "Mã sản phẩm"}
+                     </span>
+                  </SelectContainer>
                 </TableCell>
+                
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="ĐVT" 
-                    value={unit}
-                    onChange={(e) => setUnit(e.target.value)}
-                  />
+                  <SelectContainer >
+                    <span style={{color: materialOptionUnits? "#000" : "#767676"}}>
+                        {materialOptionUnits || "ĐVT"}
+                    </span>
+                  </SelectContainer>
                 </TableCell>
+
                 <TableCell>
                   <input style={{textAlign: "center", width: "100%"}}
                     type="text" 

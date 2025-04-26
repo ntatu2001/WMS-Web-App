@@ -7,3 +7,12 @@ export const lotStatusData = {
     "Bị chặn" : "#911C0F"
 };
 
+
+export const lotStatusChangeData = {
+    "Pending" : "Chờ xử lý",
+    "InProgress" : "Đang thực hiện",
+    "Done" : "Hoàn thành",
+    "Cancelled" : "Đã hủy",
+    "Suspended" : "Tạm hoãn",
+    "Blocked" : "Bị chặn"
+};

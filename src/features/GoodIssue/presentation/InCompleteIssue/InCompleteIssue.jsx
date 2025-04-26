@@ -17,33 +17,38 @@ import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import { FaChevronDown } from 'react-icons/fa';
-import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import clsx from 'clsx';
 import styles from './InCompleteIssue.module.scss'
 import { listIssueMaterials } from '../../../../app/mockData/InventoryIssueData.js';
-import receiptLotApi from '../../../../api/receiptLotApi.js';
-import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
-
+import issueLotApi from '../../../../api/issueLotApi.js';
+import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
+import wareHouseApi from '../../../../api/wareHouseApi.js';
 
 const InCompleteIssue = () => {
     
-    const [receiptLots, setReceiptLots] = useState([]);
+    const [issueEntries, setIssueEntries] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
-    
+    const [warehouses, setWarehouses] = useState([]);
+
     useEffect(() => {
-        const fetchReceiptLot = async() => {
-            const receiptLotList = await receiptLotApi.getAllReceiptLots();
-            setReceiptLots(receiptLotList);
+        const fetchIssueLot = async() => {
+            const issueLotList = await issueLotApi.getAllIssueLots();
+            const issueOptionsList = await issueLotList.map(x => x.inventoryIssueEntryId);
+            const issueEntryOptions = await Promise.all(issueOptionsList.map(id => inventoryIssueEntryApi.getIssueEntryById(id)));
+            const wareHouseList = await wareHouseApi.getAllWareHouses();
+            setIssueEntries(issueEntryOptions);
+            setWarehouses(wareHouseList);
+            
         };
 
-        fetchReceiptLot();
+        fetchIssueLot();
     }, []);
     
     // Lọc receiptLots dựa trên selectedWarehouse
-    const filteredReceiptLots = selectedWarehouse 
-        ? receiptLots.filter(item => item.warehouseName === selectedWarehouse)
-        : receiptLots;
+    const filteredIssueLots = selectedWarehouse 
+        ? issueEntries.filter(item => item.warehouseName === selectedWarehouse)
+        : issueEntries;
         
     return (
                    <div style={{display: "flex"}}>
@@ -54,9 +59,9 @@ const InCompleteIssue = () => {
                                 <SelectContainer>
                                         <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
                                         <option value="" disabled selected>Chọn loại kho hàng</option>
-                                        {listWarehouses.map((warehouse, index) => (
-                                            <option key = {`warehouse-${index}`} value= {warehouse}> 
-                                            {warehouse}
+                                        {warehouses.map((warehouse, index) => (
+                                            <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
+                                            {warehouse.warehouseName}
                                             </option>
                                         ))}
                                         </Select>
@@ -64,17 +69,17 @@ const InCompleteIssue = () => {
                                 </SelectContainer>
                             </FormGroup>
 
-                            <SectionTitle style={{fontSize: "18px", padding: "10px", marginBottom: 0}} >Danh sách lô nhập kho chưa hoàn thành</SectionTitle>
+                            <SectionTitle style={{fontSize: "18px", padding: "10px", marginBottom: 0}} >Danh sách lô xuất kho chưa hoàn thành</SectionTitle>
                             
                             <div style={{height: "85%", overflow: "auto"}}>
-                                {filteredReceiptLots.map((item) => (
+                                {filteredIssueLots.map((item) => (
                                     <div className={clsx(styles.divOfList)}
-                                        key={item.receiptLotId}
+                                        key={item.issueLotId}
                                         
                                     >
                                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
                                             <LabelSmallSize>Mã lô:</LabelSmallSize>
-                                            <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.receiptLotId}</span>
+                                            <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.lotNumber}</span>
                                         </div>
 
                                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
@@ -88,23 +93,11 @@ const InCompleteIssue = () => {
                                         </div>
 
                                         <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                            <LabelSmallSize>Số lượng nhập kho:</LabelSmallSize>
-                                            <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.importedQuantity}</span>
+                                            <LabelSmallSize>Số lượng xuất kho:</LabelSmallSize>
+                                            <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.requestedQuantity}</span>
                                         </div>  
 
-                                        <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                            <LabelSmallSize>Giới hạn tầng lưu trữ:</LabelSmallSize>
-                                            <span style={{
-                                                backgroundColor: storageLevel[item.storageLevel],
-                                                color: "white",
-                                                fontWeight: "bold",
-                                                fontSize: "12px",
-                                                padding: "4px 8px",
-                                                borderRadius: "4px",
-                                                }}> Tầng {item.storageLevel}
-                                            </span>
-                                        </div>
-
+    
                                     </div>
                                 ))}
 
@@ -113,7 +106,7 @@ const InCompleteIssue = () => {
 
                         <ListSection>
            
-                                <SectionTitle>Vị trí lưu kho cho các lô nhập kho</SectionTitle>
+                                <SectionTitle>Vị trí lưu kho cho các lô xuất kho</SectionTitle>
 
                                 <div style={{maxHeight: "400px", overflowY: "scroll"}}>
                                 <Table>

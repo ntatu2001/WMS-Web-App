@@ -22,7 +22,8 @@ import {AiOutlinePlus} from 'react-icons/ai'
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import customerApi from '../../../../api/customerApi.js';
 import personApi from '../../../../api/personApi.js';
-
+import materialApi from '../../../../api/materialApi.js';
+import materiaLotApi from '../../../../api/materiaLotApi.js';
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -41,11 +42,16 @@ const CreateGoodReceipt = () => {
   const [wareHouses, setWareHouses] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [people, setPeople] = useState([]);
-
+  const [materialOptionNames, setMaterialOptionNames] = useState([]);
+  const [materialOptionIds, setMaterialOptionIds] = useState(null);
+  const [materialOptionUnits, setMaterialOptionUnits] = useState(null);
+  const [MaterialsList, setMaterialsList] = useState([]);
+  const [lotNumberList, setLotNumberList] = useState([]);
   // const createReceipt = async() => {
   //    const receipt = {}
   //    await inventoryReceiptApi.createReceipt()
   // }
+  console.log(lotNumberList);
   useEffect(() => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -58,6 +64,73 @@ const CreateGoodReceipt = () => {
 
     GetApi();
   }, []);
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      if (selectedZone) {
+        try {
+          const materialList = await materialApi.getMaterialsByWarehouseId(selectedZone);
+
+          const optionNameList = materialList.map(material => material.materialName);
+          // const optionIdList = materialList.map(material => material.materialId);
+          // const optionPropertyList = materialList.map(material => material.properties);
+          
+          // Extract unit values from properties where propertyName is "Unit"
+          // const optionUnitList = optionPropertyList.map(properties => {
+          //   const unitProperty = properties.find(prop => prop.propertyName === "Unit");
+          //   return unitProperty ? unitProperty.propertyValue : "";
+          // });
+
+          // Filter unique propertyValues for units
+          // const uniqueUnits = [...new Set(optionUnitList)];
+
+          // console.log(optionPropertyList)
+          setMaterialsList(materialList);
+          setMaterialOptionNames(optionNameList);
+          // setMaterialOptionIds(optionIdList);
+          // setMaterialOptionUnits(uniqueUnits);
+        } catch (error) {
+          console.error('Error fetching materials:', error);
+        }
+      }
+    };
+    const getMaterialIdAndUnit = async() => {
+      if(materialName) {
+        try {
+          const material = MaterialsList.find(material => material.materialName === materialName );
+          const optionMaterialId = material.materialId;
+          const optionMaterialUnit = await materialApi.getUnitByMaterialId(optionMaterialId);
+          setMaterialOptionIds(optionMaterialId);
+          setMaterialOptionUnits(optionMaterialUnit);
+        }
+        catch (error){
+          console.error('Error fetching:', error);
+        }
+       
+      }
+    }
+
+    fetchMaterials();
+    getMaterialIdAndUnit();
+
+  }, [selectedZone, materialName]);
+
+  // Update materialId when materialOptionIds changes
+  useEffect(() => {
+      setMaterialId(materialOptionIds);
+      setUnit(materialOptionUnits);
+  }, [materialOptionIds, materialOptionUnits]);
+
+
+  useEffect(() => {
+      const fetchLotNumberList = async() => {
+        const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
+        const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
+        setLotNumberList(lotNumberList);
+      }
+
+      fetchLotNumberList();
+  }, [materialId])
+
 
   const createReceipt = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
@@ -91,6 +164,8 @@ const CreateGoodReceipt = () => {
     // Reset input fields
     setMaterialName('');
     setMaterialId('');
+    setMaterialOptionIds('');
+    setMaterialOptionUnits('');
     setUnit('');
     setPurchaseOrderNumber('');
     setRequestedQuantity(0);
@@ -196,12 +271,12 @@ const CreateGoodReceipt = () => {
           <Table style={{ tableLayout: "fixed", width: "100%"}}> 
             <thead>
               <tr>
-                <TableHeader style={{ width: "10%" }}>STT</TableHeader>
-                <TableHeader style={{ width: "20%" }}>Tên sản phẩm</TableHeader>
-                <TableHeader style={{ width: "15%" }}>Mã sản phẩm</TableHeader>
-                <TableHeader style={{ width: "15%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "15%" }}>Mã lô/Số PO</TableHeader>
-                <TableHeader style={{ width: "20%" }}>Số lượng xuất</TableHeader>
+                <TableHeader style={{ width: "7%" }}>STT</TableHeader>
+                <TableHeader style={{ width: "35%" }}>Tên sản phẩm</TableHeader>
+                <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
+                <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
+                <TableHeader style={{ width: "35%" }}>Mã lô/Số PO</TableHeader>
+                <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
                 <TableHeader style={{ width: "10%" }}></TableHeader>
               </tr>
             </thead>
@@ -224,36 +299,58 @@ const CreateGoodReceipt = () => {
               <tr>
                 <TableCell>{count}</TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="Tên sản phẩm" 
-                    value={materialName}
-                    onChange={(e) => setMaterialName(e.target.value)}
-                  />
+                  <SelectContainer >
+                      <Select 
+                      value={materialName} 
+                      onChange={(e) => setMaterialName(e.target.value)}
+                      placeholder="Tên sản phẩm"
+                      >
+                       
+                        {materialOptionNames.map((materialOptionName, index) => (
+                          <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
+                            {materialOptionName}
+                          </option>
+                        ))}
+                      </Select>
+                      <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
+                  </SelectContainer>
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="Mã sản phẩm" 
-                    value={materialId}
-                    onChange={(e) => setMaterialId(e.target.value)}
-                  />
+                  <SelectContainer >
+                      <span style={{color: materialOptionIds? "#000" : "#767676"}}>
+                          {materialOptionIds || "Mã sản phẩm"}
+                      </span>
+                    </SelectContainer>
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="ĐVT" 
-                    value={unit}
-                    onChange={(e) => setUnit(e.target.value)}
-                  />
+                  <SelectContainer >
+                      <span style={{color: materialOptionUnits? "#000" : "#767676"}}>
+                          {materialOptionUnits || "ĐVT"}
+                      </span>
+                  </SelectContainer>
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
+                  {/* <input style={{textAlign: "center", width: "100%"}}
                     type="text" 
                     placeholder="Mã lô/Số PO" 
                     value={purchaseOrderNumber}
                     onChange={(e) => setPurchaseOrderNumber(e.target.value)}
-                  />
+                  /> */}
+                  <SelectContainer >
+                      <Select 
+                      value={purchaseOrderNumber}
+                      onChange={(e) => setPurchaseOrderNumber(e.target.value)}
+                      placeholder="Mã lô/Số PO" 
+                      >
+                       
+                        {lotNumberList.map((lotNumber, index) => (
+                          <option key = {`lotNumber-${index}`} value= {lotNumber}> 
+                            {lotNumber}
+                          </option>
+                        ))}
+                      </Select>
+                      <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
+                  </SelectContainer>
                 </TableCell>
                 <TableCell>
                   <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}

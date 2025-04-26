@@ -18,24 +18,28 @@ import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
 import { FaChevronDown } from 'react-icons/fa';
-import { listWarehouses } from '../../../../app/mockData/WarehouseData.js';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import clsx from 'clsx';
 import styles from './InCompleteReceipt.module.scss'
-import { listIssueMaterials } from '../../../../app/mockData/InventoryIssueData.js';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
-
+import { LocationOfReceipt } from '../../../../app/mockData/LocationData.js';
+import wareHouseApi from '../../../../api/wareHouseApi.js';
 
 const InCompleteReceipt = () => {
     
     const [receiptLots, setReceiptLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
-    
+    const [locationReceipt, setLocationReceipt] = useState([]);
+    const [warehouses, setWarehouses] = useState([]);
+
     useEffect(() => {
         const fetchReceiptLot = async() => {
             const receiptLotList = await receiptLotApi.getAllReceiptLots();
+            const wareHouseList = await wareHouseApi.getAllWareHouses();
             setReceiptLots(receiptLotList);
+            setLocationReceipt(LocationOfReceipt);
+            setWarehouses(wareHouseList);
         };
 
         fetchReceiptLot();
@@ -55,9 +59,9 @@ const InCompleteReceipt = () => {
                                 <SelectContainer>
                                         <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
                                         <option value="" disabled selected>Chọn loại kho hàng</option>
-                                        {listWarehouses.map((warehouse, index) => (
-                                            <option key = {`warehouse-${index}`} value= {warehouse}> 
-                                            {warehouse}
+                                        {warehouses.map((warehouse, index) => (
+                                            <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
+                                            {warehouse.warehouseName}
                                             </option>
                                         ))}
                                         </Select>
@@ -129,15 +133,15 @@ const InCompleteReceipt = () => {
                                             <TableHeader style={{ width: '50px' }}></TableHeader>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {listIssueMaterials.map(item => (
-                                            <tr key={item.id}>
-                                                <TableCell>{item.id}</TableCell>
-                                                <TableCell>{item.name}</TableCell>
-                                                <TableCell>{item.code}</TableCell>
-                                                <TableCell>{item.unit}</TableCell>
-                                                <TableCell>{item.lotPo}</TableCell>
-                                                <TableCell>{item.quantity}</TableCell>
+                                    <tbody> 
+                                        {locationReceipt.map((item, index) => (
+                                            <tr key={index}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>{item.locationId}</TableCell>
+                                                <TableCell>{item.lotNumber}</TableCell>
+                                                <TableCell>{item.materialName}</TableCell>
+                                                <TableCell>{item.materialId}</TableCell>
+                                                <TableCell>{item.importedQuantity}</TableCell>
                                                 <TableCell>
                                                     <DeleteButton>
                                                         <FaTrash size={15} color="#000" />
