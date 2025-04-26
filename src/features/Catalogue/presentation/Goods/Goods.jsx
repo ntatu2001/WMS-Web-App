@@ -113,7 +113,7 @@ const InventoryHistory = () => {
         materialId: formData.goodCode,
         materialName: formData.goodName,
         materialClassId: formData.goodType,
-        materialClassName: selectedMaterialClass.className, // Ensure className exists in the API response
+        materialClassName: selectedMaterialClass.className,
         properties: [
           {
             propertyName: "Height",
@@ -174,12 +174,13 @@ const InventoryHistory = () => {
 
       console.log("New Product Data:", newProduct);
 
-      const response = await materialApi.createMaterial(newProduct); // Ensure this endpoint exists and is correct
+      const response = await materialApi.createMaterial(newProduct);
       if (response) {
         console.log("New Product Created:", response);
 
-        setSavedData((prev) => [...prev, response]);
-        setFilteredData((prev) => [...prev, response]);
+        // Ensure savedData and filteredData are arrays before updating
+        setSavedData((prev) => Array.isArray(prev) ? [...prev, response] : [response]);
+        setFilteredData((prev) => Array.isArray(prev) ? [...prev, response] : [response]);
       }
 
       setFormData({
@@ -219,8 +220,9 @@ const InventoryHistory = () => {
   };
 
   const handleDelete = (goodCode) => {
-    setSavedData((prev) => prev.filter((item) => item.goodCode !== goodCode));
-    setFilteredData((prev) => prev.filter((item) => item.goodCode !== goodCode));
+    // Ensure savedData and filteredData are arrays before filtering
+    setSavedData((prev) => Array.isArray(prev) ? prev.filter((item) => item.goodCode !== goodCode) : []);
+    setFilteredData((prev) => Array.isArray(prev) ? prev.filter((item) => item.goodCode !== goodCode) : []);
   };
 
   return (
