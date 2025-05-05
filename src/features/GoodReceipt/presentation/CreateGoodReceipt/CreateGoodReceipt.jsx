@@ -271,7 +271,7 @@ const CreateGoodReceipt = () => {
                 <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
                 <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
                 <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "16%" }}>Mã lô/Số PO</TableHeader>
+                <TableHeader style={{ width: "20%" }}>Mã lô/Số PO</TableHeader>
                 <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
                 <TableHeader style={{ width: "10%" }}></TableHeader>
               </tr>

@@ -4,7 +4,7 @@ const ContentContainer = ({ children, className = "" , style}) => {
     return (
       <div
         className={clsx(styles.contentContainer, className)} style={style}
-      >
+      > 
         {children}
       </div>
     );

@@ -34,7 +34,7 @@ const ManageGoodReceipt = () => {
 
         // Sort last week entries by date in descending order
         const sortedTodayEntries = [...todayEntries].sort((a, b) => 
-          new Date(b.issueDate) - new Date(a.issueDate)
+          new Date(b.receiptDate) - new Date(a.receiptDate)
           );
       
         setTodayReceiptEntries(sortedTodayEntries);

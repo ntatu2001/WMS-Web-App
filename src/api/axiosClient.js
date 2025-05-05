@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosClient = axios.create ({
-    baseURL: 'https://wmsapiproject.azurewebsites.net/WarehouseAPI/',
+    baseURL: 'https://wmsapis20250504173355.azurewebsites.net/WarehouseAPI/',
     // baseURL: 'https://67cebcbb125cd5af757bc819.mockapi.io/test/van/',
     headers : {
       'Content-Type' : 'application/json',

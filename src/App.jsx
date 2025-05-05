@@ -101,7 +101,7 @@ function App() {
               path="/setting/*"
               element={
                 <div style={{ display: "flex", position: "relative" }}>
-                  <div style={{ flex: 1, marginLeft: "0", height: "100vh", overflow: "hidden", position: "relative" }}>
+                  <div style={{ flex: 1, marginLeft: "0", height: "100%", overflow: "hidden", position: "relative" }}>
                     {lastAccessedRoute.sidebarContent === "/dashboard" ? (
                       <Dashboard />
                     ) : lastAccessedRoute.sidebarContent === "/storage" ? (
@@ -124,7 +124,7 @@ function App() {
                         top: "0",
                         right: "0",
                         width: "calc(100vw * 0.8952)",
-                        height: "100vh",
+                        height: "100%",
                         backgroundColor: "rgba(0, 0, 0, 0.2)",
                         zIndex: 1,
                       }}

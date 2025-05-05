@@ -33,7 +33,7 @@ const InCompleteIssue = () => {
 
     useEffect(() => {
         const fetchIssueLot = async() => {
-            const issueLotList = await issueLotApi.getAllIssueLots();
+            const issueLotList = await issueLotApi.getIssueLotsNotDone();
             const issueOptionsList = await issueLotList.map(x => x.inventoryIssueEntryId);
             const issueEntryOptions = await Promise.all(issueOptionsList.map(id => inventoryIssueEntryApi.getIssueEntryById(id)));
             const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -44,7 +44,7 @@ const InCompleteIssue = () => {
 
         fetchIssueLot();
     }, []);
-    
+    console.log(issueEntries);
     // Lọc receiptLots dựa trên selectedWarehouse
     const filteredIssueLots = selectedWarehouse 
         ? issueEntries.filter(item => item.warehouseName === selectedWarehouse)

@@ -1,6 +1,17 @@
 import axiosClient from "./axiosClient";
 
 const materiaLotApi = {
+
+    getAllMaterialLots(params) {
+        const url = 'MaterialLot/GetAllMaterialLots'; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url, { params });
+    },
+
+    getMaterialLotById(id) {
+        const url = `MaterialLot/GetMaterialLotById/${id}`; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url);
+    },
+
     GetMaterialLotsByMaterialId(id) {
         const url = `MaterialLot/GetMaterialLotsByMaterialId/${id}`;
         return axiosClient.get(url);

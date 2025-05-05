@@ -25,7 +25,7 @@ import personApi from '../../../../api/personApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
 
-const CreateGoodReceipt = () => {
+const CreateGoodIssue = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [materialName, setMaterialName] = useState('');
@@ -132,7 +132,7 @@ const CreateGoodReceipt = () => {
   }, [materialId])
 
 
-  const createReceipt = async () => {
+  const createIssue = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
       setError('Vui lòng chọn tất cả các trường bắt buộc.');
       return;
@@ -143,17 +143,17 @@ const CreateGoodReceipt = () => {
     try {
       const customerId = customers.find(x => x.customerName === selectedCustomer).customerId;
       const personId = people.find(x => x.personName === selectedPerson).personId;
-      const newReceipt = {
+      const newIssue = {
         warehouseId: selectedZone,
         customerId: customerId,
         personId: personId,
-        receiptDate: selectedDate,
+        issueDate: selectedDate,
         entries: materials
       }
-      console.log(newReceipt);
-      await inventoryIssueApi.createIssue(newReceipt);
+      console.log(newIssue);
+      await inventoryIssueApi.createIssue(newIssue);
     } catch (err) {
-      setError(err.message || 'An error occurred while creating the receipt.');
+      setError(err.message || 'An error occurred while creating the issue.');
     }
     
   };
@@ -272,10 +272,10 @@ const CreateGoodReceipt = () => {
             <thead>
               <tr>
                 <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                <TableHeader style={{ width: "35%" }}>Tên sản phẩm</TableHeader>
+                <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
                 <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
-                <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "35%" }}>Mã lô/Số PO</TableHeader>
+                <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
+                <TableHeader style={{ width: "30%" }}>Mã lô/Số PO</TableHeader>
                 <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
                 <TableHeader style={{ width: "10%" }}></TableHeader>
               </tr>
@@ -377,10 +377,10 @@ const CreateGoodReceipt = () => {
       
       </ListSection>
         </div>
-       <ActionButton style={{ marginTop: '2rem' }} onClick={createReceipt}>Tạo phiếu xuất kho</ActionButton >
+       <ActionButton style={{ marginTop: '2rem' }} onClick={createIssue}>Tạo phiếu xuất kho</ActionButton >
      
     </ContentContainer>
   );
 };
 
-export default CreateGoodReceipt; 
+export default CreateGoodIssue; 

@@ -35,7 +35,7 @@ const InCompleteReceipt = () => {
 
     useEffect(() => {
         const fetchReceiptLot = async() => {
-            const receiptLotList = await receiptLotApi.getAllReceiptLots();
+            const receiptLotList = await receiptLotApi.getReceiptLotByNotDone();
             const wareHouseList = await wareHouseApi.getAllWareHouses();
             setReceiptLots(receiptLotList);
             setLocationReceipt(LocationOfReceipt);

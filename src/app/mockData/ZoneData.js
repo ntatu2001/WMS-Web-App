@@ -1,8 +1,8 @@
 export const listZones = [
-    'Kho T01',
-    'Kho T02',
-    'Kho BB01',
-    'Kho TP01',
-    'Kho VT01',
-    'Kho NVL01'
+    'T01',
+    'T02',
+    'BB01',
+    'TP01',
+    'VT01',
+    'NVL01'
 ];

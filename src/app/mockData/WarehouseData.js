@@ -1,564 +1,1695 @@
-import Image from '../../assets/image.png'
+
 
 export const listWarehouses = [
-    'Kho Bao bì',
-    'Kho Nguyên vật liệu',
-    'Kho vật tư',
-    'Kho Bán thành phẩm',
-    'FinishedGood Warehouse'
+    'Kho Bao bi',
+    'Kho Nguyen Vat lieu',
+    'Kho Vat tu',
+    'Kho Thanh pham'
 ];
 
 
 
 export const warehouseData = [
-  {
-    wareHouse: "Kho Thành phẩm",
-    zone: "Kho TP01",
-    data: {
-      T01_1: {
-        columns: ["T01.1.1", "T01.1.2", "T01.1.3", "T01.1.4", "T01.1.5", "T01.1.6", "T01.1.7", "T01.1.8", "T01.1.9", "T01.1.10", "T01.1.11"],
-        rows: [
-          [
-              { value: "TD01", status: "Đang phân bổ"}, 
-              { value: "TD01", status: "Đang phân bổ"}, 
-              { value: "TD02", status: "Đang phân bổ"}, 
-              { value: "THP101", status: "Đang phân bổ"}, 
-              { value: "THP102", status: "Đang phân bổ"}, 
-              { value: "TD04", status: "Đang phân bổ"}, 
-              { value: "TD04", status: "Đang phân bổ"}, 
-              { value: "THP103", status: "Đang phân bổ"}, 
-  
-          ],
-          [
-              { value: "TD01", status: "Đang chứa hàng"}, 
-              { value: "TD12", status: "Đang chứa hàng"}, 
-              { value: "TD02", status: "Đang chứa hàng"}, 
-              { value: "THP101", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đã đầy"}, 
-              { value: "THP104", status: "Đã đầy"}, 
-          ],
-  
-          [
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: "THP103", status: "Đang chứa hàng"}, 
-              { value: "THP104", status: "Đang chứa hàng"}, 
-          ],
-        ],
-      },
-      T01_2: {
-        columns: ["T01.2.1", "T01.2.2", "T01.2.3", "T01.2.4", "T01.2.5", "T01.2.6", "T01.2.7", "T01.2.8", "T01.2.9"], // Thêm cột mới
-        rows: [
-          [
-              { value: "SD3117", status: "Đã đầy"}, 
-              { value: "CHA20", status: "Đang chứa hàng"}, 
-              { value: "SD3118", status: "Đã đầy"}, 
-              { value: "SKT10", status: "Đã đầy"}, 
-              { value: "TD04&05", status: "Đang chứa hàng"}, 
-              { value: "MTD31", status: "Đã đầy"}, 
-              { value: "MTD31", status: "Đang chứa hàng"}, 
-              { value: "THP102", status: "Đã đầy"}, 
-              { value: "SD3119", status: "Đã đầy"}, 
-  
-          ], // Thêm dữ liệu cột mới
-          [
-              { value: "SD3117", status: "Đang chứa hàng"}, 
-              { value: "MK402", status: "Đang chứa hàng"}, 
-              { value: "SD3119", status: "Đang chứa hàng"}, 
-              { value: "SKT10", status: "Đang chứa hàng"}, 
-              { value: "THP102", status: "Đang chứa hàng"}, 
-              { value: "MTD31", status: "Đang chứa hàng"}, 
-              { value: "TD02", status: "Đang chứa hàng"}, 
-              { value: "THP104", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đã đầy"}, 
-  
-          ],
-        ],
-      },
-      T01_3: {
-        columns: ["T01.3.1", "T01.3.2", "T01.3.3", "T01.3.4", "T01.3.5", "T01.3.6", "T01.3.7"],
-        rows: [
-          [
-              { value: "244201", status: "Đã đầy"}, 
-              { value: "48300", status: "Đã đầy"}, 
-              { value: "TD17", status: "Đã đầy"}, 
-              { value: "TD15", status: "Đã đầy"}, 
-              { value: "32439G", status: "Đã đầy"}, 
-              { value: "TD08", status: "Đã đầy"}, 
-              { value: "60647", status: "Đã đầy"}, 
-              
-          ],
-          [
-              { value: "244201", status: "Đang chứa hàng"}, 
-              { value: "48300", status: "Đang chứa hàng"}, 
-              { value: "TD17", status: "Đang chứa hàng"}, 
-              { value: "TD15", status: "Đang chứa hàng"}, 
-              { value: "32439G", 
-                status: "Đang chứa hàng",
-                details: {
-                  equipment: "Ô chứa hàng",
-                  position: "T01.3.5.2",
-                  zone: "T01",
-                  warehouse: "Kho Bao Bì",
-                  dimensions: "2m x 0.1m x 0.5m",
-                  status: "Đang chứa hàng",
-                  lot: "32439G",
-                  quantity: 100,
-                  usedVolume: "0.70m³",
-                  maxVolume: "1.3m³",
-                  image: Image,
-                  storageRate: "80%",
-                  storageHistory: [
-                    {
-                      id: 1,
-                      name: "Card Fanatic SM",
-                      lot: "TD08",
-                      importQty: 50,
-                      exportQty: "--",
-                      stockQty: 50,
-                      importDate: "2025-03-01",
-                      exportDate: "--"
-                    },
-                    {
-                      id: 2,
-                      name: "Master ISQUEAK Case",
-                      lot: "MK125",
-                      importQty: 100,
-                      exportQty: 70,
-                      stockQty: 30,
-                      importDate: "2025-02-27",
-                      exportDate: "2025-03-01"
-                    },
-                    {
-                      id: 3,
-                      name: "Fanatic LG Case",
-                      lot: "MTD132",
-                      importQty: 60,
-                      exportQty: 60,
-                      stockQty: 0,
-                      importDate: "2025-02-26",
-                      exportDate: "2025-03-01"
-                    },
-                    {
-                      id: 4,
-                      name: "80x120 Nylon Wrap",
-                      lot: "AT195",
-                      importQty: 20,
-                      exportQty: 20,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-28"
-                    },
-                    {
-                      id: 5,
-                      name: "Speaker Ball Cover",
-                      lot: "TD17",
-                      importQty: 50,
-                      exportQty: 50,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-27"
-                    },
-                    {
-                      id: 6,
-                      name:  "M318 Rubber Cord Extruder",
-                      lot: "TD21",
-                      importQty: 150,
-                      exportQty: 150,
-                      stockQty: 0,
-                      importDate: "2025-02-24",
-                      exportDate: "2025-02-27"
-                    },
-                  ]
+        
+            {
+              "locationId": "BB01.1.1.1.1",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
                 }
-              }, 
-                
-              { value: "TD08", 
-                status: "Đang chứa hàng",
-                details: {
-                  equipment: "Ô chứa hàng",
-                  position: "T01.3.6.2",
-                  zone: "T01",
-                  warehouse: "Kho Bao Bì",
-                  dimensions: "2m x 0.8m x 0.8m",
-                  status: "Đang chứa hàng",
-                  lot: "TD08",
-                  quantity: 50,
-                  usedVolume: "0.86m³",
-                  maxVolume: "1.28m³",
-                  image: Image,
-                  storageRate: "68%",
-  
-                  storageHistory: [
-                    {
-                      id: 1,
-                      name: "Card Fanatic SM",
-                      lot: "TD08",
-                      importQty: 50,
-                      exportQty: "--",
-                      stockQty: 50,
-                      importDate: "2025-03-01",
-                      exportDate: "--"
-                    },
-                    {
-                      id: 2,
-                      name: "Master ISQUEAK Case",
-                      lot: "MK125",
-                      importQty: 100,
-                      exportQty: 70,
-                      stockQty: 30,
-                      importDate: "2025-02-27",
-                      exportDate: "2025-03-01"
-                    },
-                    {
-                      id: 3,
-                      name: "Fanatic LG Case",
-                      lot: "MTD132",
-                      importQty: 60,
-                      exportQty: 60,
-                      stockQty: 0,
-                      importDate: "2025-02-26",
-                      exportDate: "2025-03-01"
-                    },
-                    {
-                      id: 4,
-                      name: "80x120 Nylon Wrap",
-                      lot: "AT195",
-                      importQty: 20,
-                      exportQty: 20,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-28"
-                    },
-                    {
-                      id: 5,
-                      name: "Speaker Ball Cover",
-                      lot: "TD17",
-                      importQty: 50,
-                      exportQty: 50,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-27"
-                    },
-                    {
-                      id: 6,
-                      name:  "M318 Rubber Cord Extruder",
-                      lot: "TD21",
-                      importQty: 150,
-                      exportQty: 150,
-                      stockQty: 0,
-                      importDate: "2025-02-24",
-                      exportDate: "2025-02-27"
-                    },
-                  ]
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.1.2",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
                 }
-              }, 
-              { value: "60647", status: "Đang chứa hàng"}, 
-          ],
-        ],
-      },
-      T01_4: {
-        columns: ["T01.4.1", "T01.4.2", "T01.4.3", "T01.4.4", "T01.4.5", "T01.4.6", "T01.4.7"],
-        rows: [
-          [
-              { value: "TD13", status: "Đang chứa hàng"}, 
-              { value: "18100", status: "Đang chứa hàng"},
-              { value: "18100", status: "Đang chứa hàng"},
-              { value: "YSK89", status: "Đang chứa hàng"},
-              { value: "PT215", status: "Đang chứa hàng"}],
-          [
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-          ],
-        ],
-      },
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.1.3",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.2.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.2.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.2.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.3.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.3.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.3.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.4.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.4.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.4.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.5.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.5.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.5.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.6.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.6.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.6.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.6.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.1.7.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.7.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.7.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.1.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.1.1",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.1.2",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.1.3",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.2.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.2.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.2.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.3.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.3.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.3.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.4.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.4.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.4.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.5.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.5.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.5.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.6.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.6.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.6.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.6.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.1.2.7.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.7.2",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.7.3",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.1.2.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+
+            {
+              "locationId": "BB01.2.1.1.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.1.2",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.1.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.2.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.2.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.2.3",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.3.1",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_13",
+                  "quantity": 50
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.3.2",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_14",
+                  "quantity": 40
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.3.3",
+              "storageStatus": "Đã đầy",
+              "lotInfors": [
+                {
+                  "lotnumber": "ML_15",
+                  "quantity": 60
+                }
+              ]
+            },
+            {
+              "locationId": "BB01.2.1.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.4.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.4.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.4.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.5.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.5.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.5.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.6.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.6.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.6.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.6.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.7.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.7.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.7.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.2.1.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.1.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.1.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.1.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.2.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.2.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.2.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.3.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.3.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.3.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.4.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.4.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.4.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.5.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.5.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.5.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.6.1",
+              "storageStatus": "Đã đầy",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.6.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.6.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.6.4",
+              "storageStatus": "Đang chứa hàng",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.7.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.7.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.7.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.3.1.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.1.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.1.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.1.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.2.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.2.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.2.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.3.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.3.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.3.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.4.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.4.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.4.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.5.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.5.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.5.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.6.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.6.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.6.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.6.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.7.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.7.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.7.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.1.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.1.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.1.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.1.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.1.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.2.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.2.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.2.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.2.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.3.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.3.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.3.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.3.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.4.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.4.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.4.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.4.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.5.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.5.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.5.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.5.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.6.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.6.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.6.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.6.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.7.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.7.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.7.3",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB01.4.2.7.4",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB02.1.1.1.1",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "BB02.1.1.1.2",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "MC10",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            },
+            {
+              "locationId": "MC123",
+              "storageStatus": "Trống",
+              "lotInfors": []
+            }
+          
+        
     
-  },
-  },
+]
 
-  {
-    wareHouse: "Kho Bao bì",
-    zone: "Kho T02",
-    data: {
-      T02_1: {
-        columns: ["T02.1.1", "T02.1.2", "T02.1.3", "T02.1.4", "T02.1.5", "T02.1.6", "T02.1.7", "T02.1.8", "T02.1.9", "T02.1.10", "T02.1.11"],
-        rows: [
-          [
-              { value: "TD01", status: "Đã đầy"}, 
-              { value: "TD01", status: "Đã đầy"}, 
-              { value: "TD02", status: "Đã đầy"}, 
-              { value: "THP101", status: "Đã đầy"}, 
-              { value: "THP102", status: "Đã đầy"}, 
-              { value: "TD04", status: "Đã đầy"}, 
-              { value: "TD04", status: "Đã đầy"}, 
-              { value: "THP103", status: "Đã đầy"}, 
+// /////////////////////////
+
+
+export const InforData = [
   
-          ],
-          [
-              { value: "TD01", status: "Đang chứa hàng"}, 
-              { value: "TD12", status: "Đang chứa hàng"}, 
-              { value: "TD02", status: "Đang chứa hàng"}, 
-              { value: "THP101", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đã đầy"}, 
-              { value: "THP104", status: "Đã đầy"}, 
-          ],
-  
-          [
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: " ", status: "Trống"}, 
-              { value: "THP103", status: "Đang chứa hàng"}, 
-              { value: "THP104", status: "Đang chứa hàng"}, 
-          ],
-        ],
-      },
-      T02_2: {
-        columns: ["T02.2.1", "T02.2.2", "T02.2.3", "T02.2.4", "T02.2.5", "T02.2.6", "T02.2.7", "T02.2.8", "T02.2.9"], // Thêm cột mới
-        rows: [
-          [
-              { value: "SD3117", status: "Đã đầy"}, 
-              { value: "CHA20", status: "Đang chứa hàng"}, 
-              { value: "SD3118", status: "Đã đầy"}, 
-              { value: "SKT10", status: "Đã đầy"}, 
-              { value: "TD04&05", status: "Đang chứa hàng"}, 
-              { value: "MTD31", status: "Đã đầy"}, 
-              { value: "MTD31", status: "Đang chứa hàng"}, 
-              { value: "THP102", status: "Đã đầy"}, 
-              { value: "SD3119", status: "Đã đầy"}, 
-  
-          ], // Thêm dữ liệu cột mới
-          [
-              { value: "SD3117", status: "Đang chứa hàng"}, 
-              { value: "MK402", status: "Đang chứa hàng"}, 
-              { value: "SD3119", status: "Đang chứa hàng"}, 
-              { value: "SKT10", status: "Đang chứa hàng"}, 
-              { value: "THP102", status: "Đang chứa hàng"}, 
-              { value: "MTD31", status: "Đang chứa hàng"}, 
-              { value: "TD02", status: "Đang chứa hàng"}, 
-              { value: "THP104", status: "Đang chứa hàng"}, 
-              { value: "THP103", status: "Đã đầy"}, 
-  
-          ],
-        ],
-      },
-      T02_3: {
-        columns: ["T02.3.1", "T02.3.2", "T02.3.3", "T02.3.4", "T02.3.5", "T02.3.6", "T02.3.7"],
-        rows: [
-          [
-              { value: "244201", status: "Đã đầy"}, 
-              { value: "48300", status: "Đã đầy"}, 
-              { value: "TD17", status: "Đã đầy"}, 
-              { value: "TD15", status: "Đã đầy"}, 
-              { value: "32439G", status: "Đã đầy"}, 
-              { value: "TD08", status: "Đã đầy"}, 
-              { value: "60647", status: "Đã đầy"}, 
-              
-          ],
-          [
-              { value: "244201", status: "Đang chứa hàng"}, 
-              { value: "48300", status: "Đang chứa hàng"}, 
-              { value: "TD17", status: "Đang chứa hàng"}, 
-              { value: "TD15", status: "Đang chứa hàng"}, 
-              { value: "32439G", 
-                status: "Đang chứa hàng",
-                details: {
-                  equipment: "Ô chứa hàng",
-                  position: "T02.3.5.2",
-                  zone: "T02",
-                  warehouse: "Kho Bao Bì",
-                  dimensions: "2m x 0.1m x 0.5m",
-                  status: "Đang chứa hàng",
-                  lot: "32439G",
-                  quantity: 100,
-                  usedVolume: "0.70m³",
-                  maxVolume: "1.3m³",
-                  image: Image,
-                  storageRate: "80%",
-                  storageHistory: [
+        {
+            "locationId": "BB01.1.1.1.1",
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 1,
-                      name: "Card Fanatic SM",
-                      lot: "TD08",
-                      importQty: 50,
-                      exportQty: "--",
-                      stockQty: 50,
-                      importDate: "2025-03-01",
-                      exportDate: "--"
-                    },
+                        "lotnumber": "ML_01",
+                        "quantity": 50
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+        },
+        {
+            "locationId": "BB01.1.1.1.2",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.1.3",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 2,
-                      name: "Master ISQUEAK Case",
-                      lot: "MK125",
-                      importQty: 100,
-                      exportQty: 70,
-                      stockQty: 30,
-                      importDate: "2025-02-27",
-                      exportDate: "2025-03-01"
-                    },
+                        "lotnumber": "ML_02",
+                        "quantity": 55
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.1.4",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 3,
-                      name: "Fanatic LG Case",
-                      lot: "MTD132",
-                      importQty: 60,
-                      exportQty: 60,
-                      stockQty: 0,
-                      importDate: "2025-02-26",
-                      exportDate: "2025-03-01"
-                    },
+                        "lotnumber": "ML_03",
+                        "quantity": 48
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.1.5",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.1.6",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.1.7",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.1",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 4,
-                      name: "80x120 Nylon Wrap",
-                      lot: "AT195",
-                      importQty: 20,
-                      exportQty: 20,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-28"
-                    },
+                        "lotnumber": "ML_04",
+                        "quantity": 52
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.2",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đang chứa hàng",
+                "storageRate": 49.98453549868766,
+                "lotInfors": [
                     {
-                      id: 5,
-                      name: "Speaker Ball Cover",
-                      lot: "TD17",
-                      importQty: 50,
-                      exportQty: 50,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-27"
-                    },
+                        "lotnumber": "ML_05",
+                        "quantity": 45
+                    }
+                ],
+                "usableVolume": 1.617,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.3",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 6,
-                      name:  "M318 Rubber Cord Extruder",
-                      lot: "TD21",
-                      importQty: 150,
-                      exportQty: 150,
-                      stockQty: 0,
-                      importDate: "2025-02-24",
-                      exportDate: "2025-02-27"
-                    },
-                  ]
-                }
-              }, 
-                
-              { value: "TD08", 
-                status: "Đang chứa hàng",
-                details: {
-                  equipment: "Ô chứa hàng",
-                  position: "T02.3.6.2",
-                  zone: "T02",
-                  warehouse: "Kho Bao Bì",
-                  dimensions: "2m x 0.8m x 0.8m",
-                  status: "Đang chứa hàng",
-                  lot: "TD08",
-                  quantity: 50,
-                  usedVolume: "0.86m³",
-                  maxVolume: "1.28m³",
-                  image: Image,
-                  storageRate: "68%",
-  
-                  storageHistory: [
+                        "lotnumber": "ML_06",
+                        "quantity": 58
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.4",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 1,
-                      name: "Card Fanatic SM",
-                      lot: "TD08",
-                      importQty: 50,
-                      exportQty: "--",
-                      stockQty: 50,
-                      importDate: "2025-03-01",
-                      exportDate: "--"
-                    },
+                        "lotnumber": "ML_07",
+                        "quantity": 47
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.5",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 2,
-                      name: "Master ISQUEAK Case",
-                      lot: "MK125",
-                      importQty: 100,
-                      exportQty: 70,
-                      stockQty: 30,
-                      importDate: "2025-02-27",
-                      exportDate: "2025-03-01"
-                    },
+                        "lotnumber": "ML_08",
+                        "quantity": 53
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.6",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 3,
-                      name: "Fanatic LG Case",
-                      lot: "MTD132",
-                      importQty: 60,
-                      exportQty: 60,
-                      stockQty: 0,
-                      importDate: "2025-02-26",
-                      exportDate: "2025-03-01"
-                    },
+                        "lotnumber": "ML_09",
+                        "quantity": 49
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.2.7",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 4,
-                      name: "80x120 Nylon Wrap",
-                      lot: "AT195",
-                      importQty: 20,
-                      exportQty: 20,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-28"
-                    },
+                        "lotnumber": "ML_10",
+                        "quantity": 56
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.1",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
                     {
-                      id: 5,
-                      name: "Speaker Ball Cover",
-                      lot: "TD17",
-                      importQty: 50,
-                      exportQty: 50,
-                      stockQty: 0,
-                      importDate: "2025-02-25",
-                      exportDate: "2025-02-27"
-                    },
+                        "lotnumber": "ML_11",
+                        "quantity": 51
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.2",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đang chứa hàng",
+                "storageRate": 49.98453549868766,
+                "lotInfors": [
                     {
-                      id: 6,
-                      name:  "M318 Rubber Cord Extruder",
-                      lot: "TD21",
-                      importQty: 150,
-                      exportQty: 150,
-                      stockQty: 0,
-                      importDate: "2025-02-24",
-                      exportDate: "2025-02-27"
-                    },
-                  ]
-                }
-              }, 
-              { value: "60647", status: "Đang chứa hàng"}, 
-          ],
-        ],
-      },
-      T02_4: {
-        columns: ["T02.4.1", "T02.4.2", "T02.4.3", "T02.4.4", "T02.4.5", "T02.4.6", "T02.4.7"],
-        rows: [
-          [
-              { value: "TD13", status: "Đang chứa hàng"}, 
-              { value: "18100", status: "Đang chứa hàng"},
-              { value: "18100", status: "Đang chứa hàng"},
-              { value: "YSK89", status: "Đang chứa hàng"},
-              { value: "PT215", status: "Đang chứa hàng"}
-          ],
-          [
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-              { value: " ", status: "Trống"},
-          ],
-        ],
-      },
+                        "lotnumber": "ML_12",
+                        "quantity": 46
+                    }
+                ],
+                "usableVolume": 1.617,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.3",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_13",
+                        "quantity": 54
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.4",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_14",
+                        "quantity": 50
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.5",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đang chứa hàng",
+                "storageRate": 49.98453549868766,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_15",
+                        "quantity": 43
+                    }
+                ],
+                "usableVolume": 1.617,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.6",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_16",
+                        "quantity": 57
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.3.7",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.1",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_17",
+                        "quantity": 48
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.2",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đang chứa hàng",
+                "storageRate": 49.98453549868766,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_18",
+                        "quantity": 42
+                    }
+                ],
+                "usableVolume": 1.617,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.3",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đang chứa hàng",
+                "storageRate": 49.98453549868766,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_19",
+                        "quantity": 44
+                    }
+                ],
+                "usableVolume": 1.617,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.4",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_20",
+                        "quantity": 59
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.5",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Đã đầy",
+                "storageRate": 99.69075332324988,
+                "lotInfors": [
+                    {
+                        "lotnumber": "ML_21",
+                        "quantity": 46
+                    }
+                ],
+                "usableVolume": 0.01,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.6",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        },
+        {
+            "locationId": "BB01.1.1.4.7",
+            
+                "equipmentName": "Ô kệ chứa hàng",
+                "warehouseId": "BB01",
+                "warehouseName": "Kho Bao bi",
+                "length": "1.4",
+                "width": "1.4",
+                "height": "1.65",
+                "status": "Trống",
+                "storageRate": 0,
+                "lotInfors": [],
+                "usableVolume": 3.2339999999999995,
+                "maxVolume": 3.2339999999999995
+            
+        }
     
 
-  },
-},
-];
-
-
-
+]
 
   

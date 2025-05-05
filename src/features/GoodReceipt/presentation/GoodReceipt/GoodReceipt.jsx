@@ -31,14 +31,20 @@ const GoodReceipt = () => {
                 <ActionButton
                   active={activeTab === 'incomplete'}
                   onClick={() => setActiveTab('incomplete')}
-                  style={{ backgroundColor: '#003366', borderRadius: "4px", width: "20%", marginTop: 0, padding: 0, marginRight: "2%"}}
+                  style={activeTab === 'incomplete' ? 
+                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" } : 
+                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" }
+                  }
                 >
                   Phân bố vị trí lưu kho
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
                   onClick={() => setActiveTab('viewResult')}
-                  style={{ backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", marginTop: 0, padding: 0, marginLeft: 0}}
+                  style={activeTab === 'viewResult' ? 
+                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0} : 
+                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0}
+                  }
                 >
                   Xem kết quả phân bổ
                 </ActionButton>
@@ -80,9 +86,19 @@ const GoodReceipt = () => {
             </>
           )}
 
-      {activeTab === 'create' ? <CreateGoodReceipt /> :
-       activeTab === 'manage' ? <ManageGoodReceipt /> :
-       activeTab === 'incomplete' ? <InCompleteReceipt/> : <ReceiptDistribution/>}
+      {activeTab === 'create' && <CreateGoodReceipt />}
+      {activeTab === 'manage' && <ManageGoodReceipt />}
+      
+      {(activeTab === 'incomplete' || activeTab === 'viewResult') && (
+        <>
+          <div style={{ display: activeTab === 'incomplete' ? 'block' : 'none' }}>
+            <InCompleteReceipt />
+          </div>
+          <div style={{ display: activeTab === 'viewResult' ? 'block' : 'none' }}>
+            <ReceiptDistribution />
+          </div>
+        </>
+      )}
     </div>
   );
 };
