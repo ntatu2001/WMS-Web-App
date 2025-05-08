@@ -4,7 +4,7 @@ import HeaderContainer from "../../../common/components/Header/HeaderContainer.j
 // import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
 import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
 import ActionButton from "../../../common/components/Button/ActionButton/ActionButton.jsx"
-import styles from "./Dashboard.module.scss"
+import styles from "./DashBoard.module.scss"
 import ColumnChart from "../../../common/components/Chart/ColumnChart.jsx"
 import PieDonutChart from "../../../common/components/Chart/PieDonutChart.jsx"
 import {
