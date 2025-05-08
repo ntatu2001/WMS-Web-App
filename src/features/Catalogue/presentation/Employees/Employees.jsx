@@ -64,7 +64,7 @@ const InventoryHistory = () => {
     }
     try {
       // Fetch employee data from the API
-      const response = await personApi.getAllPersons(); // Replace with your API endpoint
+      const response = await personApi.getAllPerson(); // Replace with your API endpoint
       const employees = response || [];
 
       // Filter employees based on the search code

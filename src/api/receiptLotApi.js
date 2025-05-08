@@ -6,9 +6,9 @@ const receiptLotApi = {
         return axiosClient.get(url, {params});
     },
 
-    getReceiptLotByNotDone(params) {
-        const url = 'InventoryReceiptLot/GetReceiptLotByNotDone';
-        return axiosClient.get(url, {params});
+    getReceiptLotByNotDone(id) {
+        const url = `InventoryReceiptLot/GetReceiptLotByNotDone?warehouseId=${id}`;
+        return axiosClient.get(url);
     }
 };
 

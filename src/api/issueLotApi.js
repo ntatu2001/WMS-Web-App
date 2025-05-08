@@ -6,9 +6,9 @@ const issueLotApi = {
         return axiosClient.get(url, {params});
     },
 
-    getIssueLotsNotDone(params) {
-        const url = 'InventoryIssueLot/GetIssueLotsNotDone';
-        return axiosClient.get(url, {params});
+    getIssueLotsNotDone(id) {
+        const url = `InventoryIssueLot/GetIssueLotsNotDone?warehouseId=${id}`;
+        return axiosClient.get(url);
     }
 };
 

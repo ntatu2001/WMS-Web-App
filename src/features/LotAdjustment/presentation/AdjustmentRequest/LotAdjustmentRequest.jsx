@@ -26,6 +26,9 @@ import lotAdjustmentApi from '../../../../api/lotAdjustmentApi.js';
 import { reasonMapData } from '../../../../app/mockData/reasonData.js';
 import { adjustmentTypeMap, AdjustmentType } from '../../../../app/mockData/AdjustmentType.js';
 import materialSubLotApi from '../../../../api/materialSubLotApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+
 
 const RequestLotAdjustment = () => {
     const [selectedDate, setSelectedDate] = useState(null);
@@ -123,6 +126,15 @@ const RequestLotAdjustment = () => {
       const createLotAdjustment = async () => {
         if (!selectedWarehouse || !selectedZone || !selectedLotNumber || !selectedPerson || !selectedDate || !selectedReason) {
           setError('Vui lòng chọn tất cả các trường bắt buộc.');
+          toast.error("Tạo yêu cầu kiểm kê thất bại!", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
           return;
         }
     
@@ -142,6 +154,15 @@ const RequestLotAdjustment = () => {
           const lotAdjustmentId = await lotAdjustmentApi.createNewMaterialLotAdjustment(newLotAdjustment);
           setLotAdjustmentId(lotAdjustmentId);
           console.log(lotAdjustmentId);
+          toast.success("Tạo yêu cầu kiểm kê thành công!", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         } catch (err) {
           setError(err.message || 'An error occurred while creating the receipt.');
         }
@@ -155,6 +176,15 @@ const RequestLotAdjustment = () => {
         });
 
         if (!hasChanges) {
+            toast.info("Không có thay đổi nào để duyệt kiểm kê", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             return;
         }
 
@@ -167,6 +197,15 @@ const RequestLotAdjustment = () => {
             console.log(updatedMaterialLotAdjustment)
             // Call API to update the material lot adjustment
             await lotAdjustmentApi.updateMaterialLotAdjustment(updatedMaterialLotAdjustment);
+            toast.success("Duyệt kiểm kê thành công!", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
         }
         catch (err) {
             setError(err.message || 'An error occurred while updating the material lot adjustment.');

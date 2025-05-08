@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
@@ -7,19 +7,51 @@ import TabButton from '../../../../common/components/Tab/TabButton.jsx';
 import Separator from '../../../../common/components/Header/Separator.jsx';
 import CreateGoodIssue from '../CreateGoodIssue/CreateGoodIssue.jsx';
 import ManageGoodIssue from '../ManageGoodIssue/ManageGoodIssue.jsx';
-import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistribution.jsx';
 import InCompleteIssue from '../InCompleteIssue/InCompleteIssue.jsx';
+import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistribution.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 
-
 const GoodIssue = () => {
-    const [activeTab, setActiveTab] = useState('create');
-    const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
-                       activeTab === 'manage' ? "Quản lý xuất kho" :
-                       activeTab === 'viewResult' ? "Kết quả phân bố vị trí lấy hàng" : "Xuất kho chưa hoàn thành"
+  const [activeTab, setActiveTab] = useState('create');
+  const [incompleteIssueMounted, setIncompleteIssueMounted] = useState(false);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  
+  const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
+                     activeTab === 'manage' ? "Quản lý xuất kho" :
+                     activeTab === 'viewResult' ? "Kết quả phân bố vị trí lấy hàng" : "Xuất kho chưa hoàn thành"
+  
+  // Reference to store the fetchIssueDetailScheduling function
+  const fetchIssueDetailSchedulingRef = useRef(null);
+  
+  // Function to handle the issue distribution button click
+  const handleIssueDistributionClick = () => {
+    setActiveTab('incomplete');
+    // Call the fetchIssueDetailScheduling function when the button is clicked
+    if (fetchIssueDetailSchedulingRef.current) {
+      fetchIssueDetailSchedulingRef.current();
+    }
+  };
+  
+  // Function to receive the fetchIssueDetailScheduling from InCompleteIssue
+  const setFetchFunction = (fetchFn) => {
+    fetchIssueDetailSchedulingRef.current = fetchFn;
+  };
+  
+  // Function to handle warehouse ID changes
+  const handleWarehouseChange = (warehouseId) => {
+    console.log("Selected warehouse ID in parent:", warehouseId);
+    setSelectedWarehouseId(warehouseId);
+  };
 
-    return (
-        <div style={{ backgroundColor: '#f5f5f5' }}>
+  // Mount InCompleteIssue when needed
+  useEffect(() => {
+    if (activeTab === 'incomplete' || activeTab === 'viewResult') {
+      setIncompleteIssueMounted(true);
+    }
+  }, [activeTab]);
+
+  return (
+    <div style={{ backgroundColor: '#f5f5f5' }}>
         <div style={{display: "flex", width: "100%", alignItems: "center"}}>
             <HeaderContainer>
                 <HeaderItem>Xuất kho</HeaderItem>
@@ -31,7 +63,7 @@ const GoodIssue = () => {
             <>
                 <ActionButton
                   active={activeTab === 'incomplete'}
-                  onClick={() => setActiveTab('incomplete')}
+                  onClick={handleIssueDistributionClick}
                   style={activeTab === 'incomplete' ? 
                     { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" } : 
                     { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" }
@@ -51,10 +83,6 @@ const GoodIssue = () => {
                 </ActionButton>
             </>
           )}
-
-          
-           
-             
         </div>
 
           {activeTab !== 'viewResult' && (
@@ -90,18 +118,22 @@ const GoodIssue = () => {
       {activeTab === 'create' && <CreateGoodIssue />}
       {activeTab === 'manage' && <ManageGoodIssue />}
       
-      {(activeTab === 'incomplete' || activeTab === 'viewResult') && (
+      {/* Keep InCompleteIssue mounted but hide it when not active */}
+      {incompleteIssueMounted && (
         <>
           <div style={{ display: activeTab === 'incomplete' ? 'block' : 'none' }}>
-            <InCompleteIssue />
+            <InCompleteIssue 
+              onButtonClick={setFetchFunction} 
+              onWarehouseChange={handleWarehouseChange}
+            />
           </div>
           <div style={{ display: activeTab === 'viewResult' ? 'block' : 'none' }}>
-            <IssueDistribution />
+            <IssueDistribution warehouseId={selectedWarehouseId} isActive={activeTab === 'viewResult'} />
           </div>
         </>
       )}
     </div>
-    );
+  );
 };
 
 export default GoodIssue;

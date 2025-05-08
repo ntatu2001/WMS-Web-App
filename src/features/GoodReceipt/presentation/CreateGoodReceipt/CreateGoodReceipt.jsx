@@ -23,6 +23,9 @@ import wareHouseApi from '../../../../api/wareHouseApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
 import personApi from '../../../../api/personApi.js';
 import materialApi from '../../../../api/materialApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+
 
 const CreateGoodReceipt = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -123,6 +126,15 @@ const CreateGoodReceipt = () => {
   const createReceipt = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedSupplier || !selectedPerson || !selectedDate) {
       setError('Vui lòng chọn tất cả các trường bắt buộc.');
+      toast.error("Tạo phiếu nhập kho thất bại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
       return;
     }
 
@@ -140,6 +152,16 @@ const CreateGoodReceipt = () => {
       }
       console.log(newReceipt);
       await inventoryReceiptApi.createReceipt(newReceipt);
+      // Show success notification
+      toast.success("Tạo phiếu nhập kho thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (err) {
       setError(err.message || 'An error occurred while creating the receipt.');
     }

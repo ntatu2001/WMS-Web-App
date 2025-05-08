@@ -371,8 +371,8 @@ const Storage = () => {
                                                 border: "2px solid #000",
                                                 cursor: "pointer",
                                                 position: "relative",
-                                                minWidth: "120px",
-                                                height: "40px",
+                                                minWidth: "130px",
+                                                height: "50px",
                                                 textAlign: "center",
                                                 }}
                                                 >
@@ -436,8 +436,8 @@ const Storage = () => {
                                                 border: "2px solid #000",
                                                 cursor: "pointer",
                                                 position: "relative",
-                                                minWidth: "120px",
-                                                height: "40px",
+                                                minWidth: "130px",
+                                                height: "50px",
                                                 textAlign: "center",
                                                 }}
                                                 >
@@ -495,7 +495,7 @@ const Storage = () => {
                 <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    right: "5%", 
+                    right: "3%", 
                     top: '30%', 
                     width: "auto", 
                     backgroundColor: "rgba(245, 245, 245, 0.9)",

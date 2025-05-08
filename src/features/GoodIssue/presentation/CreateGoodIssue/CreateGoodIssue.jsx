@@ -24,6 +24,10 @@ import customerApi from '../../../../api/customerApi.js';
 import personApi from '../../../../api/personApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+
+
 
 const CreateGoodIssue = () => {
   const [selectedDate, setSelectedDate] = useState(null);
@@ -135,6 +139,15 @@ const CreateGoodIssue = () => {
   const createIssue = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
       setError('Vui lòng chọn tất cả các trường bắt buộc.');
+      toast.error("Tạo phiếu xuất kho thất bại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
       return;
     }
 
@@ -152,6 +165,15 @@ const CreateGoodIssue = () => {
       }
       console.log(newIssue);
       await inventoryIssueApi.createIssue(newIssue);
+      toast.success("Tạo phiếu xuất kho thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (err) {
       setError(err.message || 'An error occurred while creating the issue.');
     }
