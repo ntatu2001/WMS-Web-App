@@ -173,7 +173,7 @@ const ReceiptHistory = () => {
           </ActionButton>
         </div>
         <SectionTitle style={{ fontSize: "20px", padding: "10px", marginBottom: 0 }}>Danh sách lô nhập kho</SectionTitle>
-        <div style={{ height: "55%", overflow: "auto" }}>
+        <div style={{ height: "52%", overflow: "auto" }}>
           {listReceiptHistory.map((item, index) => (
             <div
               className={clsx(styles.divOfList)}

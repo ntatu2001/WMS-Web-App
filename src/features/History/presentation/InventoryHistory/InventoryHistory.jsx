@@ -155,7 +155,7 @@ const InventoryHistory = () => {
           </ActionButton>
         </div>
         <SectionTitle style={{ fontSize: "20px", padding: "10px", marginBottom: 0 }}>Danh sách lô kiểm kê</SectionTitle>
-        <div style={{ height: "65%", overflow: "auto" }}>
+        <div style={{ height: "60%", overflow: "auto" }}>
           {listInventoryHistory.length > 0 ? (
             listInventoryHistory.map((item, index) => (
               <div
