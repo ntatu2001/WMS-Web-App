@@ -36,8 +36,8 @@ const History = () => {
           Nhân viên
         </TabButton>
         <TabButton
-          active={activeTab === 'inventory'}
-          onClick={() => setActiveTab('inventory')}
+          active={activeTab === 'storelocation'}
+          onClick={() => setActiveTab('storelocation')}
         >
           Vị trí lưu trữ
         </TabButton>

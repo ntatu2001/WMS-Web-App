@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { FaChevronDown } from 'react-icons/fa'; // Import FaChevronDown icon
 import styles from './UpdateAccount.module.scss'; // Import the CSS module
+import UpdateAccountApi from '../../../../api/UpdateAccountApi';
 
 const UpdateAccount = ({ onCancel }) => {
   const navigate = useNavigate(); // Initialize useNavigate
+
   const [formData, setFormData] = useState({
     displayName: '',
     gender: '',
@@ -13,18 +15,75 @@ const UpdateAccount = ({ onCancel }) => {
     year: '',
   });
 
+  useEffect(() => {
+    // Retrieve data from localStorage or Account.jsx
+    const personName = localStorage.getItem('personName') || '';
+    const gender = localStorage.getItem('Gender') || '';
+    const dateOfBirth = localStorage.getItem('DateOfBirth') || ''; // Format: "DD-MM-YYYY"
+
+    if (dateOfBirth) {
+      const [day, month, year] = dateOfBirth.split('-');
+      setFormData({
+        displayName: personName,
+        gender,
+        day,
+        month,
+        year,
+      });
+    } else {
+      setFormData({
+        displayName: personName,
+        gender,
+        day: '',
+        month: '',
+        year: '',
+      });
+    }
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: name === 'month' ? String(value).padStart(2, '0') : value, // Pad month with leading zero
     }));
   };
 
-  const handleSubmit = () => {
-    console.log('Submitted Data:', formData);
-    alert('Thông tin đã được lưu!');
-    navigate('/setting'); // Navigate back to the "Setting" sidebar
+  const handleSubmit = async () => {
+    const { displayName, gender, day, month, year } = formData;
+
+    // Validation: Ensure no field is empty
+    if (!displayName || !gender || !day || !month || !year) {
+      alert('Vui lòng điền đầy đủ thông tin trước khi cập nhật.');
+      return;
+    }
+
+    const personId = localStorage.getItem('userId'); // Retrieve personId from localStorage
+    console.log('Retrieved personId:', personId); // Debug log to check personId
+    if (!personId) {
+      alert('Không tìm thấy thông tin người dùng.');
+      return;
+    }
+
+    const params = {
+      personId,
+      personName: displayName,
+      properties: [
+        { propertyName: 'Gender', propertyValue: gender },
+        { propertyName: 'DateOfBirth', propertyValue: `${day}-${month}-${year}` },
+      ],
+    };
+
+    try {
+      console.log('Submitting data:', params); // Debug log
+      await UpdateAccountApi.updateAccountById(params); // Call API
+      alert('Thông tin đã được cập nhật!');
+      navigate('/setting'); // Navigate back to the "Setting" sidebar
+    } catch (error) {
+      console.error('Error updating account:', error);
+      alert('Đã xảy ra lỗi khi cập nhật thông tin.');
+    }
   };
 
   return (
@@ -109,7 +168,9 @@ const UpdateAccount = ({ onCancel }) => {
               >
                 <option value="">Tháng</option>
                 {[...Array(12)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>{String(i + 1).padStart(2, '0')}</option>
+                  <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                    {String(i + 1).padStart(2, '0')}
+                  </option>
                 ))}
               </select>
               <FaChevronDown className={styles.dropdownIcon} />
