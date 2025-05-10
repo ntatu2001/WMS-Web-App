@@ -5,9 +5,10 @@ import { AiOutlineClose } from 'react-icons/ai';
 import clsx from 'clsx';
 import styles from './DetailModal.module.scss';
 import Label from "../../../../common/components/Label/Label";
+import { ClipLoader } from 'react-spinners';
 
 
-const DetailModal = ({ data, onClose, position, onViewDetails }) => {
+const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
     // State for handling draggable functionality
     const [isDragging, setIsDragging] = useState(false);
     const [modalPosition, setModalPosition] = useState({ 
@@ -88,64 +89,77 @@ const DetailModal = ({ data, onClose, position, onViewDetails }) => {
             </button>
           </div>
   
-          <div style={{justifyItems: "center", marginRight: "7%"}} >
-            <div style={{marginBottom: "5%", width: "100%"}}>
-                  <div style={{display: "flex",justifyContent: "space-between"}}>
-                            <Label>Thiết bị:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.equipmentName}</span>
-                  </div>
-                  <div style={{display: "flex",justifyContent: "space-between"}}>
-                            <Label>Khu vực:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.warehouseId}</span>
-                  </div>
-                  <div style={{display: "flex", marginLeft: "4%", justifyContent: "space-between"}}>
-                            <Label>Kho hàng:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.warehouseName}</span>
-                  </div>
-                  <div style={{display: "flex", marginLeft: "6%", justifyContent: "space-between"}}>
-                            <Label style={{width: "40%"}}>Kích thước:</Label>
-                             <span style={{ fontSize: "12px", fontWeight: 600, marginTop: "2%"}}>{data.selectedDetails?.length}m x {data.selectedDetails?.width}m x {data.selectedDetails?.height}m</span>
-                  </div>
-                  <div style={{display: "flex", justifyContent: "space-between", marginLeft: "5%"}}>
-                    <Label style={{width: "40%"}}>Tình trạng:</Label> 
-                    <span className={`ml-2 `} style={{color: "#0089D7"}}>
-                      {data.selectedDetails?.status}
-                    </span>
-                  </div>
+          {isLoading ? (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+              width: '100%'
+            }}>
+              <ClipLoader color="#0089D7" size={40} />
             </div>
-            
-            <div style={{marginTop: "10%", width: "100%"}}>
-                  <div style={{display: "flex", marginLeft: "1.5%", justifyContent: "space-between"}}>
-                            <Label style={{width: "60%"}}>Lô hàng lưu trữ:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
-                  </div>
-                  <div style={{display: "flex", marginLeft: "3%", justifyContent: "space-between"}}>
-                            <Label style={{width: "60%"}}>Số lượng lưu trữ:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
-                  </div>
-                  <div style={{display: "flex", marginLeft: "3.5%", justifyContent: "space-between"}}>
-                            <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
-                  </div>
-                  <div style={{display: "flex", justifyContent: "space-between"}}>
-                            <Label style={{width: "60%"}}>Thể tích tối đa:</Label>
-                             <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
-                  </div>
-            </div>
-          </div>
-  
-          <div className="pt-4">
-            <ActionButton style={{width: "70%", padding: "5%"}}
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent event from bubbling up
-                onViewDetails();
-              }}
-              
-            >
-              Xem chi tiết
-            </ActionButton>
-          </div>
-   
+          ) : (
+            <>
+              <div style={{justifyItems: "center", marginRight: "7%", marginTop: "7%"}} >
+                <div style={{marginBottom: "5%", width: "100%"}}>
+                      <div style={{display: "flex", marginLeft: "-4%",justifyContent: "space-between"}}>
+                                <Label>Thiết bị:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.equipmentName}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "-2.6%",justifyContent: "space-between"}}>
+                                <Label>Khu vực:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.warehouseId}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "0%", justifyContent: "space-between"}}>
+                                <Label>Kho hàng:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.warehouseName}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "1.5%", justifyContent: "space-between"}}>
+                                <Label style={{width: "40%"}}>Kích thước:</Label>
+                                 <span style={{ fontSize: "12px", fontWeight: 600, marginTop: "2%"}}>{data.selectedDetails?.length}m x {data.selectedDetails?.width}m x {data.selectedDetails?.height}m</span>
+                      </div>
+                      <div style={{display: "flex", justifyContent: "space-between", marginLeft: "1%"}}>
+                        <Label style={{width: "40%"}}>Tình trạng:</Label> 
+                        <span className={`ml-2 `} style={{color: "#0089D7"}}>
+                          {data.selectedDetails?.status}
+                        </span>
+                      </div>
+                </div>
+                
+                <div style={{marginTop: "10%", width: "100%"}}>
+                      <div style={{display: "flex", marginLeft: "-2%", justifyContent: "space-between"}}>
+                                <Label style={{width: "60%"}}>Lô hàng lưu trữ:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
+                      </div>
+                      <div style={{display: "flex", justifyContent: "space-between"}}>
+                                <Label style={{width: "60%"}}>Số lượng lưu trữ:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
+                      </div>
+                      <div style={{display: "flex", justifyContent: "space-between"}}>
+                                <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "-4.2%", justifyContent: "space-between"}}>
+                                <Label style={{width: "60%"}}>Thể tích tối đa:</Label>
+                                 <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
+                      </div>
+                </div>
+              </div>
+        
+              <div className="pt-4">
+                <ActionButton style={{width: "70%", padding: "5%"}}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    onViewDetails();
+                  }}
+                  
+                >
+                  Xem chi tiết
+                </ActionButton>
+              </div>
+            </>
+          )}
         </div>
  
     );

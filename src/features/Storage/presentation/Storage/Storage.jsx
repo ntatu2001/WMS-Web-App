@@ -27,17 +27,18 @@ const Storage = () => {
     const [dataTable, setDataTable] = useState({})
     const [locationId, SetLocationId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isModalLoading, setIsModalLoading] = useState(false);
 
     useEffect(() => {
         const GetInforByLocationId = async() => {
-            setIsLoading(true);
+            setIsModalLoading(true);
             try {
                 const dataDetail = await locationApi.GetInforByLocationId(locationId);
                 setSelectedDetails(dataDetail);
             } catch (error) {
                 console.error("Error fetching location info:", error);
             } finally {
-                setIsLoading(false);
+                setIsModalLoading(false);
             }
         };
 
@@ -420,6 +421,7 @@ const Storage = () => {
                                                     onClose={() => setShowModal(false)}
                                                     position={modalPosition}
                                                     onViewDetails={handleViewDetails}
+                                                    isLoading={isModalLoading}
                                                     />
                                                 )}
                                             </td>
@@ -485,6 +487,7 @@ const Storage = () => {
                                                     onClose={() => setShowModal(false)}
                                                     position={modalPosition}
                                                     onViewDetails={handleViewDetails}
+                                                    isLoading={isModalLoading}
                                                     />
                                                 )}
                                             </td>
