@@ -311,7 +311,7 @@ const Storage = () => {
 
                 <Label style={{fontSize: "25px", width: "10%"}}>Kho hàng:</Label>
                 <SelectContainer>
-                    <Select style={{width: "85%", fontWeight: "500"}} 
+                    <Select style={{width: "90%", fontWeight: "500"}} 
                             onChange={(e) => setSelectedWareHouse(e.target.value)} 
                             value={selectedWareHouse}>
                         {wareHouse.map((warehouse, index) => (
@@ -320,7 +320,6 @@ const Storage = () => {
                         </option>
                         ))}
                     </Select>
-                    <DropdownIcon style={{right: "35%", top: "40%"}}><FaChevronDown size={12} /></DropdownIcon>
                 </SelectContainer>
 
                 <Label style={{fontSize: "25px", width: "13%"}}>Mã kho hàng:</Label>
@@ -334,7 +333,6 @@ const Storage = () => {
                             </option>
                         ))}
                     </Select>
-                    <DropdownIcon style={{right: "35%", top: "40%"}}><FaChevronDown size={12} /></DropdownIcon>
                 </SelectContainer>
             </div>
       

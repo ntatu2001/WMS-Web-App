@@ -330,6 +330,7 @@ const CreateGoodReceipt = () => {
                       value={materialName} 
                       onChange={(e) => setMaterialName(e.target.value)}
                       placeholder="Tên sản phẩm"
+                      style = {{fontSize: "90%"}}
                     >
                       {materialOptionNames.map((materialOptionName, index) => (
                         <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
@@ -342,7 +343,7 @@ const CreateGoodReceipt = () => {
                 </TableCell>
                 <TableCell>
                   <SelectContainer >
-                     <span style={{color: materialOptionIds? "#000" : "#767676"}}>
+                     <span style={{color: materialOptionIds? "#000" : "#767676", fontSize: "90%"}}>
                         {materialOptionIds || "Mã sản phẩm"}
                      </span>
                   </SelectContainer>
@@ -350,14 +351,14 @@ const CreateGoodReceipt = () => {
                 
                 <TableCell>
                   <SelectContainer >
-                    <span style={{color: materialOptionUnits? "#000" : "#767676"}}>
+                    <span style={{color: materialOptionUnits? "#000" : "#767676", fontSize: "90%"}}>
                         {materialOptionUnits || "ĐVT"}
                     </span>
                   </SelectContainer>
                 </TableCell>
 
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%"}}
+                  <input style={{textAlign: "center", width: "100%", fontSize: "90%"}}
                     type="text" 
                     placeholder="Mã lô/Số PO" 
                     value={lotNumber}
@@ -365,7 +366,7 @@ const CreateGoodReceipt = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
+                  <input style={{textAlign: "center", width: "100%", paddingLeft: "12%", fontSize: "90%"}}
                     type="number"
                     min="0"
                     step="1"

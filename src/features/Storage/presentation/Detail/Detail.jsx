@@ -56,13 +56,10 @@ const Detail = ({data, activeTab}) => {
                         </div>
                         <div style={{display: "flex", height: "85vh"}}>
                                 <FormSection style={{width: "25%", margin:"0px 20px", height:"100%", padding: "0.5rem"}}>
-                                        <div>
-                                                <button>
-
-                                                </button>
+                    
                                                 <SectionTitle style={{fontSize: "24px", padding: "0 10px", marginBottom : 0}} >Vị trí {data.position}</SectionTitle>
                 
-                                        </div>  
+                       
                                                 <div>
                                                         <img src={Image} alt="Image" style={{height: "30%", width: "50%", marginLeft: "25%"}}/>
                                                         
@@ -121,12 +118,12 @@ const Detail = ({data, activeTab}) => {
                                         <thead>
                                         <tr>
                                         <TableHeader style={{ width: '5%' }}>STT</TableHeader>
-                                        <TableHeader>Sản phẩm</TableHeader>
-                                        <TableHeader>Lô hàng</TableHeader>
-                                        <TableHeader style={{ width: '20%' }}>Số lượng nhập</TableHeader>
-                                        <TableHeader>Số lượng xuất</TableHeader>
+                                        <TableHeader style={{ width: '30%' }}>Sản phẩm</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>Lô hàng</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>Số lượng nhập</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>Số lượng xuất</TableHeader>
                                         <TableHeader style={{ width: '10%' }}>Số lượng tồn</TableHeader>
-                                        <TableHeader style={{ width: '120px' }}>Ngày nhập</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>Ngày nhập</TableHeader>
                                         <TableHeader style={{ width: '10%' }}>Ngày xuất</TableHeader>
                                         </tr>
                                         </thead>

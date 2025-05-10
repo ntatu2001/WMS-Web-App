@@ -78,8 +78,8 @@ const DetailModal = ({ data, onClose, position, onViewDetails }) => {
             }}
             onMouseDown={handleMouseDown}
         >
-          <div className="flex">
-            <SectionTitle style={{margin: "0px 0px 2% 25%"}}>Vị trí {data.position}</SectionTitle>
+          <div className="flex justify-center items-center w-full">
+            <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>Vị trí {data.position}</SectionTitle>
             <button 
               onClick={handleClose}
               className={clsx(styles.modalClose)}
@@ -88,13 +88,13 @@ const DetailModal = ({ data, onClose, position, onViewDetails }) => {
             </button>
           </div>
   
-          <div style={{justifyItems: "center", marginRight: "6%"}} >
-            <div style={{marginBottom: "5%", width: "90%"}}>
-                  <div style={{display: "flex", margin: 0,justifyContent: "space-between"}}>
+          <div style={{justifyItems: "center", marginRight: "7%"}} >
+            <div style={{marginBottom: "5%", width: "100%"}}>
+                  <div style={{display: "flex",justifyContent: "space-between"}}>
                             <Label>Thiết bị:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.equipmentName}</span>
                   </div>
-                  <div style={{display: "flex", marginLeft: "1%",justifyContent: "space-between"}}>
+                  <div style={{display: "flex",justifyContent: "space-between"}}>
                             <Label>Khu vực:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.warehouseId}</span>
                   </div>
@@ -114,20 +114,20 @@ const DetailModal = ({ data, onClose, position, onViewDetails }) => {
                   </div>
             </div>
             
-            <div style={{marginTop: "10%", width: "90%"}}>
-                  <div style={{display: "flex", marginLeft: "3%", justifyContent: "space-between"}}>
+            <div style={{marginTop: "10%", width: "100%"}}>
+                  <div style={{display: "flex", marginLeft: "1.5%", justifyContent: "space-between"}}>
                             <Label style={{width: "60%"}}>Lô hàng lưu trữ:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
                   </div>
-                  <div style={{display: "flex", marginLeft: "5%", justifyContent: "space-between"}}>
+                  <div style={{display: "flex", marginLeft: "3%", justifyContent: "space-between"}}>
                             <Label style={{width: "60%"}}>Số lượng lưu trữ:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
                   </div>
-                  <div style={{display: "flex", marginLeft: "5.5%", justifyContent: "space-between"}}>
+                  <div style={{display: "flex", marginLeft: "3.5%", justifyContent: "space-between"}}>
                             <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
                   </div>
-                  <div style={{display: "flex", marginLeft: "0.5%", justifyContent: "space-between"}}>
+                  <div style={{display: "flex", justifyContent: "space-between"}}>
                             <Label style={{width: "60%"}}>Thể tích tối đa:</Label>
                              <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
                   </div>
@@ -135,7 +135,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails }) => {
           </div>
   
           <div className="pt-4">
-            <ActionButton style={{width: "50%", padding: "5%"}}
+            <ActionButton style={{width: "70%", padding: "5%"}}
               onClick={(e) => {
                 e.stopPropagation(); // Prevent event from bubbling up
                 onViewDetails();

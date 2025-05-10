@@ -145,7 +145,6 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                                             </option>
                                         ))}
                                         </Select>
-                                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                                 </SelectContainer>
                             </FormGroup>
 

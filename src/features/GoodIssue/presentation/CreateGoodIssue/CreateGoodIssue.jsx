@@ -228,7 +228,6 @@ const CreateGoodIssue = () => {
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
@@ -243,7 +242,6 @@ const CreateGoodIssue = () => {
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
@@ -258,7 +256,6 @@ const CreateGoodIssue = () => {
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
@@ -273,7 +270,6 @@ const CreateGoodIssue = () => {
                 </option>
               ))}
             </Select>
-            <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
           </SelectContainer>
         </FormGroup>
 
@@ -332,6 +328,7 @@ const CreateGoodIssue = () => {
                       value={materialName} 
                       onChange={(e) => setMaterialName(e.target.value)}
                       placeholder="Tên sản phẩm"
+                      style = {{fontSize: "90%"}}
                       >
                        
                         {materialOptionNames.map((materialOptionName, index) => (
@@ -340,19 +337,18 @@ const CreateGoodIssue = () => {
                           </option>
                         ))}
                       </Select>
-                      <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                   </SelectContainer>
                 </TableCell>
                 <TableCell>
                   <SelectContainer >
-                      <span style={{color: materialOptionIds? "#000" : "#767676"}}>
+                      <span style={{color: materialOptionIds? "#000" : "#767676", fontSize: "90%"}}>
                           {materialOptionIds || "Mã sản phẩm"}
                       </span>
                     </SelectContainer>
                 </TableCell>
                 <TableCell>
                   <SelectContainer >
-                      <span style={{color: materialOptionUnits? "#000" : "#767676"}}>
+                      <span style={{color: materialOptionUnits? "#000" : "#767676", fontSize: "90%"}}>
                           {materialOptionUnits || "ĐVT"}
                       </span>
                   </SelectContainer>
@@ -369,6 +365,7 @@ const CreateGoodIssue = () => {
                       value={purchaseOrderNumber}
                       onChange={(e) => setPurchaseOrderNumber(e.target.value)}
                       placeholder="Mã lô/Số PO" 
+                      style = {{fontSize: "90%"}}
                       >
                        
                         {lotNumberList.map((lotNumber, index) => (
@@ -377,7 +374,6 @@ const CreateGoodIssue = () => {
                           </option>
                         ))}
                       </Select>
-                      <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                   </SelectContainer>
                 </TableCell>
                 <TableCell>

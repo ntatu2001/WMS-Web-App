@@ -114,7 +114,7 @@ function App() {
                     ) : lastAccessedRoute.sidebarContent === "/goodissue" ? (
                       <GoodIssue />
                     ) : lastAccessedRoute.sidebarContent === "/inventory" ? (
-                      <div>Kiểm kê</div>
+                      <LotAdjustment />
                     ) : lastAccessedRoute.sidebarContent === "/history" ? (
                       <History />
                     ) : lastAccessedRoute.sidebarContent === "/catalogue" ? (
