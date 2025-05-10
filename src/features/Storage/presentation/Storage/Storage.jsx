@@ -11,6 +11,7 @@ import Select from '../../../../common/components/Selection/Select.jsx';
 import DropdownIcon from '../../../../common/components/Icon/DropdownIcon.jsx';
 import locationApi from '../../../../api/locationApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
+import { ClipLoader } from 'react-spinners';
 
 const Storage = () => {
     const [activeTab, setActiveTab] = useState('storage'); // Trạng thái tab hiện tại
@@ -25,32 +26,53 @@ const Storage = () => {
     const [selectedZone,setSelectedZone] = useState('BTP01')
     const [dataTable, setDataTable] = useState({})
     const [locationId, SetLocationId] = useState(null);
-
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const GetInforByLocationId = async() => {
-            const dataDetail = await locationApi.GetInforByLocationId(locationId);
-            setSelectedDetails(dataDetail);
+            setIsLoading(true);
+            try {
+                const dataDetail = await locationApi.GetInforByLocationId(locationId);
+                setSelectedDetails(dataDetail);
+            } catch (error) {
+                console.error("Error fetching location info:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        GetInforByLocationId();
+        if (locationId) {
+            GetInforByLocationId();
+        }
     }, [locationId]);
-
 
     useEffect(() => {
         const GetWarehouses = async() => {
-            const wareHouseList = await wareHouseApi.getAllWareHouses();
-
-            setWareHouse(wareHouseList);
+            setIsLoading(true);
+            try {
+                const wareHouseList = await wareHouseApi.getAllWareHouses();
+                setWareHouse(wareHouseList);
+            } catch (error) {
+                console.error("Error fetching warehouses:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         GetWarehouses();
-      }, []);
+    }, []);
    
     useEffect(() => {
         const GetWarehouseId = async() => {
-            const warehouseId = await wareHouseApi.getWarehouseIdByWarehouseName(selectedWareHouse);
-            setWarehouseId(warehouseId[0]);
+            setIsLoading(true);
+            try {
+                const warehouseId = await wareHouseApi.getWarehouseIdByWarehouseName(selectedWareHouse);
+                setWarehouseId(warehouseId[0]);
+            } catch (error) {
+                console.error("Error fetching warehouse ID:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         GetWarehouseId();
@@ -107,18 +129,21 @@ const Storage = () => {
         if (warehouseId === selectedZone) {
             try {
                 const GetLocations = async() => {
-                    const locationList = await locationApi.GetLocationsByWarehouseId(selectedZone);
-                    console.log(locationList)
-                    // Process the data only after it has been fetched
-                    if (Array.isArray(locationList) && locationList.length > 0) {
-                        // Filter locations based on the selected zone
-                        const filteredLocations = locationList.filter(location => 
-                            location.locationId.includes(selectedZone)
-                        );
-                        
-                        // Transform the filtered results array into grid format
-                        const processedData = processWarehouseLocations(filteredLocations);
-                        setDataTable(processedData);
+                    setIsLoading(true);
+                    try {
+                        const locationList = await locationApi.GetLocationsByWarehouseId(selectedZone);
+                        console.log(locationList)
+                        if (Array.isArray(locationList) && locationList.length > 0) {
+                            const filteredLocations = locationList.filter(location => 
+                                location.locationId.includes(selectedZone)
+                            );
+                            const processedData = processWarehouseLocations(filteredLocations);
+                            setDataTable(processedData);
+                        }
+                    } catch (error) {
+                        console.error("Error fetching locations:", error);
+                    } finally {
+                        setIsLoading(false);
                     }
                 }
 
@@ -256,7 +281,21 @@ const Storage = () => {
           height: "100vh", 
           position: "relative",
         }}>
-             
+            {isLoading && (
+                <div style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1000,
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    padding: '20px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <ClipLoader color="#0089D7" size={50} />
+                </div>
+            )}
             <div style={{
               display: "flex", 
               padding: "10px",

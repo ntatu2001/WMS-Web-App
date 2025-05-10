@@ -127,7 +127,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     return (
         <div style={{display: "flex"}}>
             <ContentContainer style={{maxHeight: "700px"}}>
-                <FormSection style={{height: "100%"}}>
+                <FormSection style={{height: "100%", display: "flex", flexDirection: "column"}}>
                     <FormGroup>
                         <Label style={{fontWeight: "bold"}}>Kho hàng:</Label>
                         <SelectContainer>
@@ -147,11 +147,11 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
                         </SelectContainer>
                     </FormGroup>
 
-                    <SectionTitle style={{fontSize: "18px", padding: "10px", marginBottom: 0}}>
+                    <SectionTitle style={{fontSize: "100%", padding: "10px", marginBottom: 0}}>
                         Danh sách lô xuất kho chưa hoàn thành
                     </SectionTitle>
                     
-                    <div style={{height: "85%", overflow: "auto"}}>
+                    <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
                         {loadingIssueLot ? (
                             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
                                 <ClipLoader size={35} color="#0066CC" />

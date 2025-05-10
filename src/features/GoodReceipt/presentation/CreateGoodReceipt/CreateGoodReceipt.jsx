@@ -123,6 +123,13 @@ const CreateGoodReceipt = () => {
       setUnit(materialOptionUnits);
   }, [materialOptionIds, materialOptionUnits]);
 
+  // Add useEffect to clear error when any required field changes
+  useEffect(() => {
+    if (error && (selectedWarehouse || selectedZone || selectedSupplier || selectedPerson || selectedDate)) {
+      setError('');
+    }
+  }, [selectedWarehouse, selectedZone, selectedSupplier, selectedPerson, selectedDate]);
+
   const createReceipt = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedSupplier || !selectedPerson || !selectedDate) {
       setError('Vui lòng chọn tất cả các trường bắt buộc.');

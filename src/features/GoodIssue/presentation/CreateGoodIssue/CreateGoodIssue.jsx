@@ -135,6 +135,12 @@ const CreateGoodIssue = () => {
       fetchLotNumberList();
   }, [materialId])
 
+  // Add useEffect to clear error when any required field changes
+  useEffect(() => {
+    if (error && (selectedWarehouse || selectedZone || selectedCustomer || selectedPerson || selectedDate)) {
+      setError('');
+    }
+  }, [selectedWarehouse, selectedZone, selectedCustomer, selectedPerson, selectedDate]);
 
   const createIssue = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
