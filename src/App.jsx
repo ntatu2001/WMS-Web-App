@@ -134,10 +134,6 @@ function App() {
                       onClick={(e) => {
                         e.stopPropagation(); // Prevent event propagation
                         setIsSidebarVisible(true); // Ensure the dropdownMenu is always visible
-                        if (typeof modalContent === "function") {
-                          modalContent(); // Execute modalContent logic if defined
-                          return;
-                        }
                         navigate(lastAccessedRoute.mainContent); // Navigate back to the previously accessed path
                       }}
                     >
@@ -292,7 +288,6 @@ function App() {
                         </div>
                       )}
                       <div
-                        
                         onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
                       >
                         <Routes>
@@ -307,7 +302,6 @@ function App() {
                                 style={{
                                   position: "relative",
                                   margin: "auto",
-                                  
                                   borderRadius: "8px",
                                   width: "50%",
                                   zIndex: 2,
@@ -345,7 +339,7 @@ function App() {
           }
         />
 
-        {/* Fallback route */}
+        {/* Fallback route - ensure this works for server deployments */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
