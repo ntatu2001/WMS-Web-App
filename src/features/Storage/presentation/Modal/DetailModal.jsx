@@ -128,19 +128,19 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                 </div>
                 
                 <div style={{marginTop: "10%", width: "100%"}}>
-                      <div style={{display: "flex", marginLeft: "-2%", justifyContent: "space-between"}}>
+                      <div style={{display: "flex", marginLeft: "-3%", justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Lô hàng lưu trữ:</Label>
                                  <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
                       </div>
-                      <div style={{display: "flex", justifyContent: "space-between"}}>
+                      <div style={{display: "flex", marginLeft: "-1.5%",justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Số lượng lưu trữ:</Label>
                                  <span style={{ fontSize: "16px", fontWeight: 600}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
                       </div>
-                      <div style={{display: "flex", justifyContent: "space-between"}}>
+                      <div style={{display: "flex", marginLeft: "-1%",justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>
                                  <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
                       </div>
-                      <div style={{display: "flex", marginLeft: "-4.2%", justifyContent: "space-between"}}>
+                      <div style={{display: "flex", marginLeft: "-5.5%", justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Thể tích tối đa:</Label>
                                  <span style={{ fontSize: "16px", fontWeight: 600}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
                       </div>
