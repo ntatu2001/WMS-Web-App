@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye } from 'react-icons/fa';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
-import Table from '../../../../common/components/Table/Table.jsx';
-import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
-import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
-import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
-import FormSection from '../../../../common/components/Section/FormSection.jsx';
-import ListSection from '../../../../common/components/Section/ListSection.jsx';
-import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
-import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import materialApi from '../../../../api/materialApi.js'; // Ensure this import is correct
 import materialClassApi from '../../../../api/materialClassApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
 
 const fetchMaterials = async () => {
   try {
@@ -45,7 +38,6 @@ const fetchMaterialClass = async () => {
     return null;
   }
 };
-
 
 const InventoryHistory = () => {
   const [formData, setFormData] = useState({
@@ -179,6 +171,17 @@ const InventoryHistory = () => {
       if (response) {
         console.log("New Product Created:", response);
 
+        // Show success notification
+        toast.success("Sản phẩm đã được tạo thành công!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+
         // Do not update savedData or filteredData to prevent showing the new product in the table
       }
 
@@ -195,6 +198,17 @@ const InventoryHistory = () => {
       });
     } catch (error) {
       console.error("Error creating new product:", error);
+
+      // Show failure notification
+      toast.error("Tạo sản phẩm thất bại. Vui lòng thử lại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
 

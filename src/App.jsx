@@ -58,9 +58,12 @@ function App() {
       ); // Pass closeHandler to UpdateAccount
     } else if (activeContent === "logout") {
       return (
-        <div style={{ textAlign: "center", fontSize: "20px", fontWeight: "bold" }}>
-          Bạn đã đăng xuất thành công!
-        </div>
+        <Logout
+          onCancel={() => {
+            setActiveContent(null); // Reset active content
+            setIsSidebarVisible(true); // Ensure the sidebar remains visible
+          }}
+        />
       );
     }
     return null;
@@ -154,63 +157,77 @@ function App() {
                           {/* Dropdown menu content */}
                           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
                             <li
+                              className="AccountSetting"
                               style={{
-                                height: "60px", // Total height including padding
-                                width: "200px", // Width to accommodate text and padding
-                                padding: "16px", // Padding around the text
+                                height: "60px",
+                                width: "200px",
+                                padding: "16px",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "flex-start", // Align text to the left
+                                justifyContent: "flex-start",
                                 cursor: "pointer",
-                                boxSizing: "border-box", // Ensure padding is included in the dimensions
-                                fontSize: "20px", // Font size for the text
-                                fontWeight: "700", // Bold text
-                                color: "#FFFFFF", // Default white text color
-                                backgroundColor: "#002B49", // Default background color
-                                transition: "all 0.3s ease", // Smooth transition for hover effects
+                                boxSizing: "border-box",
+                                fontSize: "20px",
+                                fontWeight: "700",
+                                color: activeContent === "account" ? "#002B49" : "#FFFFFF", // Keep color if active
+                                backgroundColor: activeContent === "account" ? "#FFFFFF" : "#002B49", // Keep background if active
+                                transition: "all 0.3s ease",
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#FFFFFF"; // Change background to white
-                                e.target.style.color = "#000000"; // Change text to black
+                                if (activeContent !== "account") {
+                                  e.target.style.backgroundColor = "#FFFFFF";
+                                  e.target.style.color = "#000000";
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#002B49"; // Revert background to default
-                                e.target.style.color = "#FFFFFF"; // Revert text to default
+                                if (activeContent !== "account") {
+                                  e.target.style.backgroundColor = "#002B49";
+                                  e.target.style.color = "#FFFFFF";
+                                }
                               }}
                               onClick={(e) => {
-                                e.stopPropagation(); // Prevent event propagation
-                                setActiveContent("account"); // Set active content to "account"
+                                e.stopPropagation();
+                                setActiveContent("account");
+                                document.body.style.backgroundColor = "#FFFFFF";
+                                document.body.style.color = "#002B49";
                               }}
                             >
                               <AiOutlineUser style={{ marginRight: "8px", fontSize: "24px" }} /> Tài khoản
                             </li>
                             <li
+                              className="UpdateAccount"
                               style={{
-                                height: "60px", // Total height including padding
-                                width: "200px", // Width to accommodate text and padding
-                                padding: "16px", // Padding around the text
+                                height: "60px",
+                                width: "200px",
+                                padding: "16px",
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "flex-start", // Align text to the left
+                                justifyContent: "flex-start",
                                 cursor: "pointer",
-                                boxSizing: "border-box", // Ensure padding is included in the dimensions
-                                fontSize: "20px", // Font size for the text
+                                boxSizing: "border-box",
+                                fontSize: "20px",
                                 fontWeight: "700",
-                                color: "#FFFFFF", // Default white text color
-                                backgroundColor: "#002B49", // Default background color
-                                transition: "all 0.3s ease", // Smooth transition for hover effects
+                                color: activeContent === "update" ? "#002B49" : "#FFFFFF", // Keep color if active
+                                backgroundColor: activeContent === "update" ? "#FFFFFF" : "#002B49", // Keep background if active
+                                transition: "all 0.3s ease",
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#FFFFFF"; // Change background to white
-                                e.target.style.color = "#000000"; // Change text to black
+                                if (activeContent !== "update") {
+                                  e.target.style.backgroundColor = "#FFFFFF";
+                                  e.target.style.color = "#000000";
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#002B49"; // Revert background to default
-                                e.target.style.color = "#FFFFFF"; // Revert text to default
+                                if (activeContent !== "update") {
+                                  e.target.style.backgroundColor = "#002B49";
+                                  e.target.style.color = "#FFFFFF";
+                                }
                               }}
                               onClick={(e) => {
-                                e.stopPropagation(); // Prevent event propagation
-                                setActiveContent("update"); // Set active content to "update"
+                                e.stopPropagation();
+                                setActiveContent("update");
+                                document.body.style.backgroundColor = "#FFFFFF";
+                                document.body.style.color = "#002B49";
                               }}
                             >
                               <AiOutlineEdit style={{ marginRight: "8px", fontSize: "24px" }} /> Cập nhật

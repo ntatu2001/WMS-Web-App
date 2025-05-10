@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { login } from '../../store/slices/authSlice';
 import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
+import LoginApi from '../../api/LoginApi';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -53,7 +54,7 @@ const ErrorMessage = styled.p`
 `;
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('');
+  const [userName, setuserName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const dispatch = useDispatch();
@@ -64,26 +65,22 @@ const LoginScreen = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    console.log('Login attempt with:', { username }); // Debug log
+    console.log('Login attempt with:', { userName, password }); // Debug log
 
     try {
-      // Tạm thời mock response để test
-      const mockResponse = {
-        user: { username },
-        token: 'mock-token'
-      };
+      const response = await LoginApi.getAllUser(userName, password);
+      console.log('API response:', response); // Debug log
 
-      // Lưu token vào localStorage
-      localStorage.setItem('token', mockResponse.token);
-
-      // Dispatch action login
-      dispatch(login(mockResponse));
-      console.log('Login successful, navigating to dashboard'); // Debug log
-
-      // Chuyển hướng đến trang chính
-      navigate('/dashboard');
+      if (response === true) {
+        localStorage.setItem('userName', userName); // Store userName in localStorage
+        localStorage.setItem('token', 'mock-token'); // Store token in localStorage
+        dispatch(login({ user: { userName }, token: 'mock-token' }));
+        navigate('/dashboard');
+      } else {
+        setError('Tên đăng nhập hoặc mật khẩu không đúng');
+      }
     } catch (error) {
-      console.error('Login error:', error); // Debug log
+      console.error('Login error:', error);
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
   };
@@ -93,12 +90,12 @@ const LoginScreen = () => {
       <LoginForm onSubmit={handleSubmit}>
         <Title>Đăng nhập</Title>
         <FormGroup>
-          <Label htmlFor="username">Tên đăng nhập</Label>
+          <Label htmlFor="userName">Tên đăng nhập</Label>
           <Input
             type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="userName"
+            value={userName}
+            onChange={(e) => setuserName(e.target.value)}
             required
           />
         </FormGroup>
@@ -119,4 +116,4 @@ const LoginScreen = () => {
   );
 };
 
-export default LoginScreen; 
+export default LoginScreen;
