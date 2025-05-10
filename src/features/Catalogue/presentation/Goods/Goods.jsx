@@ -8,6 +8,7 @@ import materialApi from '../../../../api/materialApi.js'; // Ensure this import 
 import materialClassApi from '../../../../api/materialClassApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
+import { ClipLoader } from 'react-spinners';
 
 const fetchMaterials = async () => {
   try {
@@ -58,6 +59,7 @@ const InventoryHistory = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   useEffect(() => {
     const fetchData = async () => {
@@ -217,18 +219,44 @@ const InventoryHistory = () => {
       setFilteredData([]); // Clear the table if the input is empty
       return;
     }
+    setIsLoading(true); // Start loading
     try {
       const result = await fetchMaterialsById(searchCode); // Fetch data by MaterialId
       console.log("Fetched Material Data:", result); // Log the fetched data
-      if (result) {
-        setFilteredData([result]); // Update the table with the fetched data
-      } else {
-        setFilteredData([]); // Clear the table if no data is found
-        console.warn(`No material found with ID: ${searchCode}`);
+
+      if (!result) {
+        // Show notification if no data is returned
+        toast.error("Không tìm thấy dữ liệu sản phẩm!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setFilteredData([]); // Clear the table
+        return;
       }
+
+      setFilteredData([result]); // Update the table with the fetched data
     } catch (error) {
       console.error('Error fetching material by ID:', error); // Log the error
+
+      // Show failure notification
+      toast.error("Không thể tìm kiếm sản phẩm. Vui lòng thử lại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+
       setFilteredData([]); // Clear the table on error
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
@@ -388,7 +416,7 @@ const InventoryHistory = () => {
                       color: "#888",
                     }}
                   >
-                    Meter
+                    m
                   </span>
                 </SelectContainer>
               </FormGroup>
@@ -519,8 +547,9 @@ const InventoryHistory = () => {
                   width: "130px",
                   marginTop: "0px",
                 }}
+                disabled={isLoading} // Disable button while loading
               >
-                Tìm kiếm
+                {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
             </div>
 
@@ -537,66 +566,72 @@ const InventoryHistory = () => {
                 container.scrollTop += e.deltaY;
               }}
             >
-              <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
-                <thead>
-                  <tr>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>STT</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tên sản phẩm</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Mã sản phẩm</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Loại sản phẩm</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>ĐVT</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Đơn giá</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tồn kho tối thiểu</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Định mức tồn kho</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kích thước</th>
-                    <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.map((item, index) => {
-                    const unitProperty = item.properties?.find((prop) => prop.propertyName === "Unit");
-                    const priceProperty = item.properties?.find((prop) => prop.propertyName === "Price");
-                    const unitOfMeasureProperty = item.properties?.find((prop) => prop.propertyName === "unitOfMeasure");
-                    const minimumStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "MinimumStockLevel");
-                    const defaultStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "DefaultStockLevel");
-                    const widthProperty = item.properties?.find((prop) => prop.propertyName === "Width");
-                    const lengthProperty = item.properties?.find((prop) => prop.propertyName === "Length");
-                    const heightProperty = item.properties?.find((prop) => prop.propertyName === "Height");
-                    const noteProperty = item.properties?.find((prop) => prop.propertyName === "Note");
+              {isLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                  <ClipLoader size={50} color="#007bff" />
+                </div>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>STT</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tên sản phẩm</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Mã sản phẩm</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Loại sản phẩm</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>ĐVT</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Đơn giá</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tồn kho tối thiểu</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Định mức tồn kho</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kích thước</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((item, index) => {
+                      const unitProperty = item.properties?.find((prop) => prop.propertyName === "Unit");
+                      const priceProperty = item.properties?.find((prop) => prop.propertyName === "Price");
+                      const unitOfMeasureProperty = item.properties?.find((prop) => prop.propertyName === "unitOfMeasure");
+                      const minimumStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "MinimumStockLevel");
+                      const defaultStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "DefaultStockLevel");
+                      const widthProperty = item.properties?.find((prop) => prop.propertyName === "Width");
+                      const lengthProperty = item.properties?.find((prop) => prop.propertyName === "Length");
+                      const heightProperty = item.properties?.find((prop) => prop.propertyName === "Height");
+                      const noteProperty = item.properties?.find((prop) => prop.propertyName === "Note");
 
-                    const dimensions = [
-                      widthProperty?.propertyValue || "--",
-                      lengthProperty?.propertyValue || "--",
-                      heightProperty?.propertyValue || "--",
-                    ].join("x") + " Meter";
+                      const dimensions = [
+                        widthProperty?.propertyValue || "--",
+                        lengthProperty?.propertyValue || "--",
+                        heightProperty?.propertyValue || "--",
+                      ].join("x") + "m";
 
-                    return (
-                      <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.materialName}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.materialId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.materialClassId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {unitProperty ? unitProperty.propertyValue : "--"}
-                        </td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {priceProperty ? priceProperty.propertyValue : "0"} VND
-                        </td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : "0"}
-                        </td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : "0"}
-                        </td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{dimensions}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {noteProperty ? noteProperty.propertyValue : "--"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      const noteValue = noteProperty?.propertyValue === "None" ? "Không" : noteProperty?.propertyValue || "--";
+
+                      return (
+                        <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{item.materialName}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{item.materialId}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{item.materialClassId}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>
+                            {unitProperty ? unitProperty.propertyValue : "--"}
+                          </td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>
+                            {priceProperty ? priceProperty.propertyValue : "0"} VND
+                          </td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>
+                            {minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : "0"}
+                          </td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>
+                            {defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : "0"}
+                          </td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{dimensions}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{noteValue}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         )}

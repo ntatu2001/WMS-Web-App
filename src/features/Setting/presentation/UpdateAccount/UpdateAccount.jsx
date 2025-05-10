@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { FaChevronDown } from 'react-icons/fa'; // Import FaChevronDown icon
 import styles from './UpdateAccount.module.scss'; // Import the CSS module
 import UpdateAccountApi from '../../../../api/UpdateAccountApi';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 
 const UpdateAccount = ({ onCancel }) => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -15,6 +17,9 @@ const UpdateAccount = ({ onCancel }) => {
     year: '',
   });
 
+  const [initialFormData, setInitialFormData] = useState(null); // Store initial form data
+  const [isSubmitting, setIsSubmitting] = useState(false); // Add loading state
+
   useEffect(() => {
     // Retrieve data from localStorage or Account.jsx
     const personName = localStorage.getItem('personName') || '';
@@ -23,21 +28,25 @@ const UpdateAccount = ({ onCancel }) => {
 
     if (dateOfBirth) {
       const [day, month, year] = dateOfBirth.split('-');
-      setFormData({
+      const initialData = {
         displayName: personName,
         gender,
         day,
         month,
         year,
-      });
+      };
+      setFormData(initialData);
+      setInitialFormData(initialData); // Save initial data
     } else {
-      setFormData({
+      const initialData = {
         displayName: personName,
         gender,
         day: '',
         month: '',
         year: '',
-      });
+      };
+      setFormData(initialData);
+      setInitialFormData(initialData); // Save initial data
     }
   }, []);
 
@@ -76,14 +85,40 @@ const UpdateAccount = ({ onCancel }) => {
     };
 
     try {
+      setIsSubmitting(true); // Start loading
       console.log('Submitting data:', params); // Debug log
       await UpdateAccountApi.updateAccountById(params); // Call API
-      alert('Thông tin đã được cập nhật!');
+
+      // Show success notification
+      toast.success("Cập nhật thông tin thành công", {
+        position: "top-center",
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        icon: "✔️", // Add checkmark icon
+        style: {
+          backgroundColor: "#333", // Dark background
+          color: "#fff", // White text
+          borderRadius: "8px", // Rounded corners
+          padding: "16px", // Add padding
+          textAlign: "center", // Center-align text
+        },
+      });
+
       navigate('/setting'); // Navigate back to the "Setting" sidebar
     } catch (error) {
       console.error('Error updating account:', error);
       alert('Đã xảy ra lỗi khi cập nhật thông tin.');
+    } finally {
+      setIsSubmitting(false); // Stop loading
     }
+  };
+
+  // Check if the form data has changed compared to the initial values
+  const isFormChanged = () => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData);
   };
 
   return (
@@ -196,7 +231,24 @@ const UpdateAccount = ({ onCancel }) => {
       </div>
       <div className={styles.actions}>
         <button className={styles.cancelButton} onClick={onCancel}>Hủy</button>
-        <button className={styles.updateButton} onClick={handleSubmit}>Cập nhật</button>
+        <button
+          className={styles.updateButton}
+          onClick={handleSubmit}
+          disabled={!isFormChanged() || isSubmitting} // Disable button if form hasn't changed or is submitting
+          style={{
+            backgroundColor: isFormChanged() && !isSubmitting ? "#007bff" : "#ccc", // Change button color
+            cursor: isFormChanged() && !isSubmitting ? "pointer" : "not-allowed", // Change cursor style
+          }}
+        >
+          {isSubmitting ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>Đang cập nhật</span>
+              <div className={styles.spinner}></div> {/* Add spinner */}
+            </div>
+          ) : (
+            "Cập nhật"
+          )}
+        </button>
       </div>
     </div>
   );

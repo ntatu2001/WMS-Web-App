@@ -15,6 +15,7 @@ import DeleteButton from '../../../../common/components/Button/DeleteButton/Dele
 import clsx from 'clsx';
 import styles from './InventoryHistory.module.scss';
 import InventoryApi from '../../../../api/inventoryApi.js';
+import { ClipLoader } from 'react-spinners';
 
 const statusMapping = {
   Pending: { label: "Chờ xử lý", color: "#767676" },
@@ -33,11 +34,29 @@ const InventoryHistory = () => {
   const [listInventoryHistory, setListInventoryHistory] = useState([]);
   const [listIssueStorage, setListIssueStorage] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
 
   const handleSearch = async () => {
     const lotNumber = searchLotNumber.trim();
-    const startTime = selectedDate1 instanceof Date && !isNaN(selectedDate1) ? selectedDate1.toISOString() : ''; // Validate selectedDate1
-    const endTime = selectedDate2 instanceof Date && !isNaN(selectedDate2) ? selectedDate2.toISOString() : ''; // Validate selectedDate2
+
+    const toHanoiTime = (date) => {
+      const utcDate = new Date(date);
+      const hanoiOffset = 7 * 60; // Hanoi is UTC+7
+      return new Date(utcDate.getTime() + hanoiOffset * 60 * 1000);
+    };
+
+    const startTime =
+      selectedDate1 instanceof Date && !isNaN(selectedDate1.getTime())
+        ? toHanoiTime(selectedDate1).toISOString()
+        : ''; // Convert selectedDate1 to Hanoi timezone
+    const endTime =
+      selectedDate2 instanceof Date && !isNaN(selectedDate2.getTime())
+        ? toHanoiTime(selectedDate2).toISOString()
+        : (startTime ? toHanoiTime(new Date()).toISOString() : ''); // Convert current date to Hanoi timezone if needed
+
+    // Log startTime and endTime for debugging
+    console.log("Start Time (Hanoi):", startTime);
+    console.log("End Time (Hanoi):", endTime);
 
     if (!lotNumber && !startTime && !endTime) {
       console.warn('Please enter at least one search criterion.');
@@ -46,15 +65,22 @@ const InventoryHistory = () => {
 
     console.log("Searching with criteria:", { lotNumber, startTime, endTime });
 
+    setIsLoading(true); // Start loading
     try {
       const response = await InventoryApi.getAllAdjustment(lotNumber, startTime, endTime);
       console.log("API response:", response); // Debug log to inspect the response structure
 
       if (response && Array.isArray(response)) {
-        setListInventoryHistory(response); // Directly use the response if it's an array
-        console.log("Updated listInventoryHistory:", response); // Debug log to verify state update
+        // Filter data based on adjustmentDate comparison with startTime
+        const filteredData = response.filter((item) => {
+          const adjustmentDate = toHanoiTime(item.adjustmentDate); // Convert adjustmentDate to Hanoi timezone
+          return adjustmentDate >= new Date(startTime); // Compare adjustmentDate with startTime
+        });
 
-        const storageData = response.flatMap((item, index) =>
+        setListInventoryHistory(filteredData); // Update with filtered data
+        console.log("Filtered listInventoryHistory:", filteredData); // Debug log to verify state update
+
+        const storageData = filteredData.flatMap((item, index) =>
           (item.stockTakeSublotDTOs || []).map((subItem) => ({
             id: index + 1,
             materialName: item.materialName,
@@ -82,6 +108,8 @@ const InventoryHistory = () => {
       }
       setListInventoryHistory([]);
       setListIssueStorage([]);
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
@@ -121,8 +149,9 @@ const InventoryHistory = () => {
           <ActionButton 
             style={{ padding: "5px", marginTop: 0, fontSize: "16px" }} 
             onClick={handleSearch}
+            disabled={isLoading} // Disable button while loading
           >
-            Tìm kiếm
+            {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
           </ActionButton>
         </div>
         <SectionTitle style={{ fontSize: "20px", padding: "10px", marginBottom: 0 }}>Danh sách lô kiểm kê</SectionTitle>
@@ -251,7 +280,7 @@ const InventoryHistory = () => {
                   style={{
                     textAlign: 'center',
                     borderRadius: '8px',
-                    backgroundColor: "#ccc",
+                    backgroundColor: "white",
                     padding: '5px 10px',
                     color: 'white',
                     fontWeight: 'bold',
@@ -322,44 +351,50 @@ const InventoryHistory = () => {
         )}
         <h1 style={{marginLeft:"10px", marginBottom:"10px",fontWeight:"Bold", fontSize:"20px"}}>Bảng kiểm kê</h1>
         <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(90% - 250px)", overflowY: "auto" }}>
-          <div style={{ overflowX: 'auto' }}>
-            <Table>
-              <thead>
-                <tr>
-                  <TableHeader>STT</TableHeader>
-                  <TableHeader>Vị trí lưu trữ</TableHeader>
-                  <TableHeader>Tên sản phẩm</TableHeader>
-                  <TableHeader>Mã sản phẩm</TableHeader>
-                  <TableHeader>ĐVT</TableHeader>
-                  <TableHeader>Tồn kho</TableHeader>
-                  <TableHeader>Thực tế</TableHeader>
-                  <TableHeader>SL lệch</TableHeader>
-                  <TableHeader>Ghi chú</TableHeader>
-                </tr>
-              </thead>
-              <tbody>
-                {listIssueStorage.map((item, index) => (
-                  <tr
-                    key={index}
-                    style={{
-                      cursor: "pointer",
-                      backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
-                    }}
-                  >
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{item.locationId || "--"}</TableCell>
-                    <TableCell>{item.materialName || "--"}</TableCell>
-                    <TableCell>{item.materialId || "--"}</TableCell> {/* Ensure materialId is rendered */}
-                    <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                    <TableCell>{item.previousQuantity !== null && item.previousQuantity !== undefined ? item.previousQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
-                    <TableCell>{item.realAdjustmentQuantity !== null && item.realAdjustmentQuantity !== undefined ? item.realAdjustmentQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
-                    <TableCell>{item.quantityDifference !== null && item.quantityDifference !== undefined ? item.quantityDifference : "--"}</TableCell> {/* Render 0 if value is 0 */}
-                    <TableCell>--</TableCell>
+          {isLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+              <ClipLoader size={50} color="#007bff" />
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <Table>
+                <thead>
+                  <tr>
+                    <TableHeader>STT</TableHeader>
+                    <TableHeader>Vị trí lưu trữ</TableHeader>
+                    <TableHeader>Tên sản phẩm</TableHeader>
+                    <TableHeader>Mã sản phẩm</TableHeader>
+                    <TableHeader>ĐVT</TableHeader>
+                    <TableHeader>Tồn kho</TableHeader>
+                    <TableHeader>Thực tế</TableHeader>
+                    <TableHeader>SL lệch</TableHeader>
+                    <TableHeader>Ghi chú</TableHeader>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+                </thead>
+                <tbody>
+                  {listIssueStorage.map((item, index) => (
+                    <tr
+                      key={index}
+                      style={{
+                        cursor: "pointer",
+                        backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
+                      }}
+                    >
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{item.locationId || "--"}</TableCell>
+                      <TableCell>{item.materialName || "--"}</TableCell>
+                      <TableCell>{item.materialId || "--"}</TableCell> {/* Ensure materialId is rendered */}
+                      <TableCell>{item.unitOfMeasure || "--"}</TableCell>
+                      <TableCell>{item.previousQuantity !== null && item.previousQuantity !== undefined ? item.previousQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
+                      <TableCell>{item.realAdjustmentQuantity !== null && item.realAdjustmentQuantity !== undefined ? item.realAdjustmentQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
+                      <TableCell>{item.quantityDifference !== null && item.quantityDifference !== undefined ? item.quantityDifference : "--"}</TableCell> {/* Render 0 if value is 0 */}
+                      <TableCell>--</TableCell>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
         </ListSection>
       </FormSection>
     </div>

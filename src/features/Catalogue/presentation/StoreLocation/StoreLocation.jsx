@@ -7,7 +7,7 @@ import Label from '../../../../common/components/Label/Label.jsx';
 import locationApi from '../../../../api/locationApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
-
+import { ClipLoader } from 'react-spinners';
 const InventoryHistory = () => {
   const [savedData, setSavedData] = useState([]);
   const [searchCode, setSearchCode] = useState("");
@@ -115,7 +115,6 @@ const InventoryHistory = () => {
       setFilteredData([]); // Clear the table if the input is empty
       return;
     }
-    console.log("Search Code:", searchCode); // Log the searchCode value
     setIsLoading(true); // Start loading
     try {
       // Fetch data from the specified URL
@@ -134,6 +133,22 @@ const InventoryHistory = () => {
       }
 
       const location = await response.json();
+
+      if (!location || !location.locationPropertyDTOs || location.locationPropertyDTOs.length === 0) {
+        // Show notification if no data is returned
+        toast.info("Không tìm thấy dữ liệu vị trí lưu trữ!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          style: { backgroundColor: "#007bff", color: "#fff" }, // Blue theme
+        });
+        setFilteredData([]); // Clear the table
+        return;
+      }
 
       // Map and extract properties from locationPropertyDTOs
       const status = location.locationPropertyDTOs.find(
@@ -163,6 +178,19 @@ const InventoryHistory = () => {
       setFilteredData([mappedLocation]); // Set the filtered data with the fetched location
     } catch (error) {
       console.error("Error fetching location:", error);
+
+      // Show failure notification
+      toast.error("Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        
+      });
+
       setFilteredData([]); // Clear the table on error
     } finally {
       setIsLoading(false); // Stop loading
@@ -378,7 +406,7 @@ const InventoryHistory = () => {
                 style={{ padding: "8px 20px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", width: "130px", marginTop: "0px" }}
                 disabled={isLoading} // Disable button while loading
               >
-                {"Tìm kiếm"} {/* Show loading text */}
+                {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"} {/* Show loading text */}
               </ActionButton>
             </div>
 
@@ -397,32 +425,7 @@ const InventoryHistory = () => {
             >
               {isLoading ? ( // Show loading spinner while loading
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0s"
-                    }}></div>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0.2s"
-                    }}></div>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0.4s"
-                    }}></div>
-                  </div>
+                  <ClipLoader size={50} color="#007bff" />
                 </div>
               ) : (
                 <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>

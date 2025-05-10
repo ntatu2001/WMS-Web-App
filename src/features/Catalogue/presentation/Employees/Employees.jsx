@@ -7,6 +7,7 @@ import Label from '../../../../common/components/Label/Label.jsx';
 import personApi from '../../../../api/personApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
+import { ClipLoader } from 'react-spinners';
 const InventoryHistory = () => {
   const [savedData, setSavedData] = useState([]);
   const [searchCode, setSearchCode] = useState("");
@@ -116,6 +117,21 @@ const InventoryHistory = () => {
       const response = await personApi.getAllPerson(); // Replace with your API endpoint
       const employees = response || [];
 
+      if (employees.length === 0) {
+        // Show notification if no data is returned
+        toast.info("Không tìm thấy dữ liệu nhân viên!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setFilteredData([]); // Clear the table
+        return;
+      }
+
       // Map and extract properties from personPropertyDTOs
       const mappedEmployees = employees.map((employee) => {
         const dateOfBirth = employee.personPropertyDTOs.find(
@@ -143,6 +159,20 @@ const InventoryHistory = () => {
       const result = mappedEmployees.filter((item) =>
         item.personId.includes(searchCode)
       );
+
+      if (result.length === 0) {
+        // Show notification if no matching data is found
+        toast.error("Không tìm thấy nhân viên phù hợp với mã tìm kiếm!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+
       setFilteredData(result);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -358,7 +388,7 @@ const InventoryHistory = () => {
                 style={{ padding: "8px 20px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", width: "130px", marginTop: "0px" }}
                 disabled={isLoading} // Disable button while loading
               >
-                {"Tìm kiếm"} {/* Show loading text */}
+                {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
             </div>
 
@@ -375,34 +405,9 @@ const InventoryHistory = () => {
                 container.scrollTop += e.deltaY;
               }}
             >
-              {isLoading ? ( // Show loading spinner while loading
+              {isLoading ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                  <div style={{ display: "flex", gap: "5px" }}>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0s"
-                    }}></div>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0.2s"
-                    }}></div>
-                    <div style={{
-                      width: "10px",
-                      height: "10px",
-                      backgroundColor: "#007bff",
-                      borderRadius: "50%",
-                      animation: "loadingDots 1.5s infinite ease-in-out",
-                      animationDelay: "0.4s"
-                    }}></div>
-                  </div>
+                  <ClipLoader size={50} color="#007bff" />
                 </div>
               ) : (
                 <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
