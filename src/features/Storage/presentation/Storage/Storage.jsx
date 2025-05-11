@@ -535,7 +535,7 @@ const Storage = () => {
                 <div style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    right: "2%", 
+                    right: "1%", 
                     top: '30%', 
                     width: "13%", 
                     backgroundColor: "rgba(245, 245, 245, 0.9)",

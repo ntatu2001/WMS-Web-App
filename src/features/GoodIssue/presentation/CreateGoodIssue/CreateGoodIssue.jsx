@@ -127,9 +127,37 @@ const CreateGoodIssue = () => {
 
   useEffect(() => {
       const fetchLotNumberList = async() => {
-        const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
-        const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
-        setLotNumberList(lotNumberList);
+        if(materialId){
+          try{
+            const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
+            const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
+            toast.info("Tìm thấy Mã lô/Số PO!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true, 
+              draggable: true,
+              progress: undefined,
+            });
+            setLotNumberList(lotNumberList);
+          }
+          catch {
+            const lotNumberList = [];
+            setLotNumberList(lotNumberList);
+            toast.warning("Không tìm thấy Mã lô/Số PO!", {
+              position: "top-right",
+              autoClose: 3000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true, 
+              draggable: true,
+              progress: undefined,
+            });
+
+          }
+        }
+        
       }
 
       fetchLotNumberList();
