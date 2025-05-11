@@ -148,7 +148,7 @@ const ReceiptHistory = () => {
             <FormGroup>
               <SelectContainer>
                 <DateInput
-                  style={{ width: "80%", left: "9%" }}
+                  style={{ width: "80%", left: "9%",}}
                   selectedDate={selectedDate1}
                   onChange={(date) => setSelectedDate1(date || null)} // Reset to null when cleared
                 />
@@ -200,7 +200,7 @@ const ReceiptHistory = () => {
                 borderRadius: "8px",
                 padding: "15px",
                 marginBottom: "5px",
-                height: "42%",
+                height: "50%",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
@@ -304,7 +304,7 @@ const ReceiptHistory = () => {
         <h1 style={{ marginLeft: "10px", marginBottom: "10px", fontWeight: "Bold", fontSize: "20px" }}>
           Bảng phân bố vị trí lưu trữ
         </h1>
-        <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(89% - 250px)", overflowY: "auto" }}>
+        <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(85% - 250px)", overflowY: "auto" }}>
           {isLoading ? (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
               <ClipLoader size={50} color="#007bff" />

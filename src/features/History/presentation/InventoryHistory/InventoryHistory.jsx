@@ -307,12 +307,12 @@ const InventoryHistory = () => {
                 <span>{selectedItem.warehouseName || "--"}</span>
               </FormGroup>
               <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "30%" }}>Mã kho hàng:</Label>
+                <Label style={{ width: "100%" }}>Mã kho hàng:</Label>
                 <span>{selectedItem.materialId || "--"}</span>
               </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "35%" }}>Ngày thực hiện:</Label>
-                <span>{selectedItem.adjustmentDate || "--"}</span>
+              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <Label style={{ width: "55%" }}>Ngày thực hiện:</Label>
+                <span style={{ width: "70%", textAlign: "right" }}>{selectedItem.adjustmentDate || "--"}</span>
               </FormGroup>
               
             </div>

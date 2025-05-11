@@ -331,7 +331,7 @@ const IssueHistory = () => {
         <h1 style={{ marginLeft: "10px", marginBottom: "10px", fontWeight: "Bold", fontSize: "20px" }}>
           Bảng phân bố vị trí lấy hàng
         </h1>
-        <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(89% - 250px)", overflowY: "auto" }}>
+        <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(85% - 250px)", overflowY: "auto" }}>
           {isLoading ? (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
               <ClipLoader size={50} color="#007bff" />

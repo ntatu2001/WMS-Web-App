@@ -8,7 +8,8 @@ const Logout = () => {
     localStorage.clear();
     sessionStorage.clear();
     console.log("User logged out");
-    window.location.href = 'http://localhost:5173/login'; // Redirect to the specified URL
+    navigate('/login'); // Navigate back to LoginScreen
+    window.location.reload(); // Refresh the page
   };
 
   return (

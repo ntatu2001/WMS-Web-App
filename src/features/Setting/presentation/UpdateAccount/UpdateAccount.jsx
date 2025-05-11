@@ -15,6 +15,7 @@ const UpdateAccount = ({ onCancel }) => {
     day: '',
     month: '',
     year: '',
+    email: '', // Add email to formData
   });
 
   const [initialFormData, setInitialFormData] = useState(null); // Store initial form data
@@ -25,6 +26,7 @@ const UpdateAccount = ({ onCancel }) => {
     const personName = localStorage.getItem('personName') || '';
     const gender = localStorage.getItem('Gender') || '';
     const dateOfBirth = localStorage.getItem('DateOfBirth') || ''; // Format: "DD-MM-YYYY"
+    const email = localStorage.getItem('Email') || ''; // Retrieve email from localStorage
 
     if (dateOfBirth) {
       const [day, month, year] = dateOfBirth.split('-');
@@ -34,6 +36,7 @@ const UpdateAccount = ({ onCancel }) => {
         day,
         month,
         year,
+        email, // Add email to initialData
       };
       setFormData(initialData);
       setInitialFormData(initialData); // Save initial data
@@ -44,6 +47,7 @@ const UpdateAccount = ({ onCancel }) => {
         day: '',
         month: '',
         year: '',
+        email, // Add email to initialData
       };
       setFormData(initialData);
       setInitialFormData(initialData); // Save initial data
@@ -60,10 +64,10 @@ const UpdateAccount = ({ onCancel }) => {
   };
 
   const handleSubmit = async () => {
-    const { displayName, gender, day, month, year } = formData;
+    const { displayName, gender, day, month, year, email } = formData;
 
     // Validation: Ensure no field is empty
-    if (!displayName || !gender || !day || !month || !year) {
+    if (!displayName || !gender || !day || !month || !year || !email) {
       alert('Vui lòng điền đầy đủ thông tin trước khi cập nhật.');
       return;
     }
@@ -81,6 +85,7 @@ const UpdateAccount = ({ onCancel }) => {
       properties: [
         { propertyName: 'Gender', propertyValue: gender },
         { propertyName: 'DateOfBirth', propertyValue: `${day}-${month}-${year}` },
+        { propertyName: 'Email', propertyValue: email }, // Add email to properties
       ],
     };
 
@@ -122,7 +127,10 @@ const UpdateAccount = ({ onCancel }) => {
   };
 
   return (
-    <div className={styles.updateAccountContainer}>
+    <div
+      className={styles.updateAccountContainer}
+      style={{ outline: 'none' }} // Remove blur effect for the container
+    >
       <button
         onClick={onCancel} // Use onCancel to handle the "Hủy" button click
         style={{
@@ -143,7 +151,7 @@ const UpdateAccount = ({ onCancel }) => {
       >
         ×
       </button>
-      <label htmlFor="displayName" className={styles.label}>Tên hiển thị:</label>
+      <label htmlFor="displayName" style={{ fontWeight: 'bold' }}>Tên hiển thị</label>
       <input
         type="text"
         id="displayName"
@@ -152,9 +160,10 @@ const UpdateAccount = ({ onCancel }) => {
         className={styles.inputField}
         value={formData.displayName}
         onChange={handleInputChange}
+        style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
       />
       <div className={styles.section}>
-        <p className={styles.sectionTitle}>Thông tin cá nhân</p>
+        <p className={styles.sectionTitle}>Giới tính</p>
         <div className={styles.genderSelection}>
           <label>
             <input
@@ -175,6 +184,20 @@ const UpdateAccount = ({ onCancel }) => {
             /> Nữ
           </label>
         </div>
+        {/* New Email Update Section */}
+      <div className={styles.section}>
+        <label htmlFor="email" className={styles.label} style={{ fontWeight: 'bold', fontSize:"16px" }}>Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="Nhập email"
+          className={styles.inputField}
+          value={formData.email || ''} // Add email to formData
+          onChange={handleInputChange}
+          style={{ marginBottom: '0px', outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
+        />
+      </div>
         <div className={styles.birthDate}>
           <p className={styles.sectionTitle}>Ngày sinh</p>
           <div className={styles.dateSelection}>
@@ -185,6 +208,7 @@ const UpdateAccount = ({ onCancel }) => {
                 className={styles.dropdown}
                 value={formData.day}
                 onChange={handleInputChange}
+                style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
                 <option value="">Ngày</option>
                 {[...Array(31)].map((_, i) => (
@@ -200,6 +224,7 @@ const UpdateAccount = ({ onCancel }) => {
                 className={styles.dropdown}
                 value={formData.month}
                 onChange={handleInputChange}
+                style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
                 <option value="">Tháng</option>
                 {[...Array(12)].map((_, i) => (
@@ -217,6 +242,7 @@ const UpdateAccount = ({ onCancel }) => {
                 className={styles.dropdown}
                 value={formData.year}
                 onChange={handleInputChange}
+                style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
                 <option value="">Năm</option>
                 {[...Array(100)].map((_, i) => {
@@ -229,6 +255,9 @@ const UpdateAccount = ({ onCancel }) => {
           </div>
         </div>
       </div>
+
+      
+
       <div className={styles.actions}>
         <button className={styles.cancelButton} onClick={onCancel}>Hủy</button>
         <button

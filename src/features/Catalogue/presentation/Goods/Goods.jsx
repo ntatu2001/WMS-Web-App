@@ -50,7 +50,7 @@ const InventoryHistory = () => {
     standardRate: "",
     dimensions: "",
     price: "",
-    note: "",
+    StorageLevel: "", // Changed from note to StorageLevel
   });
 
   const [materialClasses, setMaterialClasses] = useState([]); // Store material classes
@@ -147,8 +147,8 @@ const InventoryHistory = () => {
             materialId: formData.goodCode,
           },
           {
-            propertyName: "Note",
-            propertyValue: formData.note || "--",
+            propertyName: "StorageLevel",
+            propertyValue: formData.StorageLevel || "--",
             unitOfMeasure: "None",
             materialId: formData.goodCode,
           },
@@ -196,7 +196,7 @@ const InventoryHistory = () => {
         standardRate: "",
         dimensions: "",
         price: "",
-        note: "",
+        StorageLevel: "", // Changed from note to StorageLevel
       });
     } catch (error) {
       console.error("Error creating new product:", error);
@@ -306,40 +306,39 @@ const InventoryHistory = () => {
         </div>
         {!isCreateSectionHidden && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-              
-              <FormGroup>
-                <Label>Tên sản phẩm:</Label>
-                <SelectContainer>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px",marginLeft: "25px",}}>
+              <FormGroup style={{ display: "flex", alignItems: "center",}}>
+                <Label style={{ flex: "0 0 150px" }}>Tên sản phẩm:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <input
                     type="text"
                     name="goodName"
                     value={formData.goodName}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }}
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Mã sản phẩm:</Label>
-                <SelectContainer>
+              <FormGroup style={{ display: "flex", alignItems: "center",}}>
+                <Label style={{ flex: "0 0 150px",marginLeft:"-20px"  }}>Mã sản phẩm:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <input
                     type="text"
                     name="goodCode"
                     value={formData.goodCode}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-10px" }}
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Đơn vị tính:</Label>
-                <SelectContainer>
+              <FormGroup style={{ display: "flex", alignItems: "center",  }}>
+                <Label style={{ flex: "0 0 150px", marginLeft:"" }}>Đơn vị tính:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <select
                     name="unit"
                     value={formData.unit}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-30px" }}
                   >
                     <option value="--">--</option>
                     <option value="PCS">PCS</option>
@@ -355,14 +354,14 @@ const InventoryHistory = () => {
                   </select>
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Loại sản phẩm:</Label>
-                <SelectContainer>
+              <FormGroup style={{ display: "flex", alignItems: "center",}}>
+                <Label style={{ flex: "0 0 150px" }}>Loại sản phẩm:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <select
                     name="goodType"
                     value={formData.goodType}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-30px" }}
                   >
                     <option value="--">--</option>
                     {materialClasses.map((materialClass) => (
@@ -373,67 +372,68 @@ const InventoryHistory = () => {
                   </select>
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Tồn kho tối thiểu:</Label>
-                <SelectContainer>
+              <FormGroup style={{ display: "flex", alignItems: "center" }}>
+                <Label style={{ flex: "0 0 150px",marginLeft:"-20px" }}>Tồn kho tối thiểu:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <input
                     type="number"
                     name="minimumStock"
                     value={formData.minimumStock || ""}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-10px" }}
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Định mức:</Label>
-                <SelectContainer>
+              <FormGroup style={{ display: "flex", alignItems: "center" }}>
+                <Label style={{ flex: "0 0 150px" }}>Định mức:</Label>
+                <SelectContainer style={{ flex: "1" }}>
                   <input
                     type="number"
                     name="standardRate"
                     value={formData.standardRate || ""}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-30px" }}
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Kích thước:</Label>
-                <SelectContainer style={{ position: "relative" }}>
+              <FormGroup style={{ display: "flex", alignItems: "center",}}>
+                <Label style={{ flex: "0 0 150px" }}>Kích thước:</Label>
+                <SelectContainer style={{ flex: "1", position: "relative" }}>
                   <input
                     type="text"
                     name="dimensions"
                     value={formData.dimensions || ""}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc",marginLeft: "-30px" }}
                   />
                   <span
                     style={{
                       position: "absolute",
-                      right: "10px",
+                      right: "40px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "#888",
+                      
                     }}
                   >
                     m
                   </span>
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Đơn giá:</Label>
-                <SelectContainer style={{ position: "relative" }}>
+              <FormGroup style={{ display: "flex", alignItems: "center" }}>
+                <Label style={{ flex: "0 0 150px", marginLeft:"-20px"  }}>Đơn giá:</Label>
+                <SelectContainer style={{ flex: "1", position: "relative" }}>
                   <input
                     type="number"
                     name="price"
                     value={formData.price || ""}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc",marginLeft: "-10px" }}
                   />
                   <span
                     style={{
                       position: "absolute",
-                      right: "10px",
+                      right: "20px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "#888",
@@ -443,21 +443,17 @@ const InventoryHistory = () => {
                   </span>
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
-                <Label>Ghi chú:</Label>
-                <SelectContainer style={{ position: "relative" }}>
+              <FormGroup style={{ display: "flex", alignItems: "center" }}>
+                <Label style={{ flex: "0 0 150px", whiteSpace: "normal", wordBreak: "break-word" }}>
+                  Giới hạn tầng<br />lưu trữ:
+                </Label>
+                <SelectContainer style={{ flex: "1", position: "relative" }}>
                   <input
-                    type="text"
-                    name="note"
-                    value={formData.note || ""}
+                    type="number"
+                    name="StorageLevel" // Changed from note to StorageLevel
+                    value={formData.StorageLevel || ""}
                     onChange={handleInputChange}
-                    placeholder="--"
-                    style={{
-                      width: "100%",
-                      padding: "5px",
-                      border: "1px solid #ccc",
-                      textAlign: "center",
-                    }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-30px" }}
                   />
                 </SelectContainer>
               </FormGroup>
@@ -472,6 +468,7 @@ const InventoryHistory = () => {
                   width: "240px",
                   backgroundColor: formData.goodCode ? "#007bff" : "#ccc",
                   cursor: formData.goodCode ? "pointer" : "not-allowed",
+                  
                 }}
               >
                 Tạo mới sản phẩm
@@ -520,8 +517,8 @@ const InventoryHistory = () => {
         </div>
         {!isSearchSectionHidden && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px" }}>
-              <Label style={{ width: "110px", fontWeight: "bold" }}>Mã sản phẩm:</Label>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", width: "100%", marginLeft: "20px" }}>
+              <Label style={{ width: "110px", fontWeight: "bold", }}>Mã sản phẩm:</Label>
               <input
                 type="text"
                 value={searchCode}
@@ -534,6 +531,7 @@ const InventoryHistory = () => {
                   borderRadius: "4px",
                   width: "calc(100% - 200px)",
                   borderBottom: "2px solid #ccc",
+                  marginRight: "10px",
                 }}
               />
               <ActionButton
@@ -546,6 +544,7 @@ const InventoryHistory = () => {
                   borderRadius: "4px",
                   width: "130px",
                   marginTop: "0px",
+                  marginRight: "40px",
                 }}
                 disabled={isLoading} // Disable button while loading
               >
@@ -559,6 +558,8 @@ const InventoryHistory = () => {
                 overflowY: "auto",
                 maxHeight: "300px",
                 border: "1px solid #ccc",
+                marginLeft: "20px",
+                marginRight: "20px",
               }}
               onWheel={(e) => {
                 e.stopPropagation();
@@ -567,11 +568,11 @@ const InventoryHistory = () => {
               }}
             >
               {isLoading ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", }}>
                   <ClipLoader size={50} color="#007bff" />
                 </div>
               ) : (
-                <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc", }}>
                   <thead>
                     <tr>
                       <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>STT</th>
@@ -583,7 +584,7 @@ const InventoryHistory = () => {
                       <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tồn kho tối thiểu</th>
                       <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Định mức tồn kho</th>
                       <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kích thước</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Ghi chú</th>
+                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Giới hạn tầng lưu trữ</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -596,15 +597,15 @@ const InventoryHistory = () => {
                       const widthProperty = item.properties?.find((prop) => prop.propertyName === "Width");
                       const lengthProperty = item.properties?.find((prop) => prop.propertyName === "Length");
                       const heightProperty = item.properties?.find((prop) => prop.propertyName === "Height");
-                      const noteProperty = item.properties?.find((prop) => prop.propertyName === "Note");
+                      const StorageLevelProperty = item.properties?.find((prop) => prop.propertyName === "StorageLevel"); // Changed from note to StorageLevel
 
                       const dimensions = [
                         widthProperty?.propertyValue || "--",
                         lengthProperty?.propertyValue || "--",
                         heightProperty?.propertyValue || "--",
-                      ].join("x") + "m";
+                      ].join("x") + "(m)";
 
-                      const noteValue = noteProperty?.propertyValue === "None" ? "Không" : noteProperty?.propertyValue || "--";
+                      const StorageLevelValue = StorageLevelProperty?.propertyValue === "None" ? "Không" : StorageLevelProperty?.propertyValue || "--";
 
                       return (
                         <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
@@ -616,7 +617,7 @@ const InventoryHistory = () => {
                             {unitProperty ? unitProperty.propertyValue : "--"}
                           </td>
                           <td style={{ padding: "8px", textAlign: "center" }}>
-                            {priceProperty ? priceProperty.propertyValue : "0"} VND
+                            {priceProperty ? priceProperty.propertyValue : "0"}(đ)
                           </td>
                           <td style={{ padding: "8px", textAlign: "center" }}>
                             {minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : "0"}
@@ -625,7 +626,7 @@ const InventoryHistory = () => {
                             {defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : "0"}
                           </td>
                           <td style={{ padding: "8px", textAlign: "center" }}>{dimensions}</td>
-                          <td style={{ padding: "8px", textAlign: "center" }}>{noteValue}</td>
+                          <td style={{ padding: "8px", textAlign: "center" }}>{StorageLevelValue}</td>
                         </tr>
                       );
                     })}

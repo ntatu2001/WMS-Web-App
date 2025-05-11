@@ -228,7 +228,7 @@ const InventoryHistory = () => {
         </div>
         {!isCreateSectionHidden && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px",marginLeft: "25px" }}>
               <FormGroup>
                 <Label>Tên nhân viên:</Label>
                 <SelectContainer>
@@ -237,11 +237,11 @@ const InventoryHistory = () => {
                     name="personName"
                     value={formData.personName}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-20px" }} 
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
+              <FormGroup style={{ marginLeft: "-20px" }}>
                 <Label>Mã nhân viên:</Label>
                 <SelectContainer>
                   <input 
@@ -249,7 +249,7 @@ const InventoryHistory = () => {
                     name="personId"
                     value={formData.personId}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-45px"  }} 
                   />
                 </SelectContainer>
               </FormGroup>
@@ -260,7 +260,7 @@ const InventoryHistory = () => {
                     name="personClassId"
                     value={formData.personClassId} 
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }}
                   >
                     <option value="QLK">Quản lý kho</option>
                     <option value="TK">Thủ kho</option>
@@ -276,11 +276,11 @@ const InventoryHistory = () => {
                     name="DateOfBirth" 
                     value={formData.DateOfBirth} 
                     onChange={handleInputChange} 
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-20px"  }} 
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
+              <FormGroup style={{ marginLeft: "-20px" }}>
                 <Label>Email:</Label>
                 <SelectContainer>
                   <input 
@@ -288,20 +288,20 @@ const InventoryHistory = () => {
                     name="Email" 
                     value={formData.Email} 
                     onChange={handleInputChange} 
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-45px"  }} 
                   />
                 </SelectContainer>
               </FormGroup>
-              <FormGroup>
+              <FormGroup style={{ marginLeft: "-50px" }}>
                 <Label>Thời gian làm việc:</Label>
                 <SelectContainer>
-                  <div style={{ display: "flex", gap: "10px" }}>
+                  <div style={{ display: "flex", gap: "10px",marginRight: "30px" }}>
                     <input 
                       type="time" 
                       name="startTime" 
                       value={formData.startTime} 
                       onChange={handleInputChange} 
-                      style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                      style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-20px" }} 
                     />
                     <span style={{ alignSelf: "center" }}>-</span>
                     <input 
@@ -374,7 +374,7 @@ const InventoryHistory = () => {
         </div>
         {!isSearchSectionHidden && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px", marginLeft: "20px", marginRight: "20px" }}>
               <Label style={{ width: "110px", fontWeight: "bold" }}>Mã nhân viên:</Label>
               <input 
                 type="text" 
@@ -397,7 +397,9 @@ const InventoryHistory = () => {
                 position: "relative", 
                 overflowY: "auto", 
                 maxHeight: "300px", 
-                border: "1px solid #ccc" 
+                border: "1px solid #ccc",
+                marginLeft: "20px",
+                marginRight: "20px", 
               }}
               onWheel={(e) => {
                 e.stopPropagation(); 

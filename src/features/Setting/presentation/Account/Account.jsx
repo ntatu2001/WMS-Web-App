@@ -24,6 +24,7 @@ const Account = ({ closeHandler }) => {
           localStorage.setItem('personName', response.personName || '');
           localStorage.setItem('Gender', formattedResponse.Gender || '');
           localStorage.setItem('DateOfBirth', formattedResponse.DateOfBirth || '');
+          localStorage.setItem('Email', formattedResponse.Email || '');
 
           setAccountInfo(formattedResponse);
         } else {

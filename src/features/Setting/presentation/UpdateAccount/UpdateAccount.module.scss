@@ -11,9 +11,12 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 
   &:focus {
+    outline: none; // Remove blur effect
     border-color: #007bff; // Highlight border on focus
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); // Add a blue glow effect
-    outline: none;
+    box-shadow: none; // Remove shadow effect
+    background-color: transparent; // Remove background effect
+    font-weight: normal; // Remove bold effect
+    color: #333; // Set text color to default
   }
 
   option {
@@ -46,6 +49,21 @@
   width: 400px;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
+
+  input:focus, select:focus {
+    outline: none; // Remove blur effect
+    border-color: #007bff; // Highlight border on focus
+    box-shadow: none; // Remove shadow effect
+    text-shadow: none; // Remove text shadow effect
+    background-color: transparent; // Remove background effect
+  }
+}
+
+.updateAccountContainer input:focus, 
+.updateAccountContainer select:focus {
+  outline: none; // Remove blur effect
+  box-shadow: none; // Remove shadow effect
+  background-color: transparent; // Remove background effect
 }
 
 .label {
@@ -53,6 +71,10 @@
   font-size: 14px;
   margin-bottom: 5px;
   color: #333;
+
+  &:focus-within {
+    text-shadow: none; // Remove text shadow effect when focused
+  }
 }
 
 .inputField {
@@ -62,6 +84,16 @@
   border-radius: 4px;
   font-size: 14px;
   margin-bottom: 20px;
+
+  &:focus {
+    outline: none; // Remove blur effect
+    border-color: #007bff; // Highlight border on focus
+    box-shadow: none; // Remove shadow effect
+    text-shadow: none; // Remove text shadow effect
+    background-color: transparent; // Remove background effect
+    font-weight: normal; // Remove bold effect
+    color: #333; // Set text color to default
+  }
 }
 
 .section {

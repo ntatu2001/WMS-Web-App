@@ -243,8 +243,8 @@ const InventoryHistory = () => {
         </div>
         {!isCreateSectionHidden && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", }}>
-              <FormGroup>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginLeft: "25px" }}>
+              <FormGroup >
                 <Label>Tên thiết bị:</Label>
                 <SelectContainer>
                   <input 
@@ -252,7 +252,7 @@ const InventoryHistory = () => {
                     name="equipmentName"
                     value={formData.equipmentName}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-50px" }} 
                   />
                 </SelectContainer>
               </FormGroup>
@@ -264,19 +264,19 @@ const InventoryHistory = () => {
                     name="locationId"
                     value={formData.locationId}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-70px" }} 
                   />
                 </SelectContainer>
               </FormGroup>
               <FormGroup>
-                <Label>Mô tả:</Label>
+                <Label style={{marginRight:"-20px"}}>Mô tả:</Label>
                 <SelectContainer>
                   <input 
                     type="text" 
                     name="Status"
                     value={formData.Status}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }} 
                   />
                 </SelectContainer>
               </FormGroup>
@@ -287,7 +287,7 @@ const InventoryHistory = () => {
                     name="warehouseName"
                     value={formData.warehouseName} 
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-50px" }}
                   >
                     <option value="Kho thành phẩm">Kho thành phẩm</option>
                     <option value="Kho bán thành phẩm">Kho bán thành phẩm</option>
@@ -305,30 +305,31 @@ const InventoryHistory = () => {
                     name="warehouseId"
                     value={formData.warehouseId}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
+                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-70px" }} 
                   />
                 </SelectContainer>
               </FormGroup>
               <FormGroup>
-                <Label>Kích thước:</Label>
+                <Label style={{marginRight:"-20px"}}>Kích thước:</Label>
                 <SelectContainer style={{ position: "relative" }}>
                   <input
                     type="text"
                     name="dimensions"
                     value={formData.dimensions || ""}
                     onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc" }}
+                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc", marginLeft: "-30px" }}
                   />
                   <span
                     style={{
                       position: "absolute",
-                      right: "10px",
+                      right: "40px",
                       top: "50%",
                       transform: "translateY(-50%)",
                       color: "#888",
+                     
                     }}
                   >
-                    Meter
+                    m
                   </span>
                 </SelectContainer>
               </FormGroup>
@@ -392,7 +393,7 @@ const InventoryHistory = () => {
         </div>
         {!isSearchSectionHidden && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px", marginLeft: "20px", marginRight: "20px" }}>
               <Label style={{ width: "110px", fontWeight: "bold" }}>Mã vị trí:</Label>
               <input 
                 type="text" 
@@ -415,7 +416,9 @@ const InventoryHistory = () => {
                 position: "relative", 
                 overflowY: "auto", 
                 maxHeight: "300px", 
-                border: "1px solid #ccc" 
+                border: "1px solid #ccc",
+                marginLeft: "20px",
+                marginRight: "20px", 
               }}
               onWheel={(e) => {
                 e.stopPropagation(); 
@@ -450,7 +453,7 @@ const InventoryHistory = () => {
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouseName}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouseId}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>
-                          {`${item.width || "--"}x${item.length || "--"}x${item.height || "--"} meter`}
+                          {`${item.width || "--"}x${item.length || "--"}x${item.height || "--"}(m)`}
                         </td>
                       </tr>
                     ))}

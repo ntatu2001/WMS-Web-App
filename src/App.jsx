@@ -240,17 +240,21 @@ function App() {
                                 boxSizing: "border-box", // Ensure padding is included in the dimensions
                                 fontSize: "20px", // Font size for the text
                                 fontWeight: "700",
-                                color: "#FFFFFF", // Default white text color
-                                backgroundColor: "#002B49", // Default background color
+                                color: activeContent === "logout" ? "#002B49" : "#FFFFFF", // Default white text color
+                                backgroundColor: activeContent === "logout" ? "#FFFFFF" : "#002B49", // Default background color
                                 transition: "all 0.3s ease", // Smooth transition for hover effects
                               }}
                               onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#FFFFFF"; // Change background to white
-                                e.target.style.color = "#FF4D4F"; // Change text and icon to red
+                                if (activeContent !== "logout") {
+                                  e.target.style.backgroundColor = "#FFFFFF"; // Change background to white
+                                  e.target.style.color = "#FF4D4F"; // Change text and icon to red
+                                }
                               }}
                               onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "#002B49"; // Revert background to default
-                                e.target.style.color = "#FFFFFF"; // Revert text and icon to default
+                                if (activeContent !== "logout") {
+                                  e.target.style.backgroundColor = "#002B49"; // Revert background to default
+                                  e.target.style.color = "#FFFFFF"; // Revert text and icon to default
+                                }
                               }}
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent event propagation
