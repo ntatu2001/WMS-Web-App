@@ -114,7 +114,7 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.receiptLot.importedQuantity}</TableCell>
                         <TableCell>{item.personName}</TableCell>
-                        <TableCell>{item.note}</TableCell>
+                        <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <div
                             style={{

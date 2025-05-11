@@ -231,7 +231,6 @@ const RequestLotAdjustment = () => {
                             </option>
                         ))}
                     </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
 
@@ -249,7 +248,6 @@ const RequestLotAdjustment = () => {
                             </option>
                         ))}
                     </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
 
@@ -274,7 +272,6 @@ const RequestLotAdjustment = () => {
                                 </option>
                             ))}
                             </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
                 
@@ -292,7 +289,6 @@ const RequestLotAdjustment = () => {
                             ))}
        
                         </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
                         
@@ -310,7 +306,6 @@ const RequestLotAdjustment = () => {
                             </option>
                         ))}
                     </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
 
@@ -329,7 +324,6 @@ const RequestLotAdjustment = () => {
                             </option>
                         ))}
                     </Select>
-                        <DropdownIcon><FaChevronDown size={12} /></DropdownIcon>
                     </SelectContainer>
                 </FormGroup>
 
@@ -520,7 +514,7 @@ const RequestLotAdjustment = () => {
                                     backgroundColor: "#FFF",
                                     fontSize: "11px"
                                     }}
-                                    >{note || ""}</span>
+                                    >{note === "None" ? "--" : note}</span>
                                 </FormGroup>
 
                   

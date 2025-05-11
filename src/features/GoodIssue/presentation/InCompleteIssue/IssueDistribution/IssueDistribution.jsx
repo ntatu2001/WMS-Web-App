@@ -3,13 +3,17 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ContentContainer from '../../../../../common/components/ContentContainer/ContentContainer.jsx';
 import { ClipLoader } from 'react-spinners';
 import schedulingApi from '../../../../../api/schedulingApi.js';
+import InforIssueModal from './../../InforModal/InforIssueModal.jsx';
 
 const IssueDistribution = ({warehouseId, isActive}) => {
     const [loading, setLoading] = useState(false);
     const [dataTable, setDataTable] = useState({});
     const [dataFetched, setDataFetched] = useState(false);
     const DEFAULT_ROWS = 4;
-
+    const [selectedCell, setSelectedCell] = useState(null);
+    const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+    const [showModal, setShowModal] = useState(false);
+    const [hoveredCellInfo, setHoveredCellInfo] = useState(null);
     // Reset dataFetched when warehouseId changes
     useEffect(() => {
         setDataFetched(false);
@@ -36,6 +40,91 @@ const IssueDistribution = ({warehouseId, isActive}) => {
         fetchData();
     }, [warehouseId, isActive, dataFetched]);
 
+    // Function to handle cell click
+    const handleCellClick = (cell, event) => {
+        if (cell) {
+            // Get the click position relative to the cell
+            const cellRect = event.currentTarget.getBoundingClientRect();
+            const relativeX = event.clientX - cellRect.left;
+            const cellWidth = cellRect.width;
+            
+            // Calculate the percentage of the click position
+            const clickPositionPercentage = relativeX / cellWidth;
+            
+            // Check if the click was on a colored part of the cell
+            const isOnMaterialPart = clickPositionPercentage <= cell.materialStoragePercentage;
+            const isOnIssuePart = !isOnMaterialPart && 
+                                   clickPositionPercentage <= (cell.materialStoragePercentage + cell.issueStoragePercentage);
+            const isFullCell = cell.status === "Đã đầy";
+            
+            // Only proceed if the click was on a colored part (blue, red, or dark blue for full)
+            if (isOnMaterialPart || isOnIssuePart || isFullCell) {
+                // Determine if the click was on material or issue section
+                let selectedDetails;
+                
+                if (isFullCell) {
+                    // If the cell is full, always use material details
+                    selectedDetails = {
+                        locationId: cell.details.locationId,
+                        status: "Đã đầy",
+                        quantity: cell.details.quantity,
+                        lotNumber: cell.details.lotNumber,
+                        storagePercentage: cell.details.storagePercentage,
+                        warehouseId: cell.details.warehouseId,
+                        warehouseName: cell.details.warehouseName,
+                        equipmentName: cell.details.equipmentName,
+                    };
+                } else if (isOnMaterialPart) {
+                    // Click was on the material section (blue)
+                    selectedDetails = {
+                        locationId: cell.details.locationId,
+                        status: "Đang chứa hàng",
+                        quantity: cell.details.quantity,
+                        lotNumber: cell.details.lotNumber,
+                        storagePercentage: cell.materialStoragePercentage,
+                        warehouseId: cell.details.warehouseId,
+                        warehouseName: cell.details.warehouseName,
+                        equipmentName: cell.details.equipmentName,
+                    };
+                } else {
+                    // Click was on the issue section (red)
+                    const issueLotInfo = cell.issueDisplayValue.split(' ');
+                    const issueLotNumber = issueLotInfo[0];
+                    const issueQuantity = issueLotInfo.length > 1 ? 
+                        parseFloat(issueLotInfo[1].replace(/[()]/g, '')) : 0;
+                        
+                    selectedDetails = {
+                        locationId: cell.details.locationId,
+                        status: "Được phân bổ",
+                        quantity: issueQuantity,
+                        lotNumber: issueLotNumber,
+                        storagePercentage: cell.issueStoragePercentage,
+                        warehouseId: cell.details.warehouseId,
+                        warehouseName: cell.details.warehouseName,
+                        equipmentName: cell.details.equipmentName,
+                    };
+                }
+                
+                setSelectedCell({
+                    position: cell.details.locationId,
+                    selectedDetails: selectedDetails
+                });
+                
+                setModalPosition({
+                    top: event.clientY - 100,
+                    left: event.clientX - 150
+                });
+                setShowModal(true);
+            }
+            // If click was on white area, do nothing (no modal will show)
+        }
+    };
+
+    // Function to close modal
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+    
     // Function to process location data into visualization grid
     const processLocationsData = (locations) => {
         if (!Array.isArray(locations) || locations.length === 0) return {};
@@ -143,8 +232,10 @@ const IssueDistribution = ({warehouseId, isActive}) => {
             // If material storage nearly 100%, mark as full
             if (materialStoragePercentage >= 0.95) {
                 status = "Đã đầy";
-            } else if (materialStoragePercentage > 0 || issueStoragePercentage > 0) {
+            } else if (materialStoragePercentage > 0) {
                 status = "Đang chứa hàng";
+            } else if (issueStoragePercentage > 0) {
+                status = "Được phân bổ";
             }
             
             // Get material display value
@@ -159,7 +250,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
             let issueDisplayValue = "";
             if (hasIssueSubLots) {
                 const issueSublot = location.issueSubLots[0];
-                const issueQuantity = issueSublot.requestedQuantity;
+                const issueQuantity = location.issueSubLots.reduce((sum, subLot) => sum + (subLot.requestedQuantity || 0), 0);
                 const issueLotNumber = issueSublot.lotNumber;
                 issueDisplayValue = `${issueLotNumber} (${issueQuantity})`;
             }
@@ -175,8 +266,24 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 details: {
                     locationId: location.locationId,
                     status: status,
-                    materialSubLots: location.materialSubLots || [],
-                    issueSubLots: location.issueSubLots || []
+                    quantity: location.materialSubLots && location.materialSubLots.length > 0 
+                        ? location.materialSubLots[0].existingQuantity 
+                        : (location.issueSubLots && location.issueSubLots.length > 0 
+                            ? location.issueSubLots[0].requestedQuantity 
+                            : 0),
+                    lotNumber: location.materialSubLots && location.materialSubLots.length > 0 
+                        ? location.materialSubLots[0].lotNumber 
+                        : (location.issueSubLots && location.issueSubLots.length > 0 
+                            ? location.issueSubLots[0].lotNumber 
+                            : ""),
+                    storagePercentage: location.materialSubLots && location.materialSubLots.length > 0 
+                        ? location.materialSubLots[0].storagePercentage 
+                        : (location.issueSubLots && location.issueSubLots.length > 0 
+                            ? location.issueSubLots[0].storagePercentage 
+                            : 0),
+                    warehouseId: location.warehouseId || "",
+                    warehouseName: location.warehouseName || "",
+                    equipmentName: location.equipmentName || "",
                 }
             };
             
@@ -192,6 +299,162 @@ const IssueDistribution = ({warehouseId, isActive}) => {
         });
         
         return sections;
+    };
+
+    // Function to check if mouse is over a colored part of a cell
+    const isOverColoredPart = (cell, mousePositionPercentage) => {
+        if (!cell) return false;
+        
+        const isOnMaterialPart = mousePositionPercentage <= cell.materialStoragePercentage;
+        const isOnIssuePart = !isOnMaterialPart && 
+                             mousePositionPercentage <= (cell.materialStoragePercentage + cell.issueStoragePercentage);
+        const isFullCell = cell.status === "Đã đầy";
+        
+        return isOnMaterialPart || isOnIssuePart || isFullCell;
+    };
+    
+    // Mouse move handler for cell
+    const handleCellMouseMove = (cell, event) => {
+        if (!cell) return;
+        
+        const cellRect = event.currentTarget.getBoundingClientRect();
+        const relativeX = event.clientX - cellRect.left;
+        const cellWidth = cellRect.width;
+        
+        // Calculate the percentage of the mouse position
+        const mousePositionPercentage = relativeX / cellWidth;
+        
+        setHoveredCellInfo({
+            cellId: `${event.currentTarget.getAttribute('data-cell-id')}`,
+            isOverColoredPart: isOverColoredPart(cell, mousePositionPercentage)
+        });
+    };
+    
+    // Handle mouse leave for cell
+    const handleCellMouseLeave = () => {
+        setHoveredCellInfo(null);
+    };
+
+    // Function to render a cell
+    const renderCell = (cell, cellIndex, rowIndex) => {
+        const cellId = `${cellIndex}-${rowIndex}`;
+        const isHovered = hoveredCellInfo && hoveredCellInfo.cellId === cellId;
+        const cursorStyle = !cell ? 'default' : 
+                           (isHovered && hoveredCellInfo.isOverColoredPart) ? 'pointer' : 'default';
+        
+        return (
+            <td
+                key={cellId}
+                data-cell-id={cellId}
+                style={{
+                    position: "relative",
+                    border: "2px solid #000",
+                    minWidth: "130px",
+                    height: "50px",
+                    overflow: "hidden",
+                    padding: 0,
+                    cursor: cursorStyle
+                }}
+                onClick={(e) => cell && handleCellClick(cell, e)}
+                onMouseMove={(e) => handleCellMouseMove(cell, e)}
+                onMouseLeave={handleCellMouseLeave}
+            >
+                {/* Background div for empty state or full state */}
+                <div 
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
+                        zIndex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center"
+                    }}
+                >
+                    {cell && cell.status === "Đã đầy" && (
+                        <div style={{ color: "#FFF", whiteSpace: "normal", wordBreak: "break-word", padding: "2px" }}>
+                            {cell.materialDisplayValue}
+                        </div>
+                    )}
+                </div>
+                
+                {/* Material storage percentage div - blue */}
+                {cell && cell.materialStoragePercentage > 0 && cell.status !== "Đã đầy" && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
+                            height: "100%",
+                            backgroundColor: "#0089D7",
+                            zIndex: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            textAlign: "center",
+                            overflow: "hidden",
+                            fontSize: cell.materialStoragePercentage < 0.18 ? 
+                                "6px" : 
+                                (cell.materialStoragePercentage < 0.4 ? 
+                                    `${Math.max(10, cell.materialStoragePercentage * 20)}px` : 
+                                    "14px"),
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            boxSizing: "border-box",
+                            padding: "0 2px",
+                            borderRight: "1px solid #000",
+                        }}
+                    >
+                        <span style={{ color: "#FFF" }}>
+                            {cell.materialStoragePercentage < 0.1 ? 
+                                cell.materialDisplayValue.split(' ')[0] : 
+                                cell.materialDisplayValue}
+                        </span>
+                    </div>
+                )}
+                
+                {/* Issue storage percentage div - red */}
+                {cell && cell.issueStoragePercentage > 0 && cell.status !== "Đã đầy" && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
+                            width: `${Math.min(cell.issueStoragePercentage * 100, 100 - cell.materialStoragePercentage * 100)}%`,
+                            height: "100%", 
+                            backgroundColor: "#FF2115",
+                            zIndex: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            textAlign: "center",
+                            overflow: "hidden",
+                            fontSize: cell.issueStoragePercentage < 0.18 ? 
+                                "6px" : 
+                                (cell.issueStoragePercentage < 0.4 ? 
+                                    `${Math.max(10, cell.issueStoragePercentage * 20)}px` : 
+                                    "14px"),
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            boxSizing: "border-box",
+                            padding: "0 2px",
+                            borderRight: "1px solid #000",
+                        }}
+                    >
+                        <span style={{ color: "#FFF" }}>
+                            {cell.issueStoragePercentage < 0.1 ? 
+                                cell.issueDisplayValue.split(' ')[0] : 
+                                cell.issueDisplayValue}
+                        </span>
+                    </div>
+                )}
+            </td>
+        );
     };
 
     return (
@@ -246,114 +509,9 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                                         <tbody>
                                                             {rackEntries[0][1].rows.slice().reverse().map((row, rowIndex) => (
                                                                 <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) => (
-                                                                        <td
-                                                                            key={`${cellIndex}-${rowIndex}`}
-                                                                            style={{
-                                                                                position: "relative",
-                                                                                border: "2px solid #000",
-                                                                                minWidth: "130px",
-                                                                                height: "50px",
-                                                                                overflow: "hidden",
-                                                                                padding: 0,
-                                                                            }}
-                                                                        >
-                                                                            {/* Background div for empty state or full state */}
-                                                                            <div 
-                                                                                style={{
-                                                                                    position: "absolute",
-                                                                                    top: 0,
-                                                                                    left: 0,
-                                                                                    width: "100%",
-                                                                                    height: "100%",
-                                                                                    backgroundColor: cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
-                                                                                    zIndex: 1,
-                                                                                    display: "flex",
-                                                                                    alignItems: "center",
-                                                                                    justifyContent: "center",
-                                                                                    textAlign: "center"
-                                                                                }}
-                                                                            >
-                                                                                {cell && cell.status === "Đã đầy" && (
-                                                                                    <div style={{ color: "#FFF", whiteSpace: "normal", wordBreak: "break-word", padding: "2px" }}>
-                                                                                        {cell.materialDisplayValue}
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                            
-                                                                            {/* Material storage percentage div - blue */}
-                                                                            {cell && cell.materialStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                                                                                <div
-                                                                                    style={{
-                                                                                        position: "absolute",
-                                                                                        top: 0,
-                                                                                        left: 0,
-                                                                                        width: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                                                                                        height: "100%",
-                                                                                        backgroundColor: "#0089D7",
-                                                                                        zIndex: 2,
-                                                                                        display: "flex",
-                                                                                        alignItems: "center",
-                                                                                        justifyContent: "center",
-                                                                                        textAlign: "center",
-                                                                                        overflow: "hidden",
-                                                                                        fontSize: cell.materialStoragePercentage < 0.18 ? 
-                                                                                            "6px" : 
-                                                                                            (cell.materialStoragePercentage < 0.4 ? 
-                                                                                                `${Math.max(10, cell.materialStoragePercentage * 20)}px` : 
-                                                                                                "14px"),
-                                                                                        whiteSpace: "normal",
-                                                                                        wordBreak: "break-word",
-                                                                                        boxSizing: "border-box",
-                                                                                        padding: "0 2px",
-                                                                                        borderRight: "1px solid #000",
-                                                                                    }}
-                                                                                >
-                                                                                    <span style={{ color: "#FFF" }}>
-                                                                                        {cell.materialStoragePercentage < 0.1 ? 
-                                                                                            cell.materialDisplayValue.split(' ')[0] : 
-                                                                                            cell.materialDisplayValue}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                            
-                                                                            {/* Issue storage percentage div - red */}
-                                                                            {cell && cell.issueStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                                                                                <div
-                                                                                    style={{
-                                                                                        position: "absolute",
-                                                                                        top: 0,
-                                                                                        left: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                                                                                        width: `${Math.min(cell.issueStoragePercentage * 100, 100 - cell.materialStoragePercentage * 100)}%`,
-                                                                                        height: "100%", 
-                                                                                        backgroundColor: "#FF2115",
-                                                                                        zIndex: 2,
-                                                                                        display: "flex",
-                                                                                        alignItems: "center",
-                                                                                        justifyContent: "center",
-                                                                                        textAlign: "center",
-                                                                                        overflow: "hidden",
-                                                                                        fontSize: cell.issueStoragePercentage < 0.18 ? 
-                                                                                            "6px" : 
-                                                                                            (cell.issueStoragePercentage < 0.4 ? 
-                                                                                                `${Math.max(10, cell.issueStoragePercentage * 20)}px` : 
-                                                                                                "14px"),
-                                                                                        whiteSpace: "normal",
-                                                                                        wordBreak: "break-word",
-                                                                                        boxSizing: "border-box",
-                                                                                        padding: "0 2px",
-                                                                                        borderRight: "1px solid #000",
-                                                                                    }}
-                                                                                >
-                                                                                    <span style={{ color: "#FFF" }}>
-                                                                                        {cell.issueStoragePercentage < 0.1 ? 
-                                                                                            cell.issueDisplayValue.split(' ')[0] : 
-                                                                                            cell.issueDisplayValue}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                        </td>
-                                                                    ))}
+                                                                    {row.map((cell, cellIndex) => 
+                                                                        renderCell(cell, cellIndex, rowIndex)
+                                                                    )}
                                                                     <td 
                                                                         style={{
                                                                             textAlign: "center",
@@ -377,114 +535,9 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                                         <tbody>
                                                             {rackEntries[1][1].rows.slice().reverse().map((row, rowIndex) => (
                                                                 <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) => (
-                                                                        <td
-                                                                            key={`${cellIndex}-${rowIndex}`}
-                                                                            style={{
-                                                                                position: "relative",
-                                                                                border: "2px solid #000",
-                                                                                minWidth: "130px",
-                                                                                height: "50px",
-                                                                                overflow: "hidden",
-                                                                                padding: 0,
-                                                                            }}
-                                                                        >
-                                                                            {/* Background div for empty state or full state */}
-                                                                            <div 
-                                                                                style={{
-                                                                                    position: "absolute",
-                                                                                    top: 0,
-                                                                                    left: 0,
-                                                                                    width: "100%",
-                                                                                    height: "100%",
-                                                                                    backgroundColor: cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
-                                                                                    zIndex: 1,
-                                                                                    display: "flex",
-                                                                                    alignItems: "center",
-                                                                                    justifyContent: "center",
-                                                                                    textAlign: "center"
-                                                                                }}
-                                                                            >
-                                                                                {cell && cell.status === "Đã đầy" && (
-                                                                                    <div style={{ color: "#FFF", whiteSpace: "normal", wordBreak: "break-word", padding: "2px" }}>
-                                                                                        {cell.materialDisplayValue}
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                            
-                                                                            {/* Material storage percentage div - blue */}
-                                                                            {cell && cell.materialStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                                                                                <div
-                                                                                    style={{
-                                                                                        position: "absolute",
-                                                                                        top: 0,
-                                                                                        left: 0,
-                                                                                        width: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                                                                                        height: "100%",
-                                                                                        backgroundColor: "#0089D7",
-                                                                                        zIndex: 2,
-                                                                                        display: "flex",
-                                                                                        alignItems: "center",
-                                                                                        justifyContent: "center",
-                                                                                        textAlign: "center",
-                                                                                        overflow: "hidden",
-                                                                                        fontSize: cell.materialStoragePercentage < 0.18 ? 
-                                                                                            "6px" : 
-                                                                                            (cell.materialStoragePercentage < 0.4 ? 
-                                                                                                `${Math.max(10, cell.materialStoragePercentage * 20)}px` : 
-                                                                                                "14px"),
-                                                                                        whiteSpace: "normal",
-                                                                                        wordBreak: "break-word",
-                                                                                        boxSizing: "border-box",
-                                                                                        padding: "0 2px",
-                                                                                        borderRight: "1px solid #000",
-                                                                                    }}
-                                                                                >
-                                                                                    <span style={{ color: "#FFF" }}>
-                                                                                        {cell.materialStoragePercentage < 0.1 ? 
-                                                                                            cell.materialDisplayValue.split(' ')[0] : 
-                                                                                            cell.materialDisplayValue}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                            
-                                                                            {/* Issue storage percentage div - red */}
-                                                                            {cell && cell.issueStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                                                                                <div
-                                                                                    style={{
-                                                                                        position: "absolute",
-                                                                                        top: 0,
-                                                                                        left: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                                                                                        width: `${Math.min(cell.issueStoragePercentage * 100, 100 - cell.materialStoragePercentage * 100)}%`,
-                                                                                        height: "100%", 
-                                                                                        backgroundColor: "#FF2115",
-                                                                                        zIndex: 2,
-                                                                                        display: "flex",
-                                                                                        alignItems: "center",
-                                                                                        justifyContent: "center",
-                                                                                        textAlign: "center",
-                                                                                        overflow: "hidden",
-                                                                                        fontSize: cell.issueStoragePercentage < 0.18 ? 
-                                                                                            "6px" : 
-                                                                                            (cell.issueStoragePercentage < 0.4 ? 
-                                                                                                `${Math.max(10, cell.issueStoragePercentage * 20)}px` : 
-                                                                                                "14px"),
-                                                                                        whiteSpace: "normal",
-                                                                                        wordBreak: "break-word",
-                                                                                        boxSizing: "border-box",
-                                                                                        padding: "0 2px",
-                                                                                        borderRight: "1px solid #000",
-                                                                                    }}
-                                                                                >
-                                                                                    <span style={{ color: "#FFF" }}>
-                                                                                        {cell.issueStoragePercentage < 0.1 ? 
-                                                                                            cell.issueDisplayValue.split(' ')[0] : 
-                                                                                            cell.issueDisplayValue}
-                                                                                    </span>
-                                                                                </div>
-                                                                            )}
-                                                                        </td>
-                                                                    ))}
+                                                                    {row.map((cell, cellIndex) => 
+                                                                        renderCell(cell, cellIndex, rowIndex)
+                                                                    )}
                                                                     <td 
                                                                         style={{
                                                                             textAlign: "center",
@@ -552,6 +605,16 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                             <span>Đang trống</span>
                         </div>
                     </div>
+
+                    {/* Modal */}
+                    {showModal && selectedCell && (
+                        <InforIssueModal 
+                            data={selectedCell}
+                            onClose={handleCloseModal}
+                            position={modalPosition}
+                            isLoading={false}
+                        />
+                    )}
                 </div>
             )}
         </>

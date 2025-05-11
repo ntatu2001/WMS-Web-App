@@ -1,238 +1,136 @@
-import React, { useState } from 'react';
-import Modal from 'react-modal';
-import { FaEye } from 'react-icons/fa';
+import React, { useState, useRef, useEffect } from "react";
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
+import SectionTitle from '../../../../common/components/Text/SectionTitle';
+import { AiOutlineClose } from 'react-icons/ai';
 import clsx from 'clsx';
 import styles from './InforReceiptModal.module.scss';
-import { AiOutlineClose } from 'react-icons/ai';
-import SectionTitle from '../../../../common/components/Text/SectionTitle';
-import Label from '../../../../common/components/Label/Label';
-import FormGroup from '../../../../common/components/FormGroup/FormGroup';
-import FormSection from '../../../../common/components/Section/FormSection';
-import ListSection from '../../../../common/components/Section/ListSection';
-import Table from '../../../../common/components/Table/Table';
-import TableHeader from '../../../../common/components/Table/TableHeader';
-import TableCell from '../../../../common/components/Table/TableCell';
-import FaEyeButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
-import SelectContainer from '../../../../common/components/Selection/SelectContainer';
-import Select from '../../../../common/components/Selection/Select';
-import DropdownIcon from '../../../../common/components/Icon/DropdownIcon';
-import DateInput from '../../../../common/components/DateInput/DateInput';
-import TextNote from '../../../../common/components/Text/TextNote';
-import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
-import { FaChevronDown } from 'react-icons/fa';
-import QRicon from '../../../../assets/QRicon.png';
-import { listReceiptStorageMaterials } from '../../../../app/mockData/InventoryReceiptData.js';
-import { listUnitOfMeasures } from '../../../../app/mockData/UnitOfMeasure.js';
-import { listSuppliers } from '../../../../app/mockData/SupplierData.js';
-import { listMaterials } from '../../../../app/mockData/MaterialData.js';
+import Label from "../../../../common/components/Label/Label";
+import { ClipLoader } from 'react-spinners';
 
-const InforReceiptModal = ({ isModalOpen, closeModal }) => {
-    const [selectedDate1, setSelectedDate1] = useState(null);
-    const [selectedDate2, setSelectedDate2] = useState(null);
-    const [selectedDate3, setSelectedDate3] = useState(null);
 
+const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
+    // State for handling draggable functionality
+    const [isDragging, setIsDragging] = useState(false);
+    const [modalPosition, setModalPosition] = useState({ 
+        top: position.top, 
+        left: position.left 
+    });
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const modalRef = useRef(null);
+
+    // Function to handle close button click
+    const handleClose = (e) => {
+        e.stopPropagation(); // Prevent event from bubbling up
+        onClose();
+    };
+
+    // Start dragging
+    const handleMouseDown = (e) => {
+        if (modalRef.current && !e.target.closest('button')) {
+            const rect = modalRef.current.getBoundingClientRect();
+            setIsDragging(true);
+            setDragOffset({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        }
+    };
+
+    // Handle mouse movement while dragging
+    const handleMouseMove = (e) => {
+        if (isDragging) {
+            setModalPosition({
+                top: e.clientY - dragOffset.y,
+                left: e.clientX - dragOffset.x
+            });
+        }
+    };
+
+    // End dragging
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    // Add event listeners for mouse move and mouse up
+    useEffect(() => {
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        } else {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging]);
+  
     return (
-        <Modal isOpen={isModalOpen}
-            onRequestClose={closeModal}
-            className={clsx(styles.modal)}
-            ariaHideApp={false}
+        <div 
+            ref={modalRef}
+            className={clsx(styles.modal)} 
+            style={{ 
+                top: modalPosition.top, 
+                left: modalPosition.left,
+                cursor: isDragging ? 'grabbing' : 'grab',
+                zIndex: 999
+            }}
+            onMouseDown={handleMouseDown}
         >
-            <SectionTitle style={{ fontSize: "24px" }}>Thông tin nhập kho chi tiết</SectionTitle>
-            {/* Thêm nội dung modal ở đây */}
-            <button className={clsx(styles.modalClose)} onClick={closeModal}>
-                <AiOutlineClose style={{ fontWeight: "bold" }} />
+          <div className="flex justify-center items-center w-full">
+            <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>Vị trí {data.position}</SectionTitle>
+            <button 
+              onClick={handleClose}
+              className={clsx(styles.modalClose)}
+            >
+               <AiOutlineClose style={{ fontWeight: "bold" }} />
             </button>
-            <div style={{ display: "flex" }}>
-
-                <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
-
-                    <FormGroup style={{ position: "relative", marginBottom: 0 }}>
-                        <Label style={{ width: "35%", marginLeft: "30px" }}>Mã lô nhập kho:</Label>
-                        <input type="text" style={{
-                            border: "1px solid #767676",
-                            borderRadius: "6px",
-                            padding: "5px 50px 5px 10px",
-                            width: "50.3%"
-                        }}
-                        />
-                        <button style={{
-                            width: "20px",
-                            position: "absolute",
-                            right: "0",
-                            marginRight: "10%"
-                        }}>
-                            <img src={QRicon} alt="QR Icon" />
-                        </button>
-
-                    </FormGroup>
-
-                    <TextNote>*Nhập hoặc quét mã lô hàng</TextNote>
-
-                    <FormGroup>
-                        <Label style={{ width: "35%", marginLeft: "30px" }}>Nhà cung cấp:</Label>
-                        <SelectContainer>
-                            <Select defaultValue="" style={{ width: "88.5%" }}>
-                                <option value="" disabled>Chọn nhà cung cấp</option>
-                                {listSuppliers.map((supplier, index) => (
-                                    <option key = {`supplier-${index}`} value={`supplier${index}`}>
-                                        {supplier}
-                                    </option>
-                                ))}
-                            </Select>
-                            <DropdownIcon style={{ right: "15%" }}><FaChevronDown size={12} /></DropdownIcon>
-                        </SelectContainer>
-                    </FormGroup>
-
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
-                    <FormGroup style={{ position: "relative" }}>
-                        <Label style={{ width: "36.3%", marginLeft: "10px" }}>Tổng số lượng:</Label>
-                        <input type="text" style={{
-                            border: "1px solid #767676",
-                            borderRadius: "6px",
-                            padding: "5px 50px 8px 10px",
-                            width: "53.5%"
-                        }}
-                        />
-                    </FormGroup>
-
-                    <FormGroup>
-                        <Label style={{ width: "35%", marginLeft: "10px" }}>Ngày nhập kho:</Label>
-                        <SelectContainer>
-                            <DateInput style={{ width: "86%", left: "2%" }}
-                                selectedDate={selectedDate1}
-                                onChange={setSelectedDate1}
-                            />
-                        </SelectContainer>
-                    </FormGroup>
-
-                </div>
-
+          </div>
+  
+          {isLoading ? (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '200px',
+              width: '100%'
+            }}>
+              <ClipLoader color="#0089D7" size={40} />
             </div>
+          ) : (
+            <>
+              <div style={{justifyItems: "center", marginRight: "7%", marginTop: "7%"}} >
+                <div style={{marginBottom: "5%", width: "100%"}}>
+                      <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
+                                <Label>Mã lô:</Label>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails.lotNumber}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
+                        <Label>Số lượng:</Label>
+                        <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails.quantity}</span>
+                      </div>
 
-            <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Thông tin sản phẩm</SectionTitle>
-
-            <FormSection style={{ margin: "0px 10px 10px", backgroundColor: "#F5F5F5", height: "182px", padding: "10px" }}>
-                <div style={{ marginBottom: 0, display: "flex" }}>
-                    <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
-                        <FormGroup style={{ marginLeft: "10px" }}>
-                            <Label style={{ width: "38%" }}>Sản phẩm:</Label>
-                            <SelectContainer>
-                                <Select defaultValue="" style={{ width: "88.5%" }}>
-                                    <option value="" disabled>Chọn sản phẩm</option>
-                                    {listMaterials.map((material, index) => (
-                                        <option key = {`marterial-${index}`} value={`material${index}`}>
-                                            {material.name}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <DropdownIcon style={{ right: "15%" }}><FaChevronDown size={12} /></DropdownIcon>
-                            </SelectContainer>
-                        </FormGroup>
-
-                        <FormGroup style={{ marginLeft: "10px" }}>
-                            <Label style={{ width: "38%" }}>Đơn vị tính:</Label>
-                            <SelectContainer>
-                                <Select defaultValue="" style={{ width: "88.5%" }}>
-                                    <option value="" disabled>Chọn ĐVT</option>
-                                    {listUnitOfMeasures.map((unitOfMeasure, index) => (
-                                        <option key = {`unitOfMeasure-${index}`} value={`unitOfMeasures${index}`}>
-                                            {unitOfMeasure}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <DropdownIcon style={{ right: "15%" }}><FaChevronDown size={12} /></DropdownIcon>
-                            </SelectContainer>
-                        </FormGroup>
-
-                        <FormGroup style={{ marginLeft: "10px" }}>
-                            <Label style={{ width: "36.6%" }}>Ngày sản xuất:</Label>
-                            <SelectContainer>
-                                <DateInput style={{ width: "84.5%", left: "4.7%" }}
-                                    selectedDate={selectedDate2}
-                                    onChange={setSelectedDate2}
-                                />
-                            </SelectContainer>
-                        </FormGroup>
-
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
-                        <FormGroup style={{ marginLeft: "10px" }}>
-                            <Label style={{ width: "39%" }}>Mã sản phẩm:</Label>
-                            <SelectContainer>
-                                <Select defaultValue="" style={{ width: "96.5%" }}>
-                                    <option value="" disabled>Chọn mã sản phẩm</option>
-                                    {listMaterials.map((material, index) => (
-                                        <option key = {`material-${index}`} value={`material${index}`}>
-                                            {material.code}
-                                        </option>
-                                    ))}
-                                </Select>
-                                <DropdownIcon style={{ right: "15%" }}><FaChevronDown size={12} /></DropdownIcon>
-                            </SelectContainer>
-                        </FormGroup>
-
-                        <FormGroup style={{ position: "relative" }}>
-                            <Label style={{ width: "37.6%", marginLeft: "10px" }}>Ghi chú:</Label>
-                            <input type="text" style={{
-                                border: "1px solid #767676",
-                                borderRadius: "6px",
-                                padding: "5px 50px 8px 10px",
-                                width: "57.7%"
-                            }}
-                            />
-                        </FormGroup>
-
-                        <FormGroup>
-                            <Label style={{ width: "36.5%", marginLeft: "3%" }}>Hạn sử dụng:</Label>
-                            <SelectContainer>
-                                <DateInput style={{ width: "91%", left: "1.5%" }}
-                                    selectedDate={selectedDate3}
-                                    onChange={setSelectedDate3}
-                                />
-                            </SelectContainer>
-                        </FormGroup>
-                    </div>
+                      <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
+                                <Label>Trạng thái:</Label>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%", color: data.selectedDetails?.status === "Đang chứa hàng" ? "#0089D7" : 
+                                    data.selectedDetails?.status === "Được phân bổ" ? "#FF2115" : "#00294D"
+                                 }}>{data.selectedDetails?.status}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
+                                <Label>Tỷ lệ lưu trữ:</Label>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{Math.round(data.selectedDetails?.storagePercentage * 100)}%</span>
+                      </div>
                 </div>
-            </FormSection>
+                
+              </div>
 
-            <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Phân bố vị trí lưu trữ</SectionTitle>
-
-            <ListSection style={{ padding: 0, width: "97%", left: "1.6%" }}>
-                <div style={{ overflowX: 'auto' }}>
-                    <Table>
-                        <thead>
-                            <tr>
-                                <TableHeader>STT</TableHeader>
-                                <TableHeader>Vị trí lưu trữ</TableHeader>
-                                <TableHeader>Số lượng lưu trữ tại mỗi vị trí</TableHeader>
-                                <TableHeader></TableHeader>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {listReceiptStorageMaterials.map((item) => (
-                                <tr key={item.id}>
-                                    <TableCell>{item.id}</TableCell>
-                                    <TableCell>{item.location}</TableCell>
-                                    <TableCell>{item.quantity}</TableCell>
-                                    <TableCell>
-                                        <FaEyeButton>
-                                            <FaEye size={25} color="#000" />
-                                        </FaEyeButton>
-                                    </TableCell>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </div>
-            </ListSection>
-
-            <ActionButton style={{ width: "35%", height: "10%" }}>Chấp nhận</ActionButton>
-
-        </Modal>
+            </>
+          )}
+        </div>
+ 
     );
-};
+  };
 
-export default InforReceiptModal;
+  export default InforReceiptModal;

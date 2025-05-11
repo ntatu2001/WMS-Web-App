@@ -3,6 +3,7 @@ import { FaTrash } from 'react-icons/fa';
 import 'react-datepicker/dist/react-datepicker.css';
 import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+import IssueDistribution from './IssueDistribution/IssueDistribution.jsx';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
@@ -25,6 +26,9 @@ import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import { ClipLoader} from 'react-spinners';
 import schedulingApi from '../../../../api/schedulingApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+import issueSubLotApi from '../../../../api/issueSubLotApi.js';
 
 const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     
@@ -32,10 +36,16 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
     const [warehouses, setWarehouses] = useState([]);
     const [warehouseId, setWarehouseId] = useState(null);
-    const [issueDetailScheduling, setIssueDetailScheduling] = useState([]);
     const [loadingScheduling, setLoadingScheduling] = useState(false);
     const [loadingIssueLot, setLoadingIssueLot] = useState(false);
+    const [activeTab, setActiveTab] = useState(0);
+    const [updatedItems, setUpdatedItems] = useState([]);
+    const [isUpdating, setIsUpdating] = useState(false);
     
+
+    console.log("updatedItems", updatedItems);
+
+
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
     const schedulingFetchedRef = useRef({});
 
@@ -61,8 +71,19 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
         
         setLoadingScheduling(true);
         try {
-            const issueDetailScheduling = await schedulingApi.getIssueDetailScheduling(warehouseId);
-            setIssueDetailScheduling(issueDetailScheduling);
+            const issueDetailSchedulingData = await schedulingApi.getIssueDetailScheduling(warehouseId);
+            
+            // Initialize updated items with the fetched data
+            const initialUpdatedItems = issueDetailSchedulingData.map(item => ({
+                issueSubLotId: item.issueSublotId || "",
+                materialId: item.materialId || "",
+                materialName: item.materialName || "",
+                requestedQuantity: item.requestedQuantity || 0,
+                locationId: item.locationId || "",
+                lotNumber: item.lotNumber || ""
+            }));
+            setUpdatedItems(initialUpdatedItems);
+            
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
         } catch (error) {
@@ -123,113 +144,222 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
         const warehouseName = e.target.value;
         setSelectedWarehouse(warehouseName);
     };
+
+    // Handle tab change
+    const handleTabChange = (tabIndex) => {
+        setActiveTab(tabIndex);
+    };
+    
+    // Handle changes to editable fields
+    const handleItemChange = (index, field, value) => {
+        // Update the data for API submission
+        const updatedItemsList = [...updatedItems];
+        updatedItemsList[index][field] = value;
+        setUpdatedItems(updatedItemsList);
+    };
+    
+    // Function to update issue sublots
+    const updateIssueSubLots = async () => {
+        setIsUpdating(true);
+        
+        try {
+            const updatedIssueSubLot = {
+                issueSubLots: updatedItems.map(item => ({
+                    issueSubLotId: item.issueSubLotId,
+                    materialId: item.materialId,
+                    locationId: item.locationId,
+                    requestedQuantity: item.requestedQuantity,
+                    lotNumber: item.lotNumber
+                }))
+            }
+            
+            // Call API to update the issue sublots
+            await issueSubLotApi.updateIssueSubLot(updatedIssueSubLot);
+            toast.success("Duyệt danh sách xuất kho thành công!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        } catch (error) {
+            console.error("Error updating issue sublots:", error);
+            toast.error("Duyệt thất bại", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
         
     return (
-        <div style={{display: "flex"}}>
-            <ContentContainer style={{maxHeight: "700px"}}>
-                <FormSection style={{height: "100%", display: "flex", flexDirection: "column"}}>
-                    <FormGroup>
-                        <Label style={{fontWeight: "bold"}}>Kho hàng:</Label>
-                        <SelectContainer>
-                            <Select 
-                                value={selectedWarehouse} 
-                                onChange={handleWarehouseChange} 
-                                required
-                            >
-                                <option value="" disabled selected>Chọn loại kho hàng</option>
-                                {warehouses.map((warehouse, index) => (
-                                    <option key={`warehouse-${index}`} value={warehouse.warehouseName}> 
-                                        {warehouse.warehouseName}
-                                    </option>
-                                ))}
-                            </Select>
-                        </SelectContainer>
-                    </FormGroup>
+        <div>
+            <TabContainer
+                tabs={[
+                    { label: 'Danh sách xuất kho' },
+                    { label: 'Sơ đồ phân bổ' }
+                ]}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+            />
 
-                    <SectionTitle style={{fontSize: "100%", padding: "10px", marginBottom: 0}}>
-                        Danh sách lô xuất kho chưa hoàn thành
-                    </SectionTitle>
-                    
-                    <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
-                        {loadingIssueLot ? (
-                            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                                <ClipLoader size={35} color="#0066CC" />
+            {activeTab === 0 && (
+                <div style={{display: "flex"}}>
+                    <ContentContainer style={{maxHeight: "700px"}}>
+                        <FormSection style={{height: "100%", display: "flex", flexDirection: "column"}}>
+                            <FormGroup>
+                                <Label style={{fontWeight: "bold"}}>Kho hàng:</Label>
+                                <SelectContainer>
+                                    <Select 
+                                        value={selectedWarehouse} 
+                                        onChange={handleWarehouseChange} 
+                                        required
+                                    >
+                                        <option value="" disabled selected>Chọn loại kho hàng</option>
+                                        {warehouses.map((warehouse, index) => (
+                                            <option key={`warehouse-${index}`} value={warehouse.warehouseName}> 
+                                                {warehouse.warehouseName}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </SelectContainer>
+                            </FormGroup>
+
+                            <SectionTitle style={{fontSize: "100%", padding: "10px", marginBottom: 0}}>
+                                Danh sách lô xuất kho chưa hoàn thành
+                            </SectionTitle>
+                            
+                            <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
+                                {loadingIssueLot ? (
+                                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                                        <ClipLoader size={35} color="#0066CC" />
+                                    </div>
+                                ) : (
+                                    filteredIssueLots.map((item) => (
+                                        <div className={clsx(styles.divOfList)}
+                                            key={item.issueLotId}
+                                        >
+                                            <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
+                                                <LabelSmallSize>Mã lô:</LabelSmallSize>
+                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.lotNumber}</span>
+                                            </div>
+
+                                            <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
+                                                <LabelSmallSize>Sản phẩm:</LabelSmallSize>
+                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialName}</span>
+                                            </div>
+
+                                            <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
+                                                <LabelSmallSize>Mã sản phẩm:</LabelSmallSize>
+                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialId}</span>
+                                            </div>
+
+                                            <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
+                                                <LabelSmallSize>Số lượng xuất kho:</LabelSmallSize>
+                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.requestedQuantity}</span>
+                                            </div>  
+                                        </div>
+                                    ))
+                                )}
                             </div>
-                        ) : (
-                            filteredIssueLots.map((item) => (
-                                <div className={clsx(styles.divOfList)}
-                                    key={item.issueLotId}
+                        </FormSection>
+
+                        <ListSection>
+                            <SectionTitle>Kết quả phân bổ vị trí lấy hàng cho các lô xuất kho</SectionTitle>
+
+                            <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+                                {loadingScheduling ? (
+                                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
+                                        <ClipLoader size={35} color="#0066CC" />
+                                    </div>
+                                ) : (
+                                    <Table>
+                                        <thead>
+                                            <tr>
+                                                <TableHeader style={{ width: '1%' }}>STT</TableHeader>
+                                                <TableHeader>Vị trí lưu trữ</TableHeader>
+                                                <TableHeader>Mã lô</TableHeader>
+                                                <TableHeader style={{ width: '25%' }}>Tên sản phẩm</TableHeader>
+                                                <TableHeader style={{width : "15%"}}>Mã sản phẩm</TableHeader>
+                                                <TableHeader style={{width: "20%"}}>Số lượng lấy</TableHeader>
+                                                <TableHeader style={{ width: '50px' }}></TableHeader>
+                                            </tr>
+                                        </thead>
+                                        <tbody> 
+                                            {updatedItems.map((item, index) => (
+                                                <tr key={index}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>
+                                                        <input
+                                                            type="text"
+                                                            value={item.locationId || ''}
+                                                            onChange={(e) => handleItemChange(index, 'locationId', e.target.value)}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '4px',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius: '4px',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{item.lotNumber}</TableCell>
+                                                    <TableCell>{item.materialName}</TableCell>
+                                                    <TableCell>{item.materialId}</TableCell>
+                                                    <TableCell>
+                                                        <input
+                                                            type="number"
+                                                            value={item.requestedQuantity || 0}
+                                                            onChange={(e) => handleItemChange(index, 'requestedQuantity', parseInt(e.target.value) || 0)}
+                                                            min="0"
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '4px',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius: '4px',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <DeleteButton>
+                                                            <FaTrash size={15} color="#000" />
+                                                        </DeleteButton>
+                                                    </TableCell>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', marginTop: "10%" }}>
+                                <ActionButton 
+                                    onClick={updateIssueSubLots}
+                                    disabled={isUpdating}
                                 >
-                                    <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Mã lô:</LabelSmallSize>
-                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.lotNumber}</span>
-                                    </div>
-
-                                    <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Sản phẩm:</LabelSmallSize>
-                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialName}</span>
-                                    </div>
-
-                                    <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Mã sản phẩm:</LabelSmallSize>
-                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialId}</span>
-                                    </div>
-
-                                    <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Số lượng xuất kho:</LabelSmallSize>
-                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.requestedQuantity}</span>
-                                    </div>  
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </FormSection>
-
-                <ListSection>
-                    <SectionTitle>Vị trí lấy hàng cho các lô xuất kho</SectionTitle>
-
-                    <div style={{maxHeight: "400px", overflowY: "scroll"}}>
-                        {loadingScheduling ? (
-                            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
-                                <ClipLoader size={35} color="#0066CC" />
+                                    Duyệt danh sách xuất kho
+                                </ActionButton>
                             </div>
-                        ) : (
-                            <Table>
-                                <thead>
-                                    <tr>
-                                        <TableHeader style={{ width: '1%' }}>STT</TableHeader>
-                                        <TableHeader>Vị trí lưu trữ</TableHeader>
-                                        <TableHeader>Mã lô</TableHeader>
-                                        <TableHeader style={{ width: '25%' }}>Tên sản phẩm</TableHeader>
-                                        <TableHeader style={{width : "15%"}}>Mã sản phẩm</TableHeader>
-                                        <TableHeader style={{width: "20%"}}>Số lượng lấy</TableHeader>
-                                        <TableHeader style={{ width: '50px' }}></TableHeader>
-                                    </tr>
-                                </thead>
-                                <tbody> 
-                                    {issueDetailScheduling.map((item, index) => (
-                                        <tr key={index}>
-                                            <TableCell>{index + 1}</TableCell>
-                                            <TableCell>{item.locationId}</TableCell>
-                                            <TableCell>{item.lotNumber}</TableCell>
-                                            <TableCell>{item.materialName}</TableCell>
-                                            <TableCell>{item.materialId}</TableCell>
-                                            <TableCell>{item.requestedQuantity}</TableCell>
-                                            <TableCell>
-                                                <DeleteButton>
-                                                    <FaTrash size={15} color="#000" />
-                                                </DeleteButton>
-                                            </TableCell>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        )}
-                    </div>
+                        </ListSection>
+                    </ContentContainer>
+                </div>
+            )}
 
-                    <ActionButton style={{ marginTop: "10%" }}>Duyệt danh sách xuất kho</ActionButton>
-                </ListSection>
-            </ContentContainer>
+            {activeTab === 1 && (
+                <IssueDistribution 
+                    warehouseId={warehouseId} 
+                    isActive={activeTab === 1}
+                />
+            )}
         </div>
     );
 };

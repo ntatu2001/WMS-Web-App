@@ -300,7 +300,7 @@ const CreateGoodIssue = () => {
                 <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
                 <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
                 <TableHeader style={{ width: "30%" }}>Mã lô/Số PO</TableHeader>
-                <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
+                <TableHeader style={{ width: "25%" }}>Số lượng xuất</TableHeader>
                 <TableHeader style={{ width: "10%" }}></TableHeader>
               </tr>
             </thead>

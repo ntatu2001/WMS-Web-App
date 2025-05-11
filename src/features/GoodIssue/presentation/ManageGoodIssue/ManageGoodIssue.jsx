@@ -108,7 +108,7 @@ const ManageGoodIssue = () => {
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.issueLot.requestedQuantity}</TableCell>
                         <TableCell>{item.personName}</TableCell>
-                        <TableCell>{item.note}</TableCell>
+                        <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <div
                             style={{

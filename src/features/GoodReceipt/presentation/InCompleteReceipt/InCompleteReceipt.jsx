@@ -26,6 +26,10 @@ import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import { ClipLoader} from 'react-spinners';
 import schedulingApi from '../../../../api/schedulingApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+import receiptSubLotApi from '../../../../api/receiptSubLotApi.js';
+
 // import {receiptDetailScheduling as receiptDetailSchedulingData} from '../../../../app/mockData/LocationData.js';
 
 const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
@@ -37,7 +41,10 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
     const [receiptDetailScheduling, setReceiptDetailScheduling] = useState([]);
     const [loadingScheduling, setLoadingScheduling] = useState(false);
     const [loadingReceiptLot, setLoadingReceiptLot] = useState(false);
-    
+    const [updatedItems, setUpdatedItems] = useState([]);
+    const [isUpdating, setIsUpdating] = useState(false);
+    console.log("receiptDetailScheduling", receiptDetailScheduling);
+    console.log("updatedItems", updatedItems);
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
     const schedulingFetchedRef = useRef({});
     
@@ -68,6 +75,16 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
         try {
             const receiptDetailScheduling = await schedulingApi.getReceiptDetailScheduling(warehouseId);
             setReceiptDetailScheduling(receiptDetailScheduling);
+            // Initialize updated items with the fetched data
+            const initialUpdatedItems = receiptDetailScheduling.map(item => ({
+                receiptSubLotId: item.receiptSublotId || "",
+                materialId: item.materialId || "",
+                materialName: item.materialName || "",
+                importedQuantity: item.importedQuantity || 0,
+                locationId: item.locationId || "",
+                lotNumber: item.lotNumber || ""
+            }));
+            setUpdatedItems(initialUpdatedItems);
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
         } catch (error) {
@@ -119,11 +136,59 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
         fetchWarehouses();
     }, []); // Only fetch warehouses once on component mount
     
-
+    
     // Handle warehouse selection change
     const handleWarehouseChange = (e) => {
         const warehouseName = e.target.value;
         setSelectedWarehouse(warehouseName);
+    };
+    
+    // Handle changes to editable fields
+    const handleItemChange = (index, field, value) => {
+        // Update the data for API submission
+        const updatedItemsList = [...updatedItems];
+        updatedItemsList[index][field] = value;
+        setUpdatedItems(updatedItemsList);
+    };
+    
+    // Function to update receipt sublots
+    const updateReceiptSublots = async () => {
+        setIsUpdating(true);
+        
+        try {
+            const updatedReceiptSubLot = {
+                receiptSubLots: updatedItems.map(item => ({
+                    receiptSubLotId: item.receiptSubLotId,
+                    materialId: item.materialId,
+                    locationId: item.locationId,
+                    importedQuantity: item.importedQuantity,
+                    lotNumber: item.lotNumber
+                }))
+            }
+            console.log("updatedReceiptSubLot", updatedReceiptSubLot);
+            // Call API to update the material lot adjustment
+            await receiptSubLotApi.updateReceiptSubLot(updatedReceiptSubLot);
+            toast.success("Duyệt danh sách nhập kho thành công!", {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+        });
+        }
+        catch {
+            toast.error("Duyệt thất bại", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        }
     };
         
     return (
@@ -202,7 +267,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
 
                         <ListSection>
            
-                                <SectionTitle>Vị trí lưu kho cho các lô nhập kho</SectionTitle>
+                                <SectionTitle>Kết quả phân bổ vị trí lưu kho cho các lô nhập kho</SectionTitle>
 
                                 <div style={{maxHeight: "400px", overflowY: "scroll"}}>
                                 {loadingScheduling ? (
@@ -223,14 +288,41 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                                             </tr>
                                         </thead>
                                         <tbody> 
-                                            {receiptDetailScheduling.map((item, index) => (
+                                            {updatedItems.map((item, index) => (
                                                 <tr key={index}>
                                                     <TableCell>{index + 1}</TableCell>
-                                                    <TableCell>{item.locationId}</TableCell>
+                                                    <TableCell>
+                                                        <input
+                                                            type="text"
+                                                            value={item.locationId || ''}
+                                                            onChange={(e) => handleItemChange(index, 'locationId', e.target.value)}
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '4px',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius: '4px',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell>{item.lotNumber}</TableCell>
                                                     <TableCell>{item.materialName}</TableCell>
                                                     <TableCell>{item.materialId}</TableCell>
-                                                    <TableCell>{item.importedQuantity}</TableCell>
+                                                    <TableCell>
+                                                        <input
+                                                            type="number"
+                                                            value={item.importedQuantity || 0}
+                                                            onChange={(e) => handleItemChange(index, 'importedQuantity', parseInt(e.target.value) || 0)}
+                                                            min="0"
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '4px',
+                                                                border: '1px solid #ccc',
+                                                                borderRadius: '4px',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell>
                                                         <DeleteButton>
                                                             <FaTrash size={15} color="#000" />
@@ -245,7 +337,14 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
 
                                 {/* Modal for additional information */}
 
-                                <ActionButton style={{ marginTop: "10%" }}>Duyệt danh sách xuất kho</ActionButton>
+                                <div style={{ display: 'flex', marginTop: "10%" }}>
+                                    <ActionButton 
+                                        onClick={updateReceiptSublots}
+                                        disabled={isUpdating}
+                                        >
+                                            Duyệt danh sách nhập kho
+                                    </ActionButton>
+                                </div>
                             </ListSection>
 
                     </ContentContainer>
