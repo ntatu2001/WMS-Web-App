@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { lotStatusData } from '../../../../app/mockData/LotStatusData';
 
 const ReceiptProgress = ({ item, handleStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false); // State để kiểm soát hiển thị dropdown
@@ -9,65 +10,67 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
     setIsOpen(false); // Đóng dropdown sau khi chọn
   };
 
+  // Check if status is "Hoàn thành" to disable dropdown
+  const isCompleted = item.status === "Hoàn thành";
+
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
       {/* Nút để mở dropdown */}
       <div
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => !isCompleted && setIsOpen(!isOpen)}
         style={{
-          backgroundColor: item.status === "Đang kiểm tra" ? "#081BB0" : "#E5B009",
+          backgroundColor: lotStatusData[item.status],
           color: "white",
           fontWeight: "bold",
-          fontSize: "12px",
+          fontSize: "14px",
           padding: "4px 8px",
-          borderRadius: "4px",
-          cursor: "pointer",
+          borderRadius: "8px",
+          cursor: isCompleted ? "default" : "pointer", // Change cursor if completed
+          textAlign: "center",
+          width: '100%',
+          margin: '0 auto',
         }}
       >
         {item.status}
       </div>
 
-      {/* Dropdown menu */}
-      {isOpen && (
+      {/* Dropdown menu - only show if not completed */}
+      {isOpen && !isCompleted && (
         <ul
           style={{
-            // position: 'absolute',
+            position: 'absolute',
             top: '100%',
             left: 0,
-            backgroundColor: 'white',
+            overflow: "scroll",
+            backgroundColor: '#767676',
             border: '1px solid #000',
             borderRadius: '4px',
             listStyle: 'none',
             padding: 0,
-            margin: 0,
+            margin: '2px 0 0 0',
             zIndex: 1000,
             width: '100%',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
           }}
         >
-          <li
-            onClick={() => handleSelect("Đang kiểm tra")}
-            style={{
-              padding: '8px',
-              cursor: 'pointer',
-              backgroundColor: "#0052cc",
-              color: "white",
-              fontWeight: "bold",
-            }}
-          >
-            Đang kiểm tra
-          </li>
-          <li
-            onClick={() => handleSelect("Đang lấy hàng")}
-            style={{
-              padding: '8px',
-              cursor: 'pointer',
-              backgroundColor: "#ff9800",
-              color: "white",
-              fontWeight: "bold",
-            }}
-          >
-            Đang lấy hàng
-          </li>
+          {Object.entries(lotStatusData).map(([status, color]) => (
+            <li
+              key={status}
+              onClick={() => handleSelect(status)}
+              style={{
+                padding: '8px',
+                cursor: 'pointer',
+                backgroundColor: color,
+                color: "white",
+                fontWeight: "bold",
+                margin: '2px 0',
+                borderRadius: '4px',
+                textAlign: 'center',
+              }}
+            >
+              {status}
+            </li>
+          ))}
         </ul>
       )}
     </div>

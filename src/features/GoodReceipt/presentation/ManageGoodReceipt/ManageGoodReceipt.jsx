@@ -5,10 +5,11 @@ import HeaderItem from '../../../../common/components/Header/HeaderItem';
 import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
-import { lotStatusData, lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
+import { lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
 import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
 import { ClipLoader} from 'react-spinners';
-
+import ReceiptProgress from '../Progress/ReceiptProgress';
+import receiptLotApi from '../../../../api/receiptLotApi.js';
 
 const ManageGoodReceipt = () => {
 
@@ -16,20 +17,20 @@ const ManageGoodReceipt = () => {
   const [todayReceiptEntries, setTodayReceiptEntries] = useState([]);
   const [lastWeekReceiptEntries, setLastWeekReceiptEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+    
   useEffect(() => {
     const GetApi = async() => {
       try {
         setLoading(true);
         const receiptEntryList = await inventoryReceiptEntryApi.getAllReceiptEntries();
+        const receiptEntryNotPending = receiptEntryList.filter(entry => entry.receiptLot.receiptLotStatus !== "Pending");
+        setReceiptEntries(receiptEntryNotPending);
 
-        setReceiptEntries(receiptEntryList);
-        
         // Filter entries for today
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Set to beginning of day
         
-        const todayEntries = receiptEntryList.filter(entry => {
+        const todayEntries = receiptEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.receiptDate);
           entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
           return entryDate.getTime() === today.getTime();
@@ -43,7 +44,7 @@ const ManageGoodReceipt = () => {
         setTodayReceiptEntries(sortedTodayEntries);
         
         // Filter entries for last week (keeping existing code structure)
-        const lastWeekEntries = receiptEntryList.filter(entry => {
+        const lastWeekEntries = receiptEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.receiptDate);
           const lastWeek = new Date();
           lastWeek.setDate(lastWeek.getDate() - 7);
@@ -66,10 +67,8 @@ const ManageGoodReceipt = () => {
     GetApi();
   },[])
 
-  console.log(receiptEntries)
-  console.log("Today's Receipt Entries:", todayReceiptEntries)
-  console.log("Last Week's Receipt Entries:", lastWeekReceiptEntries)
-  
+
+
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
       <ClipLoader color="#3498db" size={60} speedMultiplier={0.8} />
@@ -78,6 +77,61 @@ const ManageGoodReceipt = () => {
       </div>
     </div>
   );
+  
+  const handleStatusChange = async (itemId, newStatus) => {
+    try {
+      // Find the receipt entry to check its current status
+      const entryToUpdate = [...receiptEntries, ...todayReceiptEntries, ...lastWeekReceiptEntries]
+        .find(entry => entry.lotNumber === itemId);
+      
+      // If the status is already Done, don't allow changing it
+      if (entryToUpdate && entryToUpdate.receiptLot.receiptLotStatus === "Done") {
+        console.log("Cannot modify completed receipt lots");
+        return;
+      }
+      
+      // Find the reverse mapping for the new status (from UI display status to backend status)
+      const reversedStatus = Object.keys(lotStatusChangeData).find(
+        key => lotStatusChangeData[key] === newStatus
+      );
+      
+      if (!reversedStatus) {
+        console.error("Invalid status mapping");
+        return;
+      }
+      
+      const updateReceiptLotStatus = {
+        receiptLotId: itemId,
+        receiptLotStatus: reversedStatus
+      }
+      console.log(updateReceiptLotStatus)
+      // Make API call to update the status
+      await receiptLotApi.updateReceiptLotStatus(updateReceiptLotStatus);
+      
+      // Update local state
+      const updateEntries = entries => {
+        return entries.map(entry => {
+          if (entry.lotNumber === itemId) {
+            return {
+              ...entry,
+              receiptLot: {
+                ...entry.receiptLot,
+                receiptLotStatus: reversedStatus
+              }
+            };
+          }
+          return entry;
+        });
+      };
+      
+      setReceiptEntries(updateEntries(receiptEntries));
+      setTodayReceiptEntries(updateEntries(todayReceiptEntries));
+      setLastWeekReceiptEntries(updateEntries(lastWeekReceiptEntries));
+      
+    } catch (error) {
+      console.error("Error updating receipt lot status:", error);
+    }
+  };
   
   return (
     <>
@@ -116,21 +170,13 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <div
-                            style={{
-                              width: '100%',
-                              textAlign: 'center',
-                              borderRadius: '8px',
-                              backgroundColor: lotStatusData[lotStatusChangeData[item.receiptLot.receiptLotStatus]],
-                              padding: '2% 5%',
-                              margin: '0 auto',
-                              color: 'white',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
+                          <ReceiptProgress 
+                            item={{
+                              id: item.lotNumber,
+                              status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
                             }}
-                          >
-                            {lotStatusChangeData[item.receiptLot.receiptLotStatus]}
-                          </div>
+                            handleStatusChange={handleStatusChange}
+                          />
                         </TableCell>
           
                       </tr>
@@ -177,7 +223,6 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
-              
                       </tr>
                     ))}
                   </tbody>

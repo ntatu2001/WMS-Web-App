@@ -1,4 +1,3 @@
-
 import axiosClient from "./axiosClient";
 
 
@@ -11,7 +10,8 @@ const inventoryReceiptEntryApi = {
     getReceiptEntryById(id) {
         const url = `InventoryReceiptEntry/GetReceiptEntryById/${id}`;
         return axiosClient.get(url);
-    }
+    },
+    
 };
 
 export default inventoryReceiptEntryApi;

@@ -123,8 +123,14 @@ const RequestLotAdjustment = () => {
         setRealQuantities(prev => prev.filter((_, i) => i !== index));
     };
     
+    useEffect(() => {
+        if (error && (selectedWarehouse || selectedZone || selectedLotNumber || selectedPerson || selectedDate || selectedReason || selectedLotAdjustmentType)) {
+          setError('');
+        }
+      }, [selectedWarehouse, selectedZone, selectedLotNumber, selectedPerson, selectedDate, selectedReason, selectedLotAdjustmentType]);
+
       const createLotAdjustment = async () => {
-        if (!selectedWarehouse || !selectedZone || !selectedLotNumber || !selectedPerson || !selectedDate || !selectedReason) {
+        if (!selectedWarehouse || !selectedZone || !selectedLotNumber || !selectedPerson || !selectedDate || !selectedReason || selectedLotAdjustmentType) {
           setError('Vui lòng chọn tất cả các trường bắt buộc.');
           toast.error("Tạo yêu cầu kiểm kê thất bại!", {
             position: "top-right",

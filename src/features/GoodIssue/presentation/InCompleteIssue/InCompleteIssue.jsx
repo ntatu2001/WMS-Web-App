@@ -75,12 +75,14 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
             
             // Initialize updated items with the fetched data
             const initialUpdatedItems = issueDetailSchedulingData.map(item => ({
-                issueSubLotId: item.issueSublotId || "",
+                issueSublotId: item.issueSublotId || "",
                 materialId: item.materialId || "",
                 materialName: item.materialName || "",
                 requestedQuantity: item.requestedQuantity || 0,
                 locationId: item.locationId || "",
-                lotNumber: item.lotNumber || ""
+                lotNumber: item.lotNumber || "",
+                materialSubLotId: item.materialSubLotId || "",
+                issueLotId: item.issueLotId || "",
             }));
             setUpdatedItems(initialUpdatedItems);
             
@@ -165,10 +167,10 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
         try {
             const updatedIssueSubLot = {
                 issueSubLots: updatedItems.map(item => ({
-                    issueSubLotId: item.issueSubLotId,
-                    materialId: item.materialId,
-                    locationId: item.locationId,
+                    issueSublotId: item.issueSublotId,
+                    issueLotId: item.issueLotId,
                     requestedQuantity: item.requestedQuantity,
+                    materialSubLotId: item.materialSubLotId,
                     lotNumber: item.lotNumber
                 }))
             }
