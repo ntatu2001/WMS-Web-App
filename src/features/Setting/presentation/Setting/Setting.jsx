@@ -10,14 +10,6 @@ const Setting = () => {
   const [activeItem, setActiveItem] = useState(null); // Track the active item
   const [showAccountInfo, setShowAccountInfo] = useState(false);
   const [showUpdateAccount, setShowUpdateAccount] = useState(false); // State for UpdateAccount visibility
-
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    console.log("User logged out");
-    window.location.href = 'http://localhost:5173/login';
-  };
-
   const handleCloseContent = () => {
     setShowAccountInfo(false);
     setShowUpdateAccount(false); // Close UpdateAccount when content is closed

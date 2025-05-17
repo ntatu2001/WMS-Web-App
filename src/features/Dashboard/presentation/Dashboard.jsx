@@ -1,12 +1,12 @@
 import React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import HeaderContainer from "../../../common/components/Header/HeaderContainer.jsx"
 // import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
 import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
 import ActionButton from "../../../common/components/Button/ActionButton/ActionButton.jsx"
 import styles from "./DashBoard.module.scss"
-import ColumnChart from "../../../common/components/Chart/ColumnChart.jsx"
 import PieDonutChart from "../../../common/components/Chart/PieDonutChart.jsx"
+import overViewApi from "../../../api/overView.js"
 import {
     listTodayEnter,
     listMonthyEnter,
@@ -20,6 +20,7 @@ import {
 } from "../../../app/mockData/InventoryReceiptData.js"
 // import { data } from "autoprefixer"
 // import Chart from "react-apexcharts"
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 const Dashboard = () => {
     const [togleButtonPieChart, setTogleButtonPieChart] = useState([true, false, false])
     const [togleButtonColumnChart, setTogleButtonColumnChart] = useState([true, false, false])
@@ -31,7 +32,21 @@ const Dashboard = () => {
     const [filterDataCheck, setFilterDataCheck] = useState([])
     // const [dataTotal, setDataTotal] = useState(listTodayCheck)
     const [filterDataTotal, setFilterDataTotal] = useState([])
-    // console.log(styles.actionButton)
+    const [overviewData, setOverviewData] = useState({
+        Today: null,
+        ThisWeek: null,
+        ThisMonth: null,
+    })
+    const [overviewType, setOverviewType] = useState("Today") // "Today", "ThisWeek", "ThisMonth"
+    const [warehouseStats, setWarehouseStats] = useState({
+        Today: null,
+        ThisWeek: null,
+        ThisMonth: null,
+    })
+    const [warehouseStatsType, setWarehouseStatsType] = useState("Today")
+    const chartIssueRef = useRef(null);
+    const chartReceiptRef = useRef(null);
+
     useEffect(() => {
         setFilterDataEnter(() => {
             const value = [0, 0]
@@ -70,12 +85,339 @@ const Dashboard = () => {
             return [dataEnter.length, dataExport.length, dataCheck.length]
         })
     }, [dataEnter, dataExport, dataCheck])
+    /**
+     * Lấy dữ liệu tổng quan cho Today, ThisWeek, ThisMonth từ API overViewApi.
+     * @returns {Promise<{Today: object, ThisWeek: object, ThisMonth: object}>}
+     */
+    const getAllOverviewData = async () => {
+        try {
+            const [todayRes, weekRes, monthRes] = await Promise.all([
+                overViewApi.getOverViewById("Today"),
+                overViewApi.getOverViewById("ThisWeek"),
+                overViewApi.getOverViewById("ThisMonth"),
+            ])
+            return {
+                Today: todayRes,
+                ThisWeek: weekRes,
+                ThisMonth: monthRes,
+            }
+        } catch (error) {
+            console.error("Error fetching overview data:", error)
+            return {
+                Today: null,
+                ThisWeek: null,
+                ThisMonth: null,
+            }
+        }
+    }
+    /**
+     * Lấy tất cả dữ liệu API từ getInventoryActivityStats với newid = "Today", "ThisWeek", "ThisMonth".
+     * @returns {Promise<{Today: object, ThisWeek: object, ThisMonth: object}>}
+     */
+    const getAllInventoryActivityStats = async () => {
+        try {
+            const [todayRes, weekRes, monthRes] = await Promise.all([
+                overViewApi.getInventoryActivityStats("Today"),
+                overViewApi.getInventoryActivityStats("ThisWeek"),
+                overViewApi.getInventoryActivityStats("ThisMonth"),
+            ])
+            const result = {
+                Today: todayRes,
+                ThisWeek: weekRes,
+                ThisMonth: monthRes,
+            }
+            console.log("getAllInventoryActivityStats result:", result)
+            return result
+        } catch (error) {
+            console.error("Error fetching inventory activity stats:", error)
+            return {
+                Today: null,
+                ThisWeek: null,
+                ThisMonth: null,
+            }
+        }
+    }
+    // Fetch overview data once on mount
+    useEffect(() => {
+        const fetchOverview = async () => {
+            const data = await getAllOverviewData()
+            setOverviewData(data)
+        }
+        fetchOverview()
+    }, [])
+    // Update displayed data when overviewType changes
+    useEffect(() => {
+        const data = overviewData[overviewType]
+        if (data) {
+            // Nhập kho
+            setDataEnter(
+                Array(data.receiptOverview?.totalReceipts || 0)
+                    .fill({ status: "Hoàn thành" })
+                    .map((item, idx) =>
+                        idx < (data.receiptOverview?.completeReceipts || 0)
+                            ? { ...item, status: "Hoàn thành" }
+                            : { ...item, status: "Chưa hoàn thành" }
+                    )
+            )
+            setFilterDataEnter([
+                (data.receiptOverview?.totalReceipts || 0) - (data.receiptOverview?.completeReceipts || 0),
+                data.receiptOverview?.completeReceipts || 0,
+            ])
+            // Xuất kho
+            setDataExport(
+                Array(data.issueOverview?.totalIssues || 0)
+                    .fill({ status: "Hoàn thành" })
+                    .map((item, idx) =>
+                        idx < (data.issueOverview?.completeIssues || 0)
+                            ? { ...item, status: "Hoàn thành" }
+                            : { ...item, status: "Chưa hoàn thành" }
+                    )
+            )
+            setFilterDataExport([
+                (data.issueOverview?.totalIssues || 0) - (data.issueOverview?.completeIssues || 0),
+                data.issueOverview?.completeIssues || 0,
+            ])
+            // Kiểm kê
+            setDataCheck(
+                Array(data.stockTakeOverview?.totalStockTakes || 0)
+                    .fill({ status: "Định kỳ" })
+                    .map((item, idx) =>
+                        idx < (data.stockTakeOverview?.periodicStockTakes || 0)
+                            ? { ...item, status: "Định kỳ" }
+                            : { ...item, status: "Khác" }
+                    )
+            )
+            setFilterDataCheck([
+                (data.stockTakeOverview?.totalStockTakes || 0) - (data.stockTakeOverview?.periodicStockTakes || 0),
+                data.stockTakeOverview?.periodicStockTakes || 0,
+            ])
+            // Thống kê chung
+            setFilterDataTotal([
+                data.totalOverview?.totalReceipts || 0,
+                data.totalOverview?.totalIssues || 0,
+                data.totalOverview?.totalStockTakes || 0,
+            ])
+        }
+    }, [overviewType, overviewData])
+    // Fetch warehouse stats once on mount
+    useEffect(() => {
+        const fetchWarehouseStats = async () => {
+            const data = await getAllInventoryActivityStats()
+            setWarehouseStats(data)
+        }
+        fetchWarehouseStats()
+    }, [])
+    // Hiển thị dữ liệu warehouseStats[warehouseStatsType] ra giao diện
+    useEffect(() => {
+        const stats = warehouseStats[warehouseStatsType]
+        if (stats) {
+            // Hiển thị dữ liệu ra console hoặc cập nhật state để render ra giao diện
+            console.log("warehouseByReceipt:", stats.warehouseByReceipt)
+            console.log("warehouseByIssue:", stats.warehouseByIssue)
+            
+        }
+    }, [warehouseStats, warehouseStatsType])
+    // Khi click ActionButton, cập nhật warehouseStatsType để ColumnChart hiển thị đúng dữ liệu API
+    useEffect(() => {
+        // Dynamically load ApexCharts if not already loaded
+        if (!window.ApexCharts) {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/apexcharts";
+            script.onload = () => {
+                renderCharts();
+            };
+            document.body.appendChild(script);
+        } else {
+            renderCharts();
+        }
+
+        function renderCharts() {
+            // Thống kê xuất kho theo kho hàng
+            if (chartIssueRef.current && window.ApexCharts) {
+                if (chartIssueRef.current._apexChart) {
+                    chartIssueRef.current._apexChart.destroy();
+                }
+                const stats = warehouseStats[warehouseStatsType]?.warehouseByIssue;
+                const data = stats
+                    ? [
+                        Number(stats.finishedProductQuantity) || 0,
+                        Number(stats.semiFinishedProductQuantity) || 0,
+                        Number(stats.rawMaterialQuantity) || 0,
+                        Number(stats.materialQuantity) || 0,
+                        Number(stats.packagingQuantity) || 0,
+                    ]
+                    : [0, 0, 0, 0, 0];
+                const options = {
+                    chart: {
+                        type: "bar",
+                        height: "100%",
+                        toolbar: { show: false },
+                    },
+                    title: {
+                        text: "Thống kê xuất kho theo kho hàng",
+                        align: "center",
+                        style: { fontSize: "18px", fontWeight: "bold" }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: "35%", // giảm columnWidth để cột cao hơn
+                            distributed: true,
+                            endingShape: "flat", // giữ nguyên đầu cột
+                        },
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: {
+                        categories: [
+                            "Kho thành phẩm",
+                            "Kho bán thành phẩm",
+                            "Kho nguyên vật liệu",
+                            "Kho vật tư",
+                            "Kho bao bì",
+                        ],
+                        labels: {
+                            style: {
+                                fontSize: "10px"
+                            }
+                        }
+                    },
+                    yaxis: {
+                        min: 0,
+                        title: { text: "Sản lượng" },
+                        labels: {
+                            style: {
+                                fontSize: "14px"
+                            }
+                        }
+                    },
+                    grid: {
+                        padding: { left: 10, right: 10 }
+                    },
+                    colors: [
+                        "rgba(1, 0, 140, 0.8)",
+                        "rgba(80, 80, 255, 0.8)",
+                        "rgba(60,220,120,0.85)",
+                        "rgba(233,34,34,0.85)",
+                        "rgba(250,175,36,0.85)",
+                    ],
+                    series: [
+                        {
+                            name: "Sản lượng",
+                            data: data,
+                        },
+                    ],
+                    legend: { show: false },
+                };
+                chartIssueRef.current._apexChart = new window.ApexCharts(chartIssueRef.current, options);
+                chartIssueRef.current._apexChart.render();
+            }
+            // Thống kê nhập kho theo kho hàng
+            if (chartReceiptRef.current && window.ApexCharts) {
+                if (chartReceiptRef.current._apexChart) {
+                    chartReceiptRef.current._apexChart.destroy();
+                }
+                const stats = warehouseStats[warehouseStatsType]?.warehouseByReceipt;
+                const data = stats
+                    ? [
+                        Number(stats.finishedProductQuantity) || 0,
+                        Number(stats.semiFinishedProductQuantity) || 0,
+                        Number(stats.rawMaterialQuantity) || 0,
+                        Number(stats.materialQuantity) || 0,
+                        Number(stats.packagingQuantity) || 0,
+                    ]
+                    : [0, 0, 0, 0, 0];
+                const options = {
+                    chart: {
+                        type: "bar",
+                        height: "100%",
+                        toolbar: { show: false },
+                    },
+                    title: {
+                        text: "Thống kê nhập kho theo kho hàng",
+                        align: "center",
+                        style: { fontSize: "18px", fontWeight: "bold" }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: "35%", // giảm columnWidth để cột cao hơn
+                            distributed: true,
+                            endingShape: "flat", // giữ nguyên đầu cột
+                        },
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: {
+                        categories: [
+                            "Kho thành phẩm",
+                            "Kho bán thành phẩm",
+                            "Kho nguyên vật liệu",
+                            "Kho vật tư",
+                            "Kho bao bì",
+                        ],
+                        labels: {
+                            style: {
+                                fontSize: "10px"
+                            }
+                        }
+                    },
+                    yaxis: {
+                        min: 0,
+                        title: { text: "Sản lượng" },
+                        labels: {
+                            style: {
+                                fontSize: "14px"
+                            }
+                        }
+                    },
+                    grid: {
+                        padding: { left: 10, right: 10 }
+                    },
+                    colors: [
+                        "rgba(1, 0, 140, 0.8)",
+                        "rgba(80, 80, 255, 0.8)",
+                        "rgba(60,220,120,0.85)",
+                        "rgba(233,34,34,0.85)",
+                        "rgba(250,175,36,0.85)",
+                    ],
+                    series: [
+                        {
+                            name: "Sản lượng",
+                            data: data,
+                        },
+                    ],
+                    legend: { show: false },
+                };
+                chartReceiptRef.current._apexChart = new window.ApexCharts(chartReceiptRef.current, options);
+                chartReceiptRef.current._apexChart.render();
+            }
+        }
+        // Cleanup
+        return () => {
+            if (chartIssueRef.current && chartIssueRef.current._apexChart) {
+                chartIssueRef.current._apexChart.destroy();
+            }
+            if (chartReceiptRef.current && chartReceiptRef.current._apexChart) {
+                chartReceiptRef.current._apexChart.destroy();
+            }
+        };
+    }, [warehouseStats, warehouseStatsType]);
+
     return (
-        <div className="w-full h-full  flex flex-col gap-[2%]">
+        <div
+            className="w-full h-full flex flex-col gap-[2%]"
+            style={{
+                position: "relative",
+                zIndex: 1,
+                width: "100%",
+                height: "690px", // Điều chỉnh chiều cao phù hợp cho dashboard
+                overflow: "hidden",
+            }}
+        >
             <HeaderContainer style={{ height: "5%", padding: "0", margin: "0" }}>
                 <HeaderItem>Tổng quan</HeaderItem>
             </HeaderContainer>
             <div className="w-full h-[5%] flex justify-end gap-[1%]  ">
+                {/* ActionButton cho biểu đồ Pie (tổng quan) */}
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect} `}
                     style={{
@@ -87,12 +429,10 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: togleButtonPieChart[0] ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "Today" ? "#09306f" : "#4b5563",
                     }}
                     onClick={() => {
-                        setDataEnter(listTodayEnter)
-                        setDataExport(listTodayExport)
-                        setDataCheck(listTodayCheck)
+                        setOverviewType("Today")
                         setTogleButtonPieChart([true, false, false])
                     }}
                 >
@@ -108,14 +448,11 @@ const Dashboard = () => {
                         marginLeft: 0,
                         marginRight: 0,
                         padding: 0,
-                        // backgroundColor: "#4b5563",
                         fontSize: "12px",
-                        backgroundColor: togleButtonPieChart[1] ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "ThisWeek" ? "#09306f" : "#4b5563",
                     }}
                     onClick={() => {
-                        setDataEnter(listWeekyEnter)
-                        setDataExport(listWeekyExport)
-                        setDataCheck(listWeekyCheck)
+                        setOverviewType("ThisWeek")
                         setTogleButtonPieChart([false, true, false])
                     }}
                 >
@@ -131,20 +468,18 @@ const Dashboard = () => {
                         marginLeft: 0,
                         marginRight: 0,
                         padding: 0,
-                        // backgroundColor: "#4b5563",
                         fontSize: "12px",
-                        backgroundColor: togleButtonPieChart[2] ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "ThisMonth" ? "#09306f" : "#4b5563",
                     }}
                     onClick={() => {
-                        setDataEnter(listMonthyEnter)
-                        setDataExport(listMonthyExport)
-                        setDataCheck(listMonthyCheck)
+                        setOverviewType("ThisMonth")
                         setTogleButtonPieChart([false, false, true])
                     }}
                 >
                     Tháng
                 </ActionButton>
             </div>
+            
             <div className="w-full h-[40%] flex gap-[1%] justify-between">
                 <div className=" h-full w-[23%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center">
                     <HeaderContainer
@@ -173,7 +508,7 @@ const Dashboard = () => {
                             name={""}
                             fontSize={"0.8rem"}
                             label={"Tổng"}
-                            unit={"Lệnh sản xuất"}
+                            unit={""}
                             dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
                             dataChartValue={filterDataEnter}
                             // arrayColors={[
@@ -212,7 +547,7 @@ const Dashboard = () => {
                             name={""}
                             fontSize={"0.8rem"}
                             label={"Tổng"}
-                            unit={"Lệnh sản xuất"}
+                            unit={""}
                             dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
                             dataChartValue={filterDataExport}
                             // arrayColors={[
@@ -251,7 +586,7 @@ const Dashboard = () => {
                             name={""}
                             fontSize={"0.8rem"}
                             label={"Tổng"}
-                            unit={"Lệnh sản xuất"}
+                            unit={""}
                             dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
                             dataChartValue={filterDataCheck}
                             // arrayColors={[
@@ -294,7 +629,7 @@ const Dashboard = () => {
                             name={""}
                             fontSize={"0.8rem"}
                             label={"Tổng"}
-                            unit={"Lệnh sản xuất"}
+                            unit={""}
                             dataChartLabels={["Nhập kho", "Xuất kho", "Kiểm kê"]}
                             dataChartValue={filterDataTotal}
                             // arrayColors={[
@@ -307,6 +642,7 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+            {/* ActionButton riêng cho ColumnChart (thống kê kho hàng) */}
             <div className="w-full h-[5%] flex justify-end gap-[1%]  ">
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -323,6 +659,7 @@ const Dashboard = () => {
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([true, false, false])
+                        setWarehouseStatsType("Today")
                     }}
                 >
                     Hôm nay
@@ -337,12 +674,12 @@ const Dashboard = () => {
                         marginLeft: 0,
                         marginRight: 0,
                         padding: 0,
-                        // backgroundColor: "#4b5563",
                         fontSize: "12px",
                         backgroundColor: togleButtonColumnChart[1] ? "#09306f" : "#4b5563",
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([false, true, false])
+                        setWarehouseStatsType("ThisWeek")
                     }}
                 >
                     Tuần
@@ -357,12 +694,12 @@ const Dashboard = () => {
                         marginLeft: 0,
                         marginRight: 0,
                         padding: 0,
-                        // backgroundColor: "#4b5563",
                         fontSize: "12px",
                         backgroundColor: togleButtonColumnChart[2] ? "#09306f" : "#4b5563",
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([false, false, true])
+                        setWarehouseStatsType("ThisMonth")
                     }}
                 >
                     Tháng
@@ -370,63 +707,15 @@ const Dashboard = () => {
             </div>
             <div className="w-full h-[40%] flex justify-between">
                 <div className=" h-full w-[48%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center p-[0.7%]">
-                    <p className="font-bold block h-[8%]">Thống kê xuất kho theo kho hàng</p>
-                    <div className="h-[90%] w-full ">
-                        <ColumnChart
-                            height={"99%"}
-                            width={"99%"}
-                            name={"Sản lượng"}
-                            fontSize={"0.5rem"}
-                            // unit={
-                            //     lineIdData.find((item) => {
-                            //         return res.lineId === item.lineId
-                            //     }).productUnit
-                            // }
-                            dataChartX={[
-                                "Kho nguyên vật liệu",
-                                "Kho vật tư",
-                                "Kho bao bì",
-                                "Kho bán thành phẩm",
-                                " Kho thành phẩm",
-                            ]}
-                            dataChartValue={[4, 10, 15, 20, 12]}
-                            colors={[
-                                "rgba(1, 0, 140, 0.8)",
-                                "rgba(80, 80, 255, 0.8)",
-                                "rgba(60,220,120,0.85)",
-                                "rgba(233,34,34,0.85)",
-                            ]}
-                        />
+                    
+                    <div className="h-[100%] w-full ">
+                        <div ref={chartIssueRef} style={{ width: "100%", height: "100%" }} />
                     </div>
                 </div>
                 <div className=" h-full w-[48%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center p-[0.7%]">
-                    <p className="font-bold block h-[8%]">Thống kê nhập kho theo kho hàng</p>
-                    <div className="h-[90%] w-full ">
-                        <ColumnChart
-                            height={"99%"}
-                            width={"99%"}
-                            name={"Sản lượng"}
-                            fontSize={"0.5rem"}
-                            // unit={
-                            //     lineIdData.find((item) => {
-                            //         return res.lineId === item.lineId
-                            //     }).productUnit
-                            // }
-                            dataChartX={[
-                                "Kho nguyên vật liệu",
-                                "Kho vật tư",
-                                "Kho bao bì",
-                                "Kho bán thành phẩm",
-                                " Kho thành phẩm",
-                            ]}
-                            dataChartValue={[4, 10, 15, 20, 12]}
-                            colors={[
-                                "rgba(1, 0, 140, 0.8)",
-                                "rgba(80, 80, 255, 0.8)",
-                                "rgba(60,220,120,0.85)",
-                                "rgba(233,34,34,0.85)",
-                            ]}
-                        />
+                    
+                    <div className="h-[100%] w-full ">
+                        <div ref={chartReceiptRef} style={{ width: "100%", height: "100%" }} />
                     </div>
                 </div>
             </div>
