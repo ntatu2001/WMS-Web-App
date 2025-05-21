@@ -5,29 +5,33 @@ import HeaderItem from '../../../../common/components/Header/HeaderItem';
 import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
-import { lotStatusData, lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
+import { lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
 import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
 import { ClipLoader} from 'react-spinners';
+import IssueProgress from '../Progress/IssueProgress';
+import issueLotApi from '../../../../api/issueLotApi.js';
 
 const ManageGoodIssue = () => {
   const [issueEntries, setIssueEntries] = useState([]);
   const [todayIssueEntries, setTodayIssueEntries] = useState([]);
   const [lastWeekIssueEntries, setLastWeekIssueEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [getAllIssueLots, setGetAllIssueLots] = useState([]);
   useEffect(() => {
     const GetApi = async() => {
       try {
         setLoading(true);
         const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
-
-        setIssueEntries(issueEntryList);
+        const getAllIssueLots = await issueLotApi.getAllIssueLots();
+        setGetAllIssueLots(getAllIssueLots);
+        const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot.issueLotStatus !== "Pending");
+        setIssueEntries(issueEntryNotPending);
         
         // Filter entries for today
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Set to beginning of day
         
-        const todayEntries = issueEntryList.filter(entry => {
+        const todayEntries = issueEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.issueDate);
           entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
           return entryDate.getTime() === today.getTime();
@@ -41,7 +45,7 @@ const ManageGoodIssue = () => {
         setTodayIssueEntries(sortedTodayEntries);
         
         // Filter entries for last week (keeping existing code structure)
-        const lastWeekEntries = issueEntryList.filter(entry => {
+        const lastWeekEntries = issueEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.issueDate);
           const lastWeek = new Date();
           lastWeek.setDate(lastWeek.getDate() - 7);
@@ -72,6 +76,63 @@ const ManageGoodIssue = () => {
       </div>
     </div>
   );
+  
+  const handleStatusChange = async (itemId, newStatus) => {
+    try {
+      // Find the issue entry to check its current status
+      const entryToUpdate = [...issueEntries, ...todayIssueEntries, ...lastWeekIssueEntries]
+        .find(entry => entry.lotNumber === itemId);
+      
+      // If the status is already Done, don't allow changing it
+      if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
+        console.log("Cannot modify completed issue lots");
+        return;
+      }
+      
+      // Find the reverse mapping for the new status (from UI display status to backend status)
+      const reversedStatus = Object.keys(lotStatusChangeData).find(
+        key => lotStatusChangeData[key] === newStatus
+      );
+      
+      if (!reversedStatus) {
+        console.error("Invalid status mapping");
+        return;
+      }
+    
+
+      const issueLot = getAllIssueLots.find(lot => lot.materialLotId === itemId);
+      const updateIssueLotStatus = {
+        issueLotId: issueLot.issueLotId,
+        issueLotStatus: reversedStatus
+      }
+      console.log(updateIssueLotStatus)
+      // Make API call to update the status
+      await issueLotApi.updateIssueLotStatus(updateIssueLotStatus);
+      
+      // Update local state
+      const updateEntries = entries => {
+        return entries.map(entry => {
+          if (entry.lotNumber === itemId) {
+            return {
+              ...entry,
+              issueLot: {
+                ...entry.issueLot,
+                issueLotStatus: reversedStatus
+              }
+            };
+          }
+          return entry;
+        });
+      };
+      
+      setIssueEntries(updateEntries(issueEntries));
+      setTodayIssueEntries(updateEntries(todayIssueEntries));
+      setLastWeekIssueEntries(updateEntries(lastWeekIssueEntries));
+      
+    } catch (error) {
+      console.error("Error updating issue lot status:", error);
+    }
+  };
   
   return (
     <>
@@ -110,21 +171,13 @@ const ManageGoodIssue = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <div
-                            style={{
-                              width: '100%',
-                              textAlign: 'center',
-                              borderRadius: '8px',
-                              backgroundColor: lotStatusData[lotStatusChangeData[item.issueLot.issueLotStatus]],
-                              padding: '2% 5%',
-                              margin: '0 auto',
-                              color: 'white',
-                              fontWeight: 'bold',
-                              fontSize: '14px',
+                          <IssueProgress 
+                            item={{
+                              id: item.lotNumber,
+                              status: lotStatusChangeData[item.issueLot.issueLotStatus]
                             }}
-                          >
-                            {lotStatusChangeData[item.issueLot.issueLotStatus]}
-                          </div>
+                            handleStatusChange={handleStatusChange}
+                          />
                         </TableCell>
                       </tr>
                     ))}
@@ -147,15 +200,15 @@ const ManageGoodIssue = () => {
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "30%"}}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Số lượng xuất</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Số lượng xuất</TableHeader>
                       <TableHeader>Nhân viên</TableHeader>
                       <TableHeader style={{width: "10%"}}>Ngày xuất kho</TableHeader>
                       <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader></TableHeader>
+                      <TableHeader>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -170,6 +223,15 @@ const ManageGoodIssue = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <IssueProgress 
+                            item={{
+                              id: item.lotNumber,
+                              status: lotStatusChangeData[item.issueLot.issueLotStatus]
+                            }}
+                            handleStatusChange={handleStatusChange}
+                          />
+                        </TableCell>
                       </tr>
                     ))}
                   </tbody>

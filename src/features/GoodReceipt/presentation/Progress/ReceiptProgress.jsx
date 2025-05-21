@@ -1,25 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { lotStatusData } from '../../../../app/mockData/LotStatusData';
 
 const ReceiptProgress = ({ item, handleStatusChange }) => {
   const [isOpen, setIsOpen] = useState(false); // State để kiểm soát hiển thị dropdown
+  const [currentStatus, setCurrentStatus] = useState(item.status); // State lưu trữ trạng thái hiện tại
+  const dropdownRef = useRef(null); // Ref để tham chiếu đến dropdown
+
+  // Cập nhật lại currentStatus khi prop item.status thay đổi
+  useEffect(() => {
+    setCurrentStatus(item.status);
+  }, [item.status]);
+
+  // Xử lý click bên ngoài dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+
+    // Thêm event listener khi dropdown mở
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Hàm xử lý khi chọn một option
   const handleSelect = (status) => {
-    handleStatusChange(item.id, status); // Gọi hàm xử lý thay đổi status
+    // Chỉ gọi API khi người dùng chọn trạng thái khác với trạng thái hiện tại
+    if (status !== currentStatus) {
+      handleStatusChange(item.id, status); // Gọi hàm xử lý thay đổi status
+    }
+    
+    // Luôn cập nhật state local ngay lập tức để hiển thị UI
+    setCurrentStatus(status);
     setIsOpen(false); // Đóng dropdown sau khi chọn
   };
 
   // Check if status is "Hoàn thành" to disable dropdown
-  const isCompleted = item.status === "Hoàn thành";
+  const isCompleted = currentStatus === "Hoàn thành";
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+    <div ref={dropdownRef} style={{ position: 'relative', display: 'inline-block', width: '100%'}}>
       {/* Nút để mở dropdown */}
       <div
         onClick={() => !isCompleted && setIsOpen(!isOpen)}
         style={{
-          backgroundColor: lotStatusData[item.status],
+          backgroundColor: lotStatusData[currentStatus],
           color: "white",
           fontWeight: "bold",
           fontSize: "14px",
@@ -28,10 +60,10 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
           cursor: isCompleted ? "default" : "pointer", // Change cursor if completed
           textAlign: "center",
           width: '100%',
-          margin: '0 auto',
+          margin: '0 5%',
         }}
       >
-        {item.status}
+        {currentStatus}
       </div>
 
       {/* Dropdown menu - only show if not completed */}
@@ -41,7 +73,8 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
             position: 'absolute',
             top: '100%',
             left: 0,
-            overflow: "scroll",
+            maxHeight: '150px', // Giới hạn chiều cao của dropdown
+            overflowY: 'auto', // Cho phép scroll theo chiều dọc khi cần
             backgroundColor: '#767676',
             border: '1px solid #000',
             borderRadius: '4px',

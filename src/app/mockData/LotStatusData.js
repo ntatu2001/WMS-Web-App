@@ -13,6 +13,6 @@ export const lotStatusChangeData = {
     "InProgress" : "Đang thực hiện",
     "Done" : "Hoàn thành",
     "Cancelled" : "Đã hủy",
-    "Suspended" : "Tạm hoãn",
-    "Blocked" : "Bị chặn"
+    "HoldOn" : "Tạm hoãn",
+    "IsBlocked" : "Bị chặn"
 };

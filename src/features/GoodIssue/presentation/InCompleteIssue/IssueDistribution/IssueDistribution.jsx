@@ -15,6 +15,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
     const [showModal, setShowModal] = useState(false);
     const [hoveredCellInfo, setHoveredCellInfo] = useState(null);
     // Reset dataFetched when warehouseId changes
+    console.log(dataTable)
     useEffect(() => {
         setDataFetched(false);
     }, [warehouseId]);

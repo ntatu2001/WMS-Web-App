@@ -200,15 +200,15 @@ const ManageGoodReceipt = () => {
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "30%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
                       <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Số lượng nhập</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Số lượng nhập</TableHeader>
                       <TableHeader>Nhân viên</TableHeader>
                       <TableHeader style={{width: "10%"}}>Ngày nhập kho</TableHeader>
                       <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader></TableHeader>
+                      <TableHeader>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -223,6 +223,15 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <ReceiptProgress 
+                            item={{
+                              id: item.lotNumber,
+                              status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
+                            }}
+                            handleStatusChange={handleStatusChange}
+                          />
+                        </TableCell>
                       </tr>
                     ))}
                   </tbody>
