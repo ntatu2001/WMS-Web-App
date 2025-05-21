@@ -10,6 +10,9 @@ import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
 import { ClipLoader} from 'react-spinners';
 import IssueProgress from '../Progress/IssueProgress';
 import issueLotApi from '../../../../api/issueLotApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
+
 
 const ManageGoodIssue = () => {
   const [issueEntries, setIssueEntries] = useState([]);
@@ -128,9 +131,26 @@ const ManageGoodIssue = () => {
       setIssueEntries(updateEntries(issueEntries));
       setTodayIssueEntries(updateEntries(todayIssueEntries));
       setLastWeekIssueEntries(updateEntries(lastWeekIssueEntries));
-      
+      toast.success("Cập nhật trạng thái lô thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (error) {
       console.error("Error updating issue lot status:", error);
+      toast.error("Cập nhật trạng thái lô thất bại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
   

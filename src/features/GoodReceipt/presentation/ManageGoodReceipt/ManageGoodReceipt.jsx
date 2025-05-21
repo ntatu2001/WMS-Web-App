@@ -10,6 +10,8 @@ import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.j
 import { ClipLoader} from 'react-spinners';
 import ReceiptProgress from '../Progress/ReceiptProgress';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
 
 const ManageGoodReceipt = () => {
 
@@ -127,9 +129,26 @@ const ManageGoodReceipt = () => {
       setReceiptEntries(updateEntries(receiptEntries));
       setTodayReceiptEntries(updateEntries(todayReceiptEntries));
       setLastWeekReceiptEntries(updateEntries(lastWeekReceiptEntries));
-      
+      toast.success("Cập nhật trạng thái lô thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (error) {
       console.error("Error updating receipt lot status:", error);
+      toast.error("Cập nhật trạng thái lô thất bại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
   
