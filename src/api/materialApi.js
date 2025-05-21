@@ -11,6 +11,11 @@ const materialApi = {
         return axiosClient.get(url);
     },
 
+    getMaterialsByWarehouseIdAndMaterialLot(id) {
+        const url = `Material/GetMaterialsByWarehouseIdAndMaterialLot/${id}`; // Ensure this endpoint exists in your backend
+        return axiosClient.get(url);
+    },
+
     getMaterialById(id) {
         const url = `Material/GetMaterialById/${id}`; // Ensure this endpoint exists in your backend
         return axiosClient.get(url);

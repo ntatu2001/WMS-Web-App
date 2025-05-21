@@ -51,11 +51,14 @@ const CreateGoodIssue = () => {
   const [materialOptionUnits, setMaterialOptionUnits] = useState(null);
   const [MaterialsList, setMaterialsList] = useState([]);
   const [lotNumberList, setLotNumberList] = useState([]);
+  const [existingQuantity, setExistingQuantity] = useState(null);
+  const [quantityError, setQuantityError] = useState('');
   // const createReceipt = async() => {
   //    const receipt = {}
   //    await inventoryReceiptApi.createReceipt()
   // }
-  console.log(lotNumberList);
+  // console.log(purchaseOrderNumber);
+  console.log(existingQuantity);
   useEffect(() => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -72,7 +75,7 @@ const CreateGoodIssue = () => {
     const fetchMaterials = async () => {
       if (selectedZone) {
         try {
-          const materialList = await materialApi.getMaterialsByWarehouseId(selectedZone);
+          const materialList = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(selectedZone);
 
           const optionNameList = materialList.map(material => material.materialName);
           // const optionIdList = materialList.map(material => material.materialId);
@@ -170,6 +173,20 @@ const CreateGoodIssue = () => {
     }
   }, [selectedWarehouse, selectedZone, selectedCustomer, selectedPerson, selectedDate]);
 
+
+  useEffect(() => {
+    const getMaterialLotById = async() => {
+      if(purchaseOrderNumber){
+        const materialLot = await materiaLotApi.getMaterialLotById(purchaseOrderNumber);
+        console.log(materialLot);
+        setExistingQuantity(materialLot.exisitingQuantity);
+        setQuantityError('');
+        setRequestedQuantity(0);
+      }
+    }
+    getMaterialLotById();
+  }, [purchaseOrderNumber]);
+
   const createIssue = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
       setError('Vui lòng chọn tất cả các trường bắt buộc.');
@@ -214,7 +231,31 @@ const CreateGoodIssue = () => {
     
   };
   
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value);
+    setRequestedQuantity(value);
+    
+    if (existingQuantity !== null && value > existingQuantity) {
+      setQuantityError(`Số lượng vượt quá tồn kho (${existingQuantity})`);
+    } else {
+      setQuantityError('');
+    }
+  };
+  
   const addMaterial = () => {
+    if (quantityError) {
+      toast.error("Số lượng vượt quá tồn kho!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+    
     const newMaterial = { materialName, materialId, unit, purchaseOrderNumber, requestedQuantity };
     setMaterials([...materials, newMaterial]);
     // Reset input fields
@@ -225,7 +266,7 @@ const CreateGoodIssue = () => {
     setUnit('');
     setPurchaseOrderNumber('');
     setRequestedQuantity(0);
-  
+    setQuantityError('');
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -405,14 +446,29 @@ const CreateGoodIssue = () => {
                   </SelectContainer>
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="Số lượng xuất" 
-                    value={requestedQuantity}
-                    onChange={(e) => setRequestedQuantity(e.target.value)}
-                  />
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Số lượng xuất" 
+                      value={requestedQuantity}
+                      onChange={handleQuantityChange}
+                    />
+                    {quantityError && (
+                      <div style={{ 
+                        color: 'red', 
+                        fontSize: '11px', 
+                        position: 'absolute', 
+                        bottom: '-18px', 
+                        left: '0',
+                        width: '100%',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {quantityError}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <button onClick={handleAddMaterial} style={{paddingRight: "70%"}}>
