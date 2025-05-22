@@ -41,6 +41,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     const [activeTab, setActiveTab] = useState(0);
     const [updatedItems, setUpdatedItems] = useState([]);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteIndex, setDeleteIndex] = useState(null);
     
 
     console.log("updatedItems", updatedItems);
@@ -158,6 +160,29 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
         const updatedItemsList = [...updatedItems];
         updatedItemsList[index][field] = value;
         setUpdatedItems(updatedItemsList);
+    };
+    
+    // Function to delete an item from the list
+    const deleteItem = (index) => {
+        setDeleteIndex(index);
+        setShowDeleteModal(true);
+    };
+    
+    // Confirm deletion
+    const confirmDelete = () => {
+        if (deleteIndex !== null) {
+            const updatedItemsList = [...updatedItems];
+            updatedItemsList.splice(deleteIndex, 1);
+            setUpdatedItems(updatedItemsList);
+            setShowDeleteModal(false);
+            setDeleteIndex(null);
+        }
+    };
+    
+    // Cancel deletion
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+        setDeleteIndex(null);
     };
     
     // Function to update issue sublots
@@ -332,7 +357,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <DeleteButton>
+                                                        <DeleteButton onClick={() => deleteItem(index)}>
                                                             <FaTrash size={15} color="#000" />
                                                         </DeleteButton>
                                                     </TableCell>
@@ -353,6 +378,60 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
                             </div>
                         </ListSection>
                     </ContentContainer>
+                    
+                    {/* Delete Confirmation Modal */}
+                    {showDeleteModal && (
+                        <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000
+                        }}>
+                            <div style={{
+                                backgroundColor: 'white',
+                                padding: '20px',
+                                borderRadius: '8px',
+                                width: '300px',
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+                            }}>
+                                <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
+                                <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                                <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
+                                    <button 
+                                        onClick={cancelDelete}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '4px',
+                                            backgroundColor: '#f5f5f5',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button 
+                                        onClick={confirmDelete}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
