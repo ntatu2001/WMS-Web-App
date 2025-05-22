@@ -224,10 +224,10 @@ const ManageGoodReceipt = () => {
                       <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
                       <TableHeader style={{width: "10%"}}>Số lượng nhập</TableHeader>
-                      <TableHeader>Nhân viên</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
                       <TableHeader style={{width: "10%"}}>Ngày nhập kho</TableHeader>
-                      <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader>Tiến độ</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>

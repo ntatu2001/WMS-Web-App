@@ -220,15 +220,15 @@ const ManageGoodIssue = () => {
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
                       <TableHeader style={{width: "10%"}}>Số lượng xuất</TableHeader>
-                      <TableHeader>Nhân viên</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
                       <TableHeader style={{width: "10%"}}>Ngày xuất kho</TableHeader>
                       <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader>Tiến độ</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
