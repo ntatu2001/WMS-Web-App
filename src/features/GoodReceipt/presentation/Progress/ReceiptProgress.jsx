@@ -55,7 +55,7 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
           color: "white",
           fontWeight: "bold",
           fontSize: "14px",
-          padding: "4px 8px",
+          padding: "5%",
           borderRadius: "8px",
           cursor: isCompleted ? "default" : "pointer", // Change cursor if completed
           textAlign: "center",

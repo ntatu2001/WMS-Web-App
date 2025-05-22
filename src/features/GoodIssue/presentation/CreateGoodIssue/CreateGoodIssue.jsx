@@ -58,7 +58,7 @@ const CreateGoodIssue = () => {
   //    await inventoryReceiptApi.createReceipt()
   // }
   // console.log(purchaseOrderNumber);
-  console.log(existingQuantity);
+  // console.log(existingQuantity);
   useEffect(() => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -134,29 +134,12 @@ const CreateGoodIssue = () => {
           try{
             const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
             const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
-            toast.info("Tìm thấy Mã lô/Số PO!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true, 
-              draggable: true,
-              progress: undefined,
-            });
+
             setLotNumberList(lotNumberList);
           }
           catch {
             const lotNumberList = [];
             setLotNumberList(lotNumberList);
-            toast.warning("Không tìm thấy Mã lô/Số PO!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true, 
-              draggable: true,
-              progress: undefined,
-            });
 
           }
         }
@@ -177,9 +160,9 @@ const CreateGoodIssue = () => {
   useEffect(() => {
     const getMaterialLotById = async() => {
       if(purchaseOrderNumber){
-        const materialLot = await materiaLotApi.getMaterialLotById(purchaseOrderNumber);
+        const materialLot = await materiaLotApi.GetQuantityByMaterialLotId(purchaseOrderNumber);
         console.log(materialLot);
-        setExistingQuantity(materialLot.exisitingQuantity);
+        setExistingQuantity(materialLot.availableQuantity);
         setQuantityError('');
         setRequestedQuantity(0);
       }

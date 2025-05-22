@@ -15,6 +15,11 @@ const materiaLotApi = {
     GetMaterialLotsByMaterialId(id) {
         const url = `MaterialLot/GetMaterialLotsByMaterialId/${id}`;
         return axiosClient.get(url);
+    },
+
+    GetQuantityByMaterialLotId(id) {
+        const url = `MaterialLot/GetQuantityByMaterialLotId/${id}`;
+        return axiosClient.get(url);
     }
 };
 
