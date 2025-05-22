@@ -52,10 +52,48 @@ const IssueDistribution = ({warehouseId, isActive}) => {
             // Calculate the percentage of the click position
             const clickPositionPercentage = relativeX / cellWidth;
             
-            // Check if the click was on a colored part of the cell
-            const isOnMaterialPart = clickPositionPercentage <= cell.materialStoragePercentage;
-            const isOnIssuePart = !isOnMaterialPart && 
-                                   clickPositionPercentage <= (cell.materialStoragePercentage + cell.issueStoragePercentage);
+            // Check if the click was on a material sublot
+            let clickedMaterialSublot = null;
+            let isOnMaterialPart = false;
+            
+            if (cell.allMaterialSubLots && cell.allMaterialSubLots.length > 0) {
+                let startPosition = 0;
+                
+                for (let i = 0; i < cell.allMaterialSubLots.length; i++) {
+                    const sublot = cell.allMaterialSubLots[i];
+                    const endPosition = startPosition + sublot.storagePercentage;
+                    
+                    if (clickPositionPercentage > startPosition && clickPositionPercentage <= endPosition) {
+                        clickedMaterialSublot = sublot;
+                        isOnMaterialPart = true;
+                        break;
+                    }
+                    
+                    startPosition = endPosition;
+                }
+            }
+            
+            // Check if the click was on an issue sublot
+            let clickedIssueSublot = null;
+            let isOnIssuePart = false;
+            
+            if (cell.allIssueSubLots && cell.allIssueSubLots.length > 0 && !isOnMaterialPart) {
+                let startPosition = cell.materialStoragePercentage;
+                
+                for (let i = 0; i < cell.allIssueSubLots.length; i++) {
+                    const sublot = cell.allIssueSubLots[i];
+                    const endPosition = startPosition + sublot.storagePercentage;
+                    
+                    if (clickPositionPercentage > startPosition && clickPositionPercentage <= endPosition) {
+                        clickedIssueSublot = sublot;
+                        isOnIssuePart = true;
+                        break;
+                    }
+                    
+                    startPosition = endPosition;
+                }
+            }
+            
             const isFullCell = cell.status === "Đã đầy";
             
             // Only proceed if the click was on a colored part (blue, red, or dark blue for full)
@@ -75,31 +113,26 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                         warehouseName: cell.details.warehouseName,
                         equipmentName: cell.details.equipmentName,
                     };
-                } else if (isOnMaterialPart) {
+                } else if (isOnMaterialPart && clickedMaterialSublot) {
                     // Click was on the material section (blue)
                     selectedDetails = {
                         locationId: cell.details.locationId,
                         status: "Đang chứa hàng",
-                        quantity: cell.details.quantity,
-                        lotNumber: cell.details.lotNumber,
-                        storagePercentage: cell.materialStoragePercentage,
+                        quantity: clickedMaterialSublot.existingQuantity,
+                        lotNumber: clickedMaterialSublot.lotNumber,
+                        storagePercentage: clickedMaterialSublot.storagePercentage,
                         warehouseId: cell.details.warehouseId,
                         warehouseName: cell.details.warehouseName,
                         equipmentName: cell.details.equipmentName,
                     };
-                } else {
+                } else if (isOnIssuePart && clickedIssueSublot) {
                     // Click was on the issue section (red)
-                    const issueLotInfo = cell.issueDisplayValue.split(' ');
-                    const issueLotNumber = issueLotInfo[0];
-                    const issueQuantity = issueLotInfo.length > 1 ? 
-                        parseFloat(issueLotInfo[1].replace(/[()]/g, '')) : 0;
-                        
                     selectedDetails = {
                         locationId: cell.details.locationId,
                         status: "Được phân bổ",
-                        quantity: issueQuantity,
-                        lotNumber: issueLotNumber,
-                        storagePercentage: cell.issueStoragePercentage,
+                        quantity: clickedIssueSublot.requestedQuantity,
+                        lotNumber: clickedIssueSublot.lotNumber,
+                        storagePercentage: clickedIssueSublot.storagePercentage,
                         warehouseId: cell.details.warehouseId,
                         warehouseName: cell.details.warehouseName,
                         equipmentName: cell.details.equipmentName,
@@ -239,7 +272,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 status = "Được phân bổ";
             }
             
-            // Get material display value
+            // Get first material display value for status display
             let materialDisplayValue = "";
             if (location.materialSubLots && location.materialSubLots.length > 0) {
                 const existingQuantity = location.materialSubLots[0].existingQuantity;
@@ -247,11 +280,11 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 materialDisplayValue = `${lotNumber} (${existingQuantity})`;
             }
             
-            // Get issue display value
+            // Get first issue display value for status display
             let issueDisplayValue = "";
             if (hasIssueSubLots) {
                 const issueSublot = location.issueSubLots[0];
-                const issueQuantity = location.issueSubLots.reduce((sum, subLot) => sum + (subLot.requestedQuantity || 0), 0);
+                const issueQuantity = issueSublot.requestedQuantity;
                 const issueLotNumber = issueSublot.lotNumber;
                 issueDisplayValue = `${issueLotNumber} (${issueQuantity})`;
             }
@@ -288,6 +321,16 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 }
             };
             
+            // Add all material sublots to the cell for rendering multiple sections
+            if (location.materialSubLots && location.materialSubLots.length > 0) {
+                cell.allMaterialSubLots = location.materialSubLots;
+            }
+            
+            // Add all issue sublots to the cell for rendering multiple sections
+            if (location.issueSubLots && location.issueSubLots.length > 0) {
+                cell.allIssueSubLots = location.issueSubLots;
+            }
+            
             // Place cell in the grid
             sections[sectionId].racks[fullSectionId].rows[rowIndex][colIndex] = cell;
         });
@@ -306,9 +349,42 @@ const IssueDistribution = ({warehouseId, isActive}) => {
     const isOverColoredPart = (cell, mousePositionPercentage) => {
         if (!cell) return false;
         
-        const isOnMaterialPart = mousePositionPercentage <= cell.materialStoragePercentage;
-        const isOnIssuePart = !isOnMaterialPart && 
-                             mousePositionPercentage <= (cell.materialStoragePercentage + cell.issueStoragePercentage);
+        // Check if over any material part
+        let isOnMaterialPart = false;
+        if (cell.allMaterialSubLots && cell.allMaterialSubLots.length > 0) {
+            let startPosition = 0;
+            
+            for (let i = 0; i < cell.allMaterialSubLots.length; i++) {
+                const sublot = cell.allMaterialSubLots[i];
+                const endPosition = startPosition + sublot.storagePercentage;
+                
+                if (mousePositionPercentage > startPosition && mousePositionPercentage <= endPosition) {
+                    isOnMaterialPart = true;
+                    break;
+                }
+                
+                startPosition = endPosition;
+            }
+        }
+        
+        // Check if over any issue part
+        let isOnIssuePart = false;
+        if (cell.allIssueSubLots && cell.allIssueSubLots.length > 0) {
+            let startPosition = cell.materialStoragePercentage;
+            
+            for (let i = 0; i < cell.allIssueSubLots.length; i++) {
+                const sublot = cell.allIssueSubLots[i];
+                const endPosition = startPosition + sublot.storagePercentage;
+                
+                if (mousePositionPercentage > startPosition && mousePositionPercentage <= endPosition) {
+                    isOnIssuePart = true;
+                    break;
+                }
+                
+                startPosition = endPosition;
+            }
+        }
+        
         const isFullCell = cell.status === "Đã đầy";
         
         return isOnMaterialPart || isOnIssuePart || isFullCell;
@@ -383,76 +459,106 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                     )}
                 </div>
                 
-                {/* Material storage percentage div - blue */}
-                {cell && cell.materialStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                            height: "100%",
-                            backgroundColor: "#0089D7",
-                            zIndex: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            textAlign: "center",
-                            overflow: "hidden",
-                            fontSize: cell.materialStoragePercentage < 0.18 ? 
-                                "6px" : 
-                                (cell.materialStoragePercentage < 0.4 ? 
-                                    `${Math.max(10, cell.materialStoragePercentage * 20)}px` : 
-                                    "14px"),
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                            boxSizing: "border-box",
-                            padding: "0 2px",
-                            borderRight: "1px solid #000",
-                        }}
-                    >
-                        <span style={{ color: "#FFF" }}>
-                            {cell.materialStoragePercentage < 0.1 ? 
-                                cell.materialDisplayValue.split(' ')[0] : 
-                                cell.materialDisplayValue}
-                        </span>
-                    </div>
+                {/* Multiple Material storage percentage divs - blue */}
+                {cell && cell.allMaterialSubLots && cell.status !== "Đã đầy" && (
+                    <>
+                        {cell.allMaterialSubLots.map((subLot, index) => {
+                            // Calculate the starting position for this sublot
+                            const previousSublotsWidth = cell.allMaterialSubLots
+                                .slice(0, index)
+                                .reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            
+                            // Starting position after previous material sublots
+                            const startPosition = previousSublotsWidth;
+                            
+                            return subLot.storagePercentage > 0 ? (
+                                <div
+                                    key={subLot.materialSublotId || `material-${index}`}
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: `${Math.min(startPosition * 100, 100)}%`,
+                                        width: `${Math.min(subLot.storagePercentage * 100, 100 - startPosition * 100)}%`,
+                                        height: "100%",
+                                        backgroundColor: "#0089D7",
+                                        zIndex: 2,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        textAlign: "center",
+                                        overflow: "hidden",
+                                        fontSize: subLot.storagePercentage < 0.18 ? 
+                                            "6px" : 
+                                            (subLot.storagePercentage < 0.4 ? 
+                                                `${Math.max(10, subLot.storagePercentage * 20)}px` : 
+                                                "14px"),
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                        boxSizing: "border-box",
+                                        padding: "0 2px",
+                                        borderRight: "1px solid #000",
+                                    }}
+                                >
+                                    <span style={{ color: "#FFF" }}>
+                                        {subLot.storagePercentage < 0.1 ? 
+                                            subLot.lotNumber : 
+                                            `${subLot.lotNumber} (${subLot.existingQuantity})`}
+                                    </span>
+                                </div>
+                            ) : null;
+                        })}
+                    </>
                 )}
                 
-                {/* Issue storage percentage div - red */}
-                {cell && cell.issueStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                            width: `${Math.min(cell.issueStoragePercentage * 100, 100 - cell.materialStoragePercentage * 100)}%`,
-                            height: "100%", 
-                            backgroundColor: "#FF2115",
-                            zIndex: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            textAlign: "center",
-                            overflow: "hidden",
-                            fontSize: cell.issueStoragePercentage < 0.18 ? 
-                                "6px" : 
-                                (cell.issueStoragePercentage < 0.4 ? 
-                                    `${Math.max(10, cell.issueStoragePercentage * 20)}px` : 
-                                    "14px"),
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                            boxSizing: "border-box",
-                            padding: "0 2px",
-                            borderRight: "1px solid #000",
-                        }}
-                    >
-                        <span style={{ color: "#FFF" }}>
-                            {cell.issueStoragePercentage < 0.1 ? 
-                                cell.issueDisplayValue.split(' ')[0] : 
-                                cell.issueDisplayValue}
-                        </span>
-                    </div>
+                {/* Multiple Issue storage percentage divs - red */}
+                {cell && cell.allIssueSubLots && cell.status !== "Đã đầy" && (
+                    <>
+                        {cell.allIssueSubLots.map((subLot, index) => {
+                            // Calculate the starting position for this sublot
+                            const previousSublotsWidth = cell.allIssueSubLots
+                                .slice(0, index)
+                                .reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            
+                            // Starting position is after material storage + previous issue sublots
+                            const startPosition = cell.materialStoragePercentage + previousSublotsWidth;
+                            
+                            return subLot.storagePercentage > 0 ? (
+                                <div
+                                    key={subLot.issueSublotId || `issue-${index}`}
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: `${Math.min(startPosition * 100, 100)}%`,
+                                        width: `${Math.min(subLot.storagePercentage * 100, 100 - startPosition * 100)}%`,
+                                        height: "100%", 
+                                        backgroundColor: "#FF2115",
+                                        zIndex: 2,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        textAlign: "center",
+                                        overflow: "hidden",
+                                        fontSize: subLot.storagePercentage < 0.18 ? 
+                                            "6px" :     
+                                            (subLot.storagePercentage < 0.4 ? 
+                                                `${Math.max(10, subLot.storagePercentage * 20)}px` : 
+                                                "14px"),
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                        boxSizing: "border-box",
+                                        padding: "0 2px",
+                                        borderRight: "1px solid #000",
+                                    }}
+                                >
+                                    <span style={{ color: "#FFF" }}>
+                                        {subLot.storagePercentage < 0.1 ? 
+                                            subLot.lotNumber : 
+                                            `${subLot.lotNumber} (${subLot.requestedQuantity})`}
+                                    </span>
+                                </div>
+                            ) : null;
+                        })}
+                    </>
                 )}
             </td>
         );
