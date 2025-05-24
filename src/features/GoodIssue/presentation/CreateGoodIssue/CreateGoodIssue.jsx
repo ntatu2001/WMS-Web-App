@@ -236,7 +236,7 @@ const CreateGoodIssue = () => {
         draggable: true,
         progress: undefined,
       });
-      return;
+      return false;
     }
 
     if (quantityError) {
@@ -249,7 +249,7 @@ const CreateGoodIssue = () => {
         draggable: true,
         progress: undefined,
       });
-      return;
+      return false;
     }
     
     const newMaterial = { materialName, materialId, unit, purchaseOrderNumber, requestedQuantity };
@@ -263,6 +263,7 @@ const CreateGoodIssue = () => {
     setPurchaseOrderNumber('');
     setRequestedQuantity(0);
     setQuantityError('');
+    return true;
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -271,8 +272,10 @@ const CreateGoodIssue = () => {
   };
   
   const handleAddMaterial = () => {
-     addMaterial();
-     setCount(count + 1);
+     const success = addMaterial();
+     if (success) {
+       setCount(count + 1);
+     }
   }
   
   return (

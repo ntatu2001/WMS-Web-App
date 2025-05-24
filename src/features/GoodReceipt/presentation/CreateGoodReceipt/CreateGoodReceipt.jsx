@@ -186,7 +186,7 @@ const CreateGoodReceipt = () => {
         draggable: true,
         progress: undefined,
       });
-      return;
+      return false;
     }
     
     const newMaterial = { materialName, materialId, unit, lotNumber, importedQuantity };
@@ -199,6 +199,7 @@ const CreateGoodReceipt = () => {
     setUnit('');
     setLotNumber('');
     setImportedQuantity(0);
+    return true;
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -207,8 +208,10 @@ const CreateGoodReceipt = () => {
   };
   
   const handleAddMaterial = () => {
-     addMaterial();
-     setCount(count + 1);
+     const success = addMaterial();
+     if (success) {
+       setCount(count + 1);
+     }
   }
   
   return (
