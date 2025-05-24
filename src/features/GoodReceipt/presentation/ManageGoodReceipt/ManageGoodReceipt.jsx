@@ -173,7 +173,7 @@ const ManageGoodReceipt = () => {
                       <TableHeader>Số lượng nhập</TableHeader>
                       <TableHeader>Nhân viên</TableHeader>
                       <TableHeader>Ghi chú</TableHeader>
-                      <TableHeader>Tiến độ</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
                       <TableHeader></TableHeader> 
                     </tr>
                   </thead>
