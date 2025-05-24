@@ -22,8 +22,8 @@ const statusMapping = {
   InProgress: { label: "Đang thực hiện", color: "#1D84C9" },
   Done: { label: "Hoàn thành", color: "#149117" },
   Cancelled: { label: "Đã hủy", color: "#F03B28" },
-  Suspended: { label: "Tạm hoãn", color: "#DC7010" },
-  Blocked: { label: "Bị chặn", color: "#911C0F" },
+  HoldOn: { label: "Tạm hoãn", color: "#DC7010" },
+  IsBlocked: { label: "Bị chặn", color: "#911C0F" },
 };
 
 const IssueHistory = () => {
