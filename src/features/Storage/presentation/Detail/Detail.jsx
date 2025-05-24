@@ -21,13 +21,30 @@ const Detail = ({data, activeTab}) => {
         const [selectedDate1, setSelectedDate1] = useState(null);
         const [stockLocationHistories, setStockLocationHistories] = useState([]);
         console.log(stockLocationHistories)
+
         useEffect(() => {
                 const fetchStockLocationHistories = async () => {
-                        const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, new Date(selectedDate).toISOString(), new Date(selectedDate1).toISOString());
+                        const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, '', '');
                         setStockLocationHistories(response);
                 };
                 fetchStockLocationHistories();
-        }, [data.position, selectedDate, selectedDate1]);
+        }, []);
+
+        useEffect(() => {
+                const fetchStockLocationHistories = async () => {
+                        if (selectedDate && selectedDate1) {
+                                const response = await locationApi.getStockLocationHistoriesByLocationId(
+                                        data.position,
+                                        new Date(selectedDate).toISOString(),
+                                        new Date(selectedDate1).toISOString()
+                                );
+                                setStockLocationHistories(response);
+                        }
+                };
+                if (selectedDate && selectedDate1) {
+                        fetchStockLocationHistories();
+                }
+        }, [selectedDate, selectedDate1]);
         return (
                 <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
                         <div style={{display: "flex"}}>
