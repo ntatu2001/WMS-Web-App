@@ -211,7 +211,7 @@ const IssueHistory = () => {
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '13px',
-                      width: "30%",
+                      width: "50%",
                     }}
                   >
                     {statusMapping[item.lotStatus]?.label || "--"}
