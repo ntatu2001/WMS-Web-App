@@ -263,8 +263,11 @@ const IssueDistribution = ({warehouseId, isActive}) => {
             // Determine status based on issue sublots and material percentage
             let status = "Trống"; // Default to empty
             
-            // If material storage nearly 100%, mark as full
-            if (materialStoragePercentage >= 0.95) {
+            // Check if any single materialSubLot has storagePercentage of 100%
+            const hasFullMaterialSubLot = location.materialSubLots && 
+                location.materialSubLots.some(subLot => subLot.storagePercentage > 0.99);
+                
+            if (hasFullMaterialSubLot) {
                 status = "Đã đầy";
             } else if (materialStoragePercentage > 0) {
                 status = "Đang chứa hàng";

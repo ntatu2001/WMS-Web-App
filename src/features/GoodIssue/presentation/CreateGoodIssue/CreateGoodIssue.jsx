@@ -226,6 +226,19 @@ const CreateGoodIssue = () => {
   };
   
   const addMaterial = () => {
+    if (!materialName || !purchaseOrderNumber) {
+      toast.error("Vui lòng chọn tên sản phẩm và mã lô/số PO!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+
     if (quantityError) {
       toast.error("Số lượng vượt quá tồn kho!", {
         position: "top-right",
@@ -454,7 +467,14 @@ const CreateGoodIssue = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <button onClick={handleAddMaterial} style={{paddingRight: "70%"}}>
+                  <button 
+                    onClick={handleAddMaterial} 
+                    style={{
+                      paddingRight: "70%", 
+                      opacity: (!materialName || !purchaseOrderNumber) ? 0.5 : 1,
+                      cursor: (!materialName || !purchaseOrderNumber) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <AiOutlinePlus size={18}/>
                   </button>
                 </TableCell>
