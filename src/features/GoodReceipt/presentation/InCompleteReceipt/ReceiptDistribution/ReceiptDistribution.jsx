@@ -258,7 +258,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
             
             // Check if any single materialSubLot has storagePercentage of 100%
             const hasFullMaterialSubLot = location.materialSubLots && 
-                location.materialSubLots.some(subLot => subLot.storagePercentage > 0.99);
+                location.materialSubLots.some(subLot => subLot.storagePercentage > 0.95);
                 
             if (hasFullMaterialSubLot) {
                 status = "Đã đầy";
@@ -459,9 +459,10 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                             // Starting position after previous material sublots
                             const startPosition = previousSublotsWidth;
                             
-                            // Check if this specific sublot is full (99% or more)
-                            const isSubLotFull = subLot.storagePercentage > 0.99;
-                            const backgroundColor = isSubLotFull ? "#00294D" : "#0089D7";
+                            // Check if total storage percentage is full
+                            const totalStoragePercentage = cell.allMaterialSubLots.reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            const isTotalFull = totalStoragePercentage > 0.95;
+                            const backgroundColor = isTotalFull ? "#00294D" : "#0089D7";
                             
                             return subLot.storagePercentage > 0 ? (
                                 <div

@@ -263,11 +263,11 @@ const IssueDistribution = ({warehouseId, isActive}) => {
             // Determine status based on issue sublots and material percentage
             let status = "Trống"; // Default to empty
             
-            // Check if any single materialSubLot has storagePercentage of 100%
-            const hasFullMaterialSubLot = location.materialSubLots && 
-                location.materialSubLots.some(subLot => subLot.storagePercentage > 0.99);
+            // Check total material storage percentage for full status
+            const totalMaterialStoragePercentage = location.materialSubLots ? 
+                location.materialSubLots.reduce((sum, subLot) => sum + (subLot.storagePercentage || 0), 0) : 0;
                 
-            if (hasFullMaterialSubLot) {
+            if (totalMaterialStoragePercentage > 0.95) {
                 status = "Đã đầy";
             } else if (materialStoragePercentage > 0) {
                 status = "Đang chứa hàng";
@@ -474,6 +474,11 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                             // Starting position after previous material sublots
                             const startPosition = previousSublotsWidth;
                             
+                            // Check if total storage percentage is full
+                            const totalStoragePercentage = cell.allMaterialSubLots.reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            const isTotalFull = totalStoragePercentage > 0.95;
+                            const backgroundColor = isTotalFull ? "#00294D" : "#0089D7";
+                            
                             return subLot.storagePercentage > 0 ? (
                                 <div
                                     key={subLot.materialSublotId || `material-${index}`}
@@ -483,7 +488,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                         left: `${Math.min(startPosition * 100, 100)}%`,
                                         width: `${Math.min(subLot.storagePercentage * 100, 100 - startPosition * 100)}%`,
                                         height: "100%",
-                                        backgroundColor: "#0089D7",
+                                        backgroundColor: backgroundColor,
                                         zIndex: 2,
                                         display: "flex",
                                         alignItems: "center",
