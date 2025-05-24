@@ -176,6 +176,19 @@ const CreateGoodReceipt = () => {
   };
   
   const addMaterial = () => {
+    if (!materialName || !lotNumber || !importedQuantity) {
+      toast.error("Vui lòng chọn đủ tên sản phẩm, nhập Mã lô/số PO và số lượng nhập!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+    
     const newMaterial = { materialName, materialId, unit, lotNumber, importedQuantity };
     setMaterials([...materials, newMaterial]);
     // Reset input fields
@@ -186,7 +199,6 @@ const CreateGoodReceipt = () => {
     setUnit('');
     setLotNumber('');
     setImportedQuantity(0);
-  
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -376,7 +388,14 @@ const CreateGoodReceipt = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <button onClick={handleAddMaterial} style={{paddingRight: "70%"}}>
+                  <button 
+                    onClick={handleAddMaterial} 
+                    style={{
+                      paddingRight: "70%", 
+                      opacity: (!materialName || !lotNumber || !importedQuantity) ? 0.5 : 1,
+                      cursor: (!materialName || !lotNumber || !importedQuantity) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <AiOutlinePlus size={18}/>
                   </button>
                 </TableCell>

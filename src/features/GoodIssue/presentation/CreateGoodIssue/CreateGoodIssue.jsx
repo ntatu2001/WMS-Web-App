@@ -227,7 +227,7 @@ const CreateGoodIssue = () => {
   
   const addMaterial = () => {
     if (!materialName || !purchaseOrderNumber) {
-      toast.error("Vui lòng chọn tên sản phẩm và mã lô/số PO!", {
+      toast.error("Vui lòng chọn đủ tên sản phẩm và Mã lô/số PO!", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
