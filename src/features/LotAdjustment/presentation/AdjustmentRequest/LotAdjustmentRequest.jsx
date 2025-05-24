@@ -116,7 +116,7 @@ const RequestLotAdjustment = () => {
                     // Initialize real quantities array with objects containing realQuantity and locationId
                     const initialRealQuantities = materialSubLotsByLotNumber.map(subLot => ({
                         materialSubLotId: subLot.materialSubLotId,
-                        existingQuality: subLot.existingQuality,
+                        previousQuantity: subLot.existingQuality,
                         realQuantity: subLot.realTimeQuality || 0,
                         locationId: subLot.locationId
                     }));

@@ -110,11 +110,19 @@ const Detail = ({data, activeTab}) => {
                                                 <div style={{marginTop: "10%"}}>
                                                         <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px", width: "45%"}}>Lô hàng lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
+                                                                <span style={{fontSize: "16px", fontWeight: 500}}>
+                                                                    {data.selectedLotNumber ? 
+                                                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.lotnumber :
+                                                                        data.selectedDetails?.lotInfors[0]?.lotnumber}
+                                                                </span>
                                                         </div>
                                                         <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px", width: "45%"}}>Số lượng lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
+                                                                <span style={{fontSize: "16px", fontWeight: 500}}>
+                                                                    {data.selectedLotNumber ? 
+                                                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.quantity :
+                                                                        data.selectedDetails?.lotInfors[0]?.quantity}
+                                                                </span>
                                                         </div>
                                                         <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px", width: "45%"}}>Thể tích sử dụng:</Label>

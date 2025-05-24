@@ -27,6 +27,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
     // Start dragging
     const handleMouseDown = (e) => {
         if (modalRef.current && !e.target.closest('button')) {
+            e.stopPropagation(); // Prevent event bubbling to avoid triggering parent click events
             const rect = modalRef.current.getBoundingClientRect();
             setIsDragging(true);
             setDragOffset({
@@ -39,6 +40,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
     // Handle mouse movement while dragging
     const handleMouseMove = (e) => {
         if (isDragging) {
+            e.stopPropagation(); // Prevent event bubbling while dragging
             setModalPosition({
                 top: e.clientY - dragOffset.y,
                 left: e.clientX - dragOffset.x
@@ -47,23 +49,29 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
     };
 
     // End dragging
-    const handleMouseUp = () => {
+    const handleMouseUp = (e) => {
+        if (isDragging) {
+            e.stopPropagation(); // Prevent event bubbling when ending drag
+        }
         setIsDragging(false);
     };
 
     // Add event listeners for mouse move and mouse up
     useEffect(() => {
+        const mouseMoveHandler = (e) => handleMouseMove(e);
+        const mouseUpHandler = (e) => handleMouseUp(e);
+
         if (isDragging) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
         } else {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
         }
 
         return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
         };
     }, [isDragging]);
   
@@ -78,6 +86,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                 zIndex: 999
             }}
             onMouseDown={handleMouseDown}
+            onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to parent
         >
           <div className="flex justify-center items-center w-full">
             <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>Vị trí {data.position}</SectionTitle>
@@ -130,11 +139,19 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                 <div style={{marginTop: "10%", width: "100%"}}>
                       <div style={{display: "flex", marginLeft: "-3%", justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Lô hàng lưu trữ:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.lotInfors[0]?.lotnumber}</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>
+                                    {data.selectedLotNumber ? 
+                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.lotnumber :
+                                        data.selectedDetails?.lotInfors[0]?.lotnumber}
+                                 </span>
                       </div>
                       <div style={{display: "flex", marginLeft: "-1.5%",justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Số lượng lưu trữ:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.lotInfors[0]?.quantity}</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>
+                                    {data.selectedLotNumber ? 
+                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.quantity :
+                                        data.selectedDetails?.lotInfors[0]?.quantity}
+                                 </span>
                       </div>
                       <div style={{display: "flex", marginLeft: "-1%",justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>

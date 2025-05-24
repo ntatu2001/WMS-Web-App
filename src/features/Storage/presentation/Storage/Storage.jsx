@@ -28,6 +28,8 @@ const Storage = () => {
     const [locationId, SetLocationId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalLoading, setIsModalLoading] = useState(false);
+    const [selectedLotNumber, setSelectedLotNumber] = useState(null);
+    const [selectedLotForDetail, setSelectedLotForDetail] = useState(null);
 
     useEffect(() => {
         const GetInforByLocationId = async() => {
@@ -99,24 +101,27 @@ const Storage = () => {
     }, []);
 
     const handleViewDetails = () => {
-      setActiveTab('detail'); // Cập nhật trạng thái tab
-      setShowModal(false); // Đóng modal
-  };
+        setSelectedLotForDetail(selectedLotNumber); // Lưu lại lotNumber được chọn khi chuyển sang Detail
+        setActiveTab('detail');
+        setShowModal(false);
+    };
 
-    const handleCellClick = (cell, point, e, locationId) => {
+    const handleCellClick = (cell, point, e, locationId, selectedLot = null) => {
       if (cell && cell.details && cell.status !== "Trống") {
-        const rect = e.currentTarget.getBoundingClientRect(); // Lấy vị trí của ô
+        if (!showModal || selectedLot) {
+          setSelectedLotNumber(selectedLot);
+        }
+        
+        const rect = e.currentTarget.getBoundingClientRect();
         setModalPosition({
-          top: rect.bottom + window.scrollY - 300, // Vị trí dưới ô
-          left: rect.left + window.scrollX // Vị trí bên trái ô
+          top: rect.bottom + window.scrollY - 300,
+          left: rect.left + window.scrollX
         });
         
         setCurPoint(point);
-        // Store cell position data
         SetLocationId(locationId);
         
-        // For debugging - log the position
-        console.log("locationId:", locationId);
+        console.log("locationId:", locationId, "selectedLot:", selectedLot);
         
         setShowModal(true);
       }
@@ -138,7 +143,7 @@ const Storage = () => {
                             const filteredLocations = locationList.filter(location => 
                                 location.locationId.includes(selectedZone)
                             );
-                            const processedData = processWarehouseLocations(filteredLocations);
+                            const processedData = processLocationsData(filteredLocations);
                             setDataTable(processedData);
                         }
                     } catch (error) {
@@ -157,21 +162,15 @@ const Storage = () => {
     }, [warehouseId, selectedZone]);
 
     // Function to process location data into visualization grid
-    const processWarehouseLocations = (locations) => {
+    const processLocationsData = (locations) => {
         if (!Array.isArray(locations) || locations.length === 0) return {};
 
         // Group by section and rack
         const sections = {};
         
-        // Structure: BB01.1.1.1.3 format where:
-        // BB01 = warehouse
-        // 1 = section
-        // 1 = rack
-        // 1 = column
-        // 3 = row
         locations.forEach(location => {
             const locParts = location.locationId.split('.');
-            if (locParts.length < 3) return; // Skip if not properly formatted
+            if (locParts.length < 4) return; // Skip if not properly formatted
             
             // Get section from first two parts (e.g., BB01.1)
             const sectionPrefix = locParts[0];
@@ -214,12 +213,11 @@ const Storage = () => {
             }
         });
         
-        // Second pass: place locations in the grid based on correct column and row indices
+        // Second pass: place locations in the grid
         locations.forEach(location => {
             const locParts = location.locationId.split('.');
-            if (locParts.length < 5) return; // We need all 5 parts: BB01.1.1.1.1
+            if (locParts.length < 5) return;
             
-            // Extract section and rack for lookup
             const sectionPrefix = locParts[0];
             const sectionNumber = locParts[1];
             const section = `${sectionPrefix}.${sectionNumber}`;
@@ -230,47 +228,127 @@ const Storage = () => {
             
             if (!sections[sectionId] || !sections[sectionId].racks[fullSectionId]) return;
             
-            // Get column and row indices from location parts
-            // For format like BB01.1.1.3.4:
-            // Column index is the 4th part (3) - 1 = 2 (0-indexed)
-            // Row index is the 5th part (4) - 1 = 3 (0-indexed)
             const colIndex = parseInt(locParts[3], 10) - 1;
             const rowIndex = parseInt(locParts[4], 10) - 1;
             
-            // Validate indices
             if (isNaN(colIndex) || colIndex < 0 || colIndex >= 7) return;
             if (isNaN(rowIndex) || rowIndex < 0 || rowIndex >= DEFAULT_ROWS) return;
+
+            // Calculate equal division width for each lotInfo
+            const lotInfors = location.lotInfors || [];
+            const hasLotInfors = lotInfors.length > 0;
+            const equalDivisionWidth = hasLotInfors ? (1 / lotInfors.length) : 1;
             
             // Create cell data
             const cell = {
-                value: locParts[locParts.length - 1], // Display the last part of location ID
-                status: location.storageStatus || "Trống",
+                value: hasLotInfors ? lotInfors[0].lotNumber : "",
+                status: location.storageStatus,
                 details: {
                     locationId: location.locationId,
-                    status: location.storageStatus || "Trống",
-                    lotInfors: location.lotInfors || [],
-                    warehouseId: selectedZone, 
+                    lotInfors: lotInfors,
+                    warehouseId: location.warehouseId || "",
                     equipmentName: "Ô kệ chứa hàng"
                 }
             };
 
-            // Show lotnumber in cell if available
-            if (location.lotInfors && location.lotInfors.length > 0) {
-                cell.lotnumber = location.lotInfors[0].lotnumber;
+            // Add all lotInfors to the cell for rendering multiple sections
+            if (hasLotInfors) {
+                cell.allLotInfors = lotInfors.map((lot, index) => ({
+                    lotNumber: lot.lotnumber,
+                    quantity: lot.existingQuantity,
+                    startPosition: index * equalDivisionWidth,
+                    width: equalDivisionWidth
+                }));
             }
-    
-            // Place cell in the grid
+
             sections[sectionId].racks[fullSectionId].rows[rowIndex][colIndex] = cell;
         });
         
-        // Clean up the locationMap from each rack
-        Object.values(sections).forEach(section => {
-            Object.values(section.racks).forEach(rack => {
-                delete rack.locationMap;
-            });
-        });
-        
         return sections;
+    };
+
+    // Function to render a cell
+    const renderCell = (cell, cellIndex, rowIndex, rackId) => {
+        const realRowNum = DEFAULT_ROWS - rowIndex;
+        const colNum = cellIndex + 1;
+        const locationId = cell?.details?.locationId || `${rackId}.${colNum}.${realRowNum}`;
+
+        return (
+            <td
+                key={`${cellIndex}-${rowIndex}`}
+                className={`... cursor-pointer`}
+                onClick={(e) => handleCellClick(cell, `${rackId}-${cellIndex}-${rowIndex}`, e, locationId, null)}
+                style={{
+                    backgroundColor: cell && cell.status === "Đang chứa hàng" ? "#0089D7" 
+                        : cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
+                    color: "#FFF",
+                    border: "2px solid #000",
+                    position: "relative",
+                    minWidth: "130px",
+                    height: "50px",
+                    textAlign: "center",
+                    cursor: cell && cell.status !== "Trống" ? "pointer" : "default",
+                    padding: 0,
+                    overflow: "hidden"
+                }}
+            >
+                {cell && cell.allLotInfors && cell.allLotInfors.map((lot, index) => (
+                    <div
+                        key={`lot-${index}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleCellClick(cell, `${rackId}-${cellIndex}-${rowIndex}`, e, locationId, lot.lotNumber);
+                        }}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: `${lot.startPosition * 100}%`,
+                            width: `${lot.width * 100}%`,
+                            height: "100%",
+                            backgroundColor: cell.status === "Đã đầy" ? "#00294D" : "#0089D7",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            overflow: "hidden",
+                            borderRight: index < cell.allLotInfors.length - 1 ? "1px solid #000" : "none",
+                            fontSize: lot.width < 0.18 ? 
+                                "6px" : 
+                                (lot.width < 0.4 ? 
+                                    `${Math.max(10, lot.width * 20)}px` : 
+                                    "14px"),
+                            padding: "0 2px",
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            boxSizing: "border-box",
+                            cursor: "pointer"
+                        }}
+                    >
+                        <span style={{ 
+                            color: "#FFF",
+                            maxWidth: "100%",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                        }}>
+                            {lot.width < 0.1 ? 
+                                lot.lotNumber : 
+                                `${lot.lotNumber}`}
+                        </span>
+                    </div>
+                ))}
+                {(curPoint === `${rackId}-${cellIndex}-${rowIndex}` && showModal) && (
+                    <DetailModal 
+                        data={{selectedDetails, position: locationId, selectedLotNumber}}
+                        onClose={() => {
+                            setShowModal(false);
+                            setSelectedLotNumber(null);
+                        }}
+                        position={modalPosition}
+                        onViewDetails={handleViewDetails}
+                        isLoading={isModalLoading}
+                    />
+                )}
+            </td>
+        );
     };
 
     return (
@@ -387,57 +465,19 @@ const Storage = () => {
                                         <tbody>
                                         {rackEntries[0][1].rows.slice().reverse().map((row, rowIndex) => (
                                             <tr key={rowIndex}>
-                                            {row.map((cell, cellIndex) => {
-                                            // Calculate the real row number (reverse the index)
-                                            const realRowNum = DEFAULT_ROWS - rowIndex;
-                                            // Create position info for this cell
-                                            const colNum = cellIndex + 1;
-                                            const locationId = `${rackEntries[0][1].rackId}.${colNum}.${realRowNum}`;
-                     
-                                        
-                                            
-                                            return (
-                                            <td
-                                                key={`${cellIndex}-${rowIndex}`}
-                                                className={`... cursor-pointer`}
-                                                onClick={(e) => handleCellClick(cell, `${rackEntries[0][0]}-${cellIndex}-${rowIndex}`, e, locationId)}
-                                                style={{
-                                                backgroundColor: cell && cell.status === "Đang chứa hàng" ? "#0089D7" 
-                                                : cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
-                                           
-                                                color: "#FFF",
-                                                border: "2px solid #000",
-                                                cursor: cell && cell.status !== "Trống" ? "pointer" : "default",
-                                                position: "relative",
-                                                minWidth: "130px",
-                                                height: "50px",
-                                                textAlign: "center",
-                                                }}
-                                                >
-                                                {cell ? cell.lotnumber || "" : ""}
-                                                {(curPoint === `${rackEntries[0][0]}-${cellIndex}-${rowIndex}` && showModal) && (
-                                                    <DetailModal 
-                                                    data={{selectedDetails, position: locationId}}
-                                                    onClose={() => setShowModal(false)}
-                                                    position={modalPosition}
-                                                    onViewDetails={handleViewDetails}
-                                                    isLoading={isModalLoading}
-                                                    />
+                                                {row.map((cell, cellIndex) => 
+                                                    renderCell(cell, cellIndex, rowIndex, rackEntries[0][0])
                                                 )}
-                                            </td>
-                                            );
-                                            })}
-                                            {/* Add row number cell */}
-                                            <td 
-                                            style={{
-                                                textAlign: "center",
-                                                height: "40px",
-                                                width: "30px"
-                                            }}
-                                            >
-                                            {DEFAULT_ROWS - rowIndex}
-                                            </td>
-                                        </tr>
+                                                <td 
+                                                    style={{
+                                                        textAlign: "center",
+                                                        height: "40px",
+                                                        width: "30px"
+                                                    }}
+                                                >
+                                                    {DEFAULT_ROWS - rowIndex}
+                                                </td>
+                                            </tr>
                                         ))}
                                         </tbody>
                                     </table>
@@ -453,57 +493,19 @@ const Storage = () => {
                                         <tbody>
                                         {rackEntries[1][1].rows.slice().reverse().map((row, rowIndex) => (
                                             <tr key={rowIndex}>
-                                            {row.map((cell, cellIndex) => {
-                                            // Calculate the real row number (reverse the index)
-                                            const realRowNum = DEFAULT_ROWS - rowIndex;
-                                            // Create position info for this cell
-                                            const colNum = cellIndex + 1;
-                                            const locationId =  `${rackEntries[1][1].rackId}.${colNum}.${realRowNum}`
-                                               
-                                            
-                                            
-                                            return (
-                                            <td
-                                                key={`${cellIndex}-${rowIndex}`}
-                                                className={`... cursor-pointer`}
-                                                onClick={(e) => handleCellClick(cell, `${rackEntries[1][0]}-${cellIndex}-${rowIndex}`, e, locationId)}
-                                                style={{
-                                                backgroundColor: cell && cell.status === "Đang chứa hàng" ? "#0089D7" 
-                                                : cell && cell.status === "Đã đầy" ? "#00294D"
-                                                : cell && cell.status === "Được phân bổ" ? "#FF2115" : "#FFF",
-                                                color: "#FFF",
-                                                border: "2px solid #000",
-                                                cursor: cell && cell.status !== "Trống" ? "pointer" : "default",
-                                                position: "relative",
-                                                minWidth: "130px",
-                                                height: "50px",
-                                                textAlign: "center",
-                                                }}
-                                                >
-                                                {cell ? cell.lotnumber || "" : ""}
-                                                {(curPoint === `${rackEntries[1][0]}-${cellIndex}-${rowIndex}` && showModal) && (
-                                                    <DetailModal 
-                                                    data={{selectedDetails, position: locationId}}
-                                                    onClose={() => setShowModal(false)}
-                                                    position={modalPosition}
-                                                    onViewDetails={handleViewDetails}
-                                                    isLoading={isModalLoading}
-                                                    />
+                                                {row.map((cell, cellIndex) => 
+                                                    renderCell(cell, cellIndex, rowIndex, rackEntries[1][0])
                                                 )}
-                                            </td>
-                                            );
-                                            })}
-                                            {/* Add row number cell */}
-                                            <td 
-                                            style={{
-                                                textAlign: "center",
-                                                height: "40px",
-                                                width: "30px"
-                                            }}
-                                            >
-                                            {DEFAULT_ROWS - rowIndex}
-                                            </td>
-                                        </tr>
+                                                <td 
+                                                    style={{
+                                                        textAlign: "center",
+                                                        height: "40px",
+                                                        width: "30px"
+                                                    }}
+                                                >
+                                                    {DEFAULT_ROWS - rowIndex}
+                                                </td>
+                                            </tr>
                                         ))}
                                         </tbody>
                                         <tfoot>
@@ -564,7 +566,16 @@ const Storage = () => {
       )}
 
       {/* Hiển thị trang Detail nếu activeTab là 'detail' */}
-      {activeTab === 'detail' && <Detail data={{selectedDetails, position: locationId}} activeTab={setActiveTab} />}
+      {activeTab === 'detail' && 
+        <Detail 
+            data={{
+                selectedDetails, 
+                position: locationId, 
+                selectedLotNumber: selectedLotForDetail
+            }} 
+            activeTab={setActiveTab} 
+        />
+      }
       </>
     );
   };
