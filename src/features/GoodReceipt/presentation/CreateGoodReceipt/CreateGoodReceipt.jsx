@@ -169,6 +169,22 @@ const CreateGoodReceipt = () => {
         draggable: true,
         progress: undefined,
       });
+      
+      // Clear all form data after successful creation
+      setSelectedWarehouse(null);
+      setSelectedZone(null);
+      setSelectedSupplier(null);
+      setSelectedPerson(null);
+      setSelectedDate(null);
+      setMaterials([]);
+      setCount(1);
+      setMaterialName('');
+      setMaterialId('');
+      setUnit('');
+      setLotNumber('');
+      setImportedQuantity(0);
+      setMaterialOptionIds(null);
+      setMaterialOptionUnits(null);
     } catch (err) {
       setError(err.message || 'An error occurred while creating the receipt.');
     }

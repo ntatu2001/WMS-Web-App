@@ -194,14 +194,25 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
             // Call API to update the material lot adjustment
             await receiptSubLotApi.updateReceiptSubLot(updatedReceiptSubLot);
             toast.success("Duyệt danh sách nhập kho thành công!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-        });
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            
+            // Reset all form values and data
+            setUpdatedItems([]);
+            setSelectedWarehouse(null);
+            setWarehouseId(null);
+            setReceiptLots([]);
+            setReceiptDetailScheduling([]);
+            setDeleteIndex(null);
+            setShowDeleteModal(false);
+            // Reset the scheduling fetched reference to trigger new data fetch
+            schedulingFetchedRef.current = {};
         }
         catch {
             toast.error("Duyệt thất bại", {
@@ -213,6 +224,8 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                 draggable: true,
                 progress: undefined,
             });
+        } finally {
+            setIsUpdating(false);
         }
     };
         

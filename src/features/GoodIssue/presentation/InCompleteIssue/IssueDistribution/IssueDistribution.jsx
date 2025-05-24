@@ -590,7 +590,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                             const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
                                 const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
                                 const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
-                                return rackNumA - rackNumB;
+                                return rackNumB - rackNumA;
                             });
                             
                             return (

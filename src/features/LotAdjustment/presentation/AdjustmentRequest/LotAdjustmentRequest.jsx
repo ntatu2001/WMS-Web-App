@@ -204,14 +204,32 @@ const RequestLotAdjustment = () => {
             // Call API to update the material lot adjustment
             await lotAdjustmentApi.updateMaterialLotAdjustment(updatedMaterialLotAdjustment);
             toast.success("Duyệt kiểm kê thành công!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-        });
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            
+            // Reset all form values and data
+            setSelectedDate(null);
+            setSelectedWarehouse(null);
+            setSelectedZone(null);
+            setSelectedPerson(null);
+            setSelectedLotNumber(null);
+            setSelectedReason(null);
+            setSelectedLotAdjustmentType(null);
+            setMaterialLotById(null);
+            setMaterial(null);
+            setUnit(null);
+            setNote(null);
+            setSubLots([]);
+            setRealQuantities([]);
+            setLotAdjustmentId(null);
+            setIsDetailsVisible(false);
+            setError('');
         }
         catch (err) {
             setError(err.message || 'An error occurred while updating the material lot adjustment.');

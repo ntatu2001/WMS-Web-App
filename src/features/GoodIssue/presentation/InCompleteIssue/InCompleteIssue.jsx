@@ -211,6 +211,17 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
                 draggable: true,
                 progress: undefined,
             });
+            
+            // Reset all form values and data
+            setUpdatedItems([]);
+            setSelectedWarehouse(null);
+            setWarehouseId(null);
+            setIssueLots([]);
+            setActiveTab(0);
+            setDeleteIndex(null);
+            setShowDeleteModal(false);
+            // Reset the scheduling fetched reference to trigger new data fetch
+            schedulingFetchedRef.current = {};
         } catch (error) {
             console.error("Error updating issue sublots:", error);
             toast.error("Duyệt thất bại", {
