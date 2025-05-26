@@ -567,15 +567,26 @@ const Dashboard = () => {
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
-                            <p className="font-bold">{`${dataCheck.length}`}</p>
+                            {/* Hiển thị tổng số kiểm kê từ stockTakeOverview.totalStockTakes */}
+                            <p className="font-bold">{`${overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 0}`}</p>
                             <p>Tổng</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
-                            <p className="font-bold">{`${filterDataCheck[1]}`}</p>
+                            {/* Hiển thị số kiểm kê định kỳ từ stockTakeOverview.periodicStockTakes */}
+                            <p className="font-bold">{`${overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0}`}</p>
                             <p>Định kỳ</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
-                            <p className="font-bold">{`${((filterDataCheck[1] / dataCheck.length) * 100).toFixed(0)}%`}</p>
+                            {/* Tính toán tỷ lệ đúng */}
+                            <p className="font-bold">
+                                {(overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 0) > 0
+                                    ? `${(
+                                        (overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0) /
+                                        (overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 1) *
+                                        100
+                                    ).toFixed(0)}%`
+                                    : "0%"}
+                            </p>
                             <p>Tỉ lệ</p>
                         </div>
                     </div>
@@ -587,8 +598,13 @@ const Dashboard = () => {
                             fontSize={"0.8rem"}
                             label={"Tổng"}
                             unit={""}
-                            dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
-                            dataChartValue={filterDataCheck}
+                            // Đảm bảo nhãn đúng với dữ liệu
+                            dataChartLabels={["Khác", "Định kỳ"]}
+                            dataChartValue={[
+                                (overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 0) -
+                                (overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0),
+                                overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0,
+                            ]}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",
                             //     "rgba(60,220,120,0.85)",

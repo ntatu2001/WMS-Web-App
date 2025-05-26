@@ -79,15 +79,21 @@ const ReceiptHistory = () => {
       if (response && Array.isArray(response) && response.length > 0) {
         setListReceiptHistory(response); // Update with API data
         console.log("Updated listReceiptHistory:", response); // Debug log
-        const storageData = response.map((item, index) => ({
-          id: index + 1,
-          materialName: item.materialName,
-          materialId: item.materialId,
-          unitOfMeasure: item.unitOfMeasure,
-          warehouseID: item.warehouseID,
-          importedQuantity: item.importedQuantity,
-          lotNumber: item.lotNumber, // Include lotNumber for filtering
-        }));
+        // Ensure locationId is mapped from API response
+        const storageData = response.flatMap((item, index) =>
+          Array.isArray(item.receiptSubLots)
+            ? item.receiptSubLots.map((sub, subIdx) => ({
+                id: `${index + 1}.${subIdx + 1}`,
+                materialName: item.materialName,
+                materialId: item.materialId,
+                unitOfMeasure: item.unitOfMeasure,
+                warehouseID: item.warehouseID,
+                importedQuantity: sub.importedQuantity,
+                locationId: sub.locationId,
+                lotNumber: item.lotNumber,
+              }))
+            : []
+        );
         setListReceiptStorage(storageData); // Update storage data
         console.log("Updated listReceiptStorage:", storageData); // Debug log
       } else {
@@ -182,15 +188,27 @@ const ReceiptHistory = () => {
                 setSelectedItem(item); // Set selected item for "Thông tin lô nhập kho"
                 try {
                   const response = await ReceiptApi.getAllReceipt(item.lotNumber); // Fetch data by lotNumber
-                  console.log("API response for storage details:", response); // Debug log
+                  // Lấy dữ liệu từ receiptSubLots nếu có
                   if (response && Array.isArray(response)) {
-                    setListReceiptStorage(response); // Update table data with API response
+                    const storageData = response.flatMap((item, idx) =>
+                      Array.isArray(item.receiptSubLots)
+                        ? item.receiptSubLots.map((sub, subIdx) => ({
+                            id: `${idx + 1}.${subIdx + 1}`,
+                            materialName: item.materialName,
+                            materialId: item.materialId,
+                            unitOfMeasure: item.unitOfMeasure,
+                            warehouseID: item.warehouseID,
+                            importedQuantity: sub.importedQuantity,
+                            locationId: sub.locationId,
+                            lotNumber: item.lotNumber,
+                          }))
+                        : []
+                    );
+                    setListReceiptStorage(storageData); // Update table data with API response
                   } else {
-                    console.warn("No valid storage details received from API.");
                     setListReceiptStorage([]); // Clear table data if no valid data is received
                   }
                 } catch (error) {
-                  console.error("Error fetching storage details:", error.message || error);
                   setListReceiptStorage([]); // Clear table data on error
                 }
               }}
@@ -230,7 +248,7 @@ const ReceiptHistory = () => {
                     color: 'white',
                     fontWeight: 'bold',
                     fontSize: '13px',
-                    width: "30%",
+                    width: "50%",
                   }}
                 >
                   {statusMapping[item.lotStatus]?.label || "--"}
@@ -336,7 +354,7 @@ const ReceiptHistory = () => {
                       <TableCell>{item.materialName || "--"}</TableCell>
                       <TableCell>{item.materialId || "--"}</TableCell>
                       <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                      <TableCell>{item.warehouseID || "--"}</TableCell>
+                      <TableCell>{item.locationId || "--"}</TableCell>
                       <TableCell>{item.importedQuantity || "--"}</TableCell>
                       <TableCell>{"--"}</TableCell>
                     </tr>

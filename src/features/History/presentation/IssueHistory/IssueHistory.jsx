@@ -70,18 +70,22 @@ const IssueHistory = () => {
 
       // Map the response directly to the listIssueHistory state
       if (response && Array.isArray(response)) {
-        setListIssueHistory(response); // Directly use the response if it's an array
-        console.log("Updated listIssueHistory:", response); // Debug log to verify state update
-
-        // Map the response to listIssueStorage for "Bảng phân bố vị trí lưu trữ"
-        const storageData = response.map((item, index) => ({
-          id: index + 1,
-          materialName: item.materialName,
-          materialId: item.materialId,
-          unitOfMeasure: item.unitOfMeasure,
-          warehouseID: item.warehouseID,
-          requestedQuantity: item.requestedQuantity, // Corrected property name
-        }));
+        setListIssueHistory(response);
+        // Map dữ liệu từ issueSubLotDTOs
+        const storageData = response.flatMap((item, index) =>
+          Array.isArray(item.issueSubLotDTOs)
+            ? item.issueSubLotDTOs.map((sub, subIdx) => ({
+                id: `${index + 1}.${subIdx + 1}`,
+                materialName: item.materialName,
+                materialId: item.materialId,
+                unitOfMeasure: item.unitOfMeasure,
+                warehouseID: item.warehouseID,
+                requestedQuantity: sub.requestedQuantity,
+                locationId: sub.materialSublot?.locationId,
+                lotNumber: item.lotNumber,
+              }))
+            : []
+        );
         setListIssueStorage(storageData);
         console.log("Updated listIssueStorage:", storageData); // Debug log to verify state update
       } else {
@@ -164,7 +168,21 @@ const IssueHistory = () => {
                     const response = await IssueApi.getAllIssue(item.lotNumber); // Fetch data by lotNumber
                     console.log("API response for storage details:", response); // Debug log
                     if (response && Array.isArray(response)) {
-                      setListIssueStorage(response); // Update table data with API response
+                      const storageData = response.flatMap((item, idx) =>
+                        Array.isArray(item.issueSubLotDTOs)
+                          ? item.issueSubLotDTOs.map((sub, subIdx) => ({
+                              id: `${idx + 1}.${subIdx + 1}`,
+                              materialName: item.materialName,
+                              materialId: item.materialId,
+                              unitOfMeasure: item.unitOfMeasure,
+                              warehouseID: item.warehouseID,
+                              requestedQuantity: sub.requestedQuantity,
+                              locationId: sub.materialSublot?.locationId,
+                              lotNumber: item.lotNumber,
+                            }))
+                          : []
+                      );
+                      setListIssueStorage(storageData); // Update table data with API response
                     } else {
                       console.warn("No valid storage details received from API.");
                       setListIssueStorage([]); // Clear table data if no valid data is received
@@ -211,7 +229,7 @@ const IssueHistory = () => {
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '13px',
-                      width: "30%",
+                      width: "50%",
                     }}
                   >
                     {statusMapping[item.lotStatus]?.label || "--"}
@@ -363,7 +381,7 @@ const IssueHistory = () => {
                       <TableCell>{item.materialName || "--"}</TableCell>
                       <TableCell>{item.materialId || "--"}</TableCell>
                       <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                      <TableCell>{item.warehouseID || "--"}</TableCell>
+                      <TableCell>{item.locationId || "--"}</TableCell>
                       <TableCell>{item.requestedQuantity || "--"}</TableCell>
                       <TableCell>--</TableCell>
                     </tr>

@@ -239,7 +239,7 @@ const InventoryHistory = () => {
                       color: 'white',
                       fontWeight: 'bold',
                       fontSize: '14px',
-                      width: "30%",
+                      width: "50%",
                     }}
                   >
                     {statusMapping[item.lotStatus]?.label || "--"}
