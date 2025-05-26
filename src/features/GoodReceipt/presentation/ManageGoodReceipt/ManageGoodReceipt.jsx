@@ -10,6 +10,8 @@ import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.j
 import { ClipLoader} from 'react-spinners';
 import ReceiptProgress from '../Progress/ReceiptProgress';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
+import { toast } from "react-toastify"; // Import toast for notifications
+import "react-toastify/dist/ReactToastify.css";
 
 const ManageGoodReceipt = () => {
 
@@ -127,9 +129,26 @@ const ManageGoodReceipt = () => {
       setReceiptEntries(updateEntries(receiptEntries));
       setTodayReceiptEntries(updateEntries(todayReceiptEntries));
       setLastWeekReceiptEntries(updateEntries(lastWeekReceiptEntries));
-      
+      toast.success("Cập nhật trạng thái lô thành công!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (error) {
       console.error("Error updating receipt lot status:", error);
+      toast.error("Cập nhật trạng thái lô thất bại!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
   
@@ -154,7 +173,7 @@ const ManageGoodReceipt = () => {
                       <TableHeader>Số lượng nhập</TableHeader>
                       <TableHeader>Nhân viên</TableHeader>
                       <TableHeader>Ghi chú</TableHeader>
-                      <TableHeader>Tiến độ</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
                       <TableHeader></TableHeader> 
                     </tr>
                   </thead>
@@ -200,15 +219,15 @@ const ManageGoodReceipt = () => {
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "30%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
                       <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Số lượng nhập</TableHeader>
-                      <TableHeader>Nhân viên</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Số lượng nhập</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
                       <TableHeader style={{width: "10%"}}>Ngày nhập kho</TableHeader>
-                      <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader></TableHeader>
+                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -223,6 +242,15 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
+                        <TableCell style={{ textAlign: 'center' }}>
+                          <ReceiptProgress 
+                            item={{
+                              id: item.lotNumber,
+                              status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
+                            }}
+                            handleStatusChange={handleStatusChange}
+                          />
+                        </TableCell>
                       </tr>
                     ))}
                   </tbody>

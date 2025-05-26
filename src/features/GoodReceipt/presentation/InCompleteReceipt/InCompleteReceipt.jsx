@@ -43,6 +43,8 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
     const [loadingReceiptLot, setLoadingReceiptLot] = useState(false);
     const [updatedItems, setUpdatedItems] = useState([]);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteIndex, setDeleteIndex] = useState(null);
     console.log("receiptDetailScheduling", receiptDetailScheduling);
     console.log("updatedItems", updatedItems);
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
@@ -151,6 +153,29 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
         setUpdatedItems(updatedItemsList);
     };
     
+    // Function to delete an item from the list
+    const deleteItem = (index) => {
+        setDeleteIndex(index);
+        setShowDeleteModal(true);
+    };
+    
+    // Confirm deletion
+    const confirmDelete = () => {
+        if (deleteIndex !== null) {
+            const updatedItemsList = [...updatedItems];
+            updatedItemsList.splice(deleteIndex, 1);
+            setUpdatedItems(updatedItemsList);
+            setShowDeleteModal(false);
+            setDeleteIndex(null);
+        }
+    };
+    
+    // Cancel deletion
+    const cancelDelete = () => {
+        setShowDeleteModal(false);
+        setDeleteIndex(null);
+    };
+    
     // Function to update receipt sublots
     const updateReceiptSublots = async () => {
         setIsUpdating(true);
@@ -169,14 +194,25 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
             // Call API to update the material lot adjustment
             await receiptSubLotApi.updateReceiptSubLot(updatedReceiptSubLot);
             toast.success("Duyệt danh sách nhập kho thành công!", {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-        });
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            
+            // Reset all form values and data
+            setUpdatedItems([]);
+            setSelectedWarehouse(null);
+            setWarehouseId(null);
+            setReceiptLots([]);
+            setReceiptDetailScheduling([]);
+            setDeleteIndex(null);
+            setShowDeleteModal(false);
+            // Reset the scheduling fetched reference to trigger new data fetch
+            schedulingFetchedRef.current = {};
         }
         catch {
             toast.error("Duyệt thất bại", {
@@ -188,6 +224,8 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                 draggable: true,
                 progress: undefined,
             });
+        } finally {
+            setIsUpdating(false);
         }
     };
         
@@ -324,7 +362,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                                                         />
                                                     </TableCell>
                                                     <TableCell>
-                                                        <DeleteButton>
+                                                        <DeleteButton onClick={() => deleteItem(index)}>
                                                             <FaTrash size={15} color="#000" />
                                                         </DeleteButton>
                                                     </TableCell>
@@ -348,6 +386,60 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                             </ListSection>
 
                     </ContentContainer>
+                    
+                    {/* Delete Confirmation Modal */}
+                    {showDeleteModal && (
+                        <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000
+                        }}>
+                            <div style={{
+                                backgroundColor: 'white',
+                                padding: '20px',
+                                borderRadius: '8px',
+                                width: '300px',
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+                            }}>
+                                <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
+                                <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                                <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
+                                    <button 
+                                        onClick={cancelDelete}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: '1px solid #ccc',
+                                            borderRadius: '4px',
+                                            backgroundColor: '#f5f5f5',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Hủy
+                                    </button>
+                                    <button 
+                                        onClick={confirmDelete}
+                                        style={{
+                                            padding: '8px 16px',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                    </div>
 
 

@@ -53,15 +53,32 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
             // Calculate the percentage of the click position
             const clickPositionPercentage = relativeX / cellWidth;
             
-            // Check if the click was on material part
-            const isOnMaterialPart = clickPositionPercentage <= cell.materialStoragePercentage;
-            const isFullCell = cell.status === "Đã đầy";
+            // Check if the click was on a material sublot
+            let clickedMaterialSublot = null;
+            let isOnMaterialPart = false;
+            
+            if (cell.allMaterialSubLots && cell.allMaterialSubLots.length > 0) {
+                let startPosition = 0;
+                
+                for (let i = 0; i < cell.allMaterialSubLots.length; i++) {
+                    const sublot = cell.allMaterialSubLots[i];
+                    const endPosition = startPosition + sublot.storagePercentage;
+                    
+                    if (clickPositionPercentage > startPosition && clickPositionPercentage <= endPosition) {
+                        clickedMaterialSublot = sublot;
+                        isOnMaterialPart = true;
+                        break;
+                    }
+                    
+                    startPosition = endPosition;
+                }
+            }
             
             // Check which receipt sublot was clicked (if any)
             let clickedReceiptSublot = null;
             let isOnReceiptPart = false;
             
-            if (cell.allReceiptSubLots && cell.allReceiptSubLots.length > 0 && !isOnMaterialPart && !isFullCell) {
+            if (cell.allReceiptSubLots && cell.allReceiptSubLots.length > 0 && !isOnMaterialPart) {
                 let startPosition = cell.materialStoragePercentage;
                 
                 for (let i = 0; i < cell.allReceiptSubLots.length; i++) {
@@ -78,31 +95,22 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                 }
             }
             
+            // Check if this specific materialSubLot is full
+            const isClickedMaterialSubLotFull = clickedMaterialSublot && clickedMaterialSublot.storagePercentage > 0.99;
+            
             // Only proceed if the click was on a colored part (blue, red, or dark blue for full)
-            if (isOnMaterialPart || isOnReceiptPart || isFullCell) {
+            if (isOnMaterialPart || isOnReceiptPart) {
                 // Determine if the click was on material or receipt section
                 let selectedDetails;
                 
-                if (isFullCell) {
-                    // If the cell is full, always use material details
+                if (isOnMaterialPart && clickedMaterialSublot) {
+                    // Click was on the material section (blue or dark blue if full)
                     selectedDetails = {
                         locationId: cell.details.locationId,
-                        status: "Đã đầy",
-                        quantity: cell.details.quantity,
-                        lotNumber: cell.details.lotNumber,
-                        storagePercentage: cell.details.storagePercentage,
-                        warehouseId: cell.details.warehouseId,
-                        warehouseName: cell.details.warehouseName,
-                        equipmentName: cell.details.equipmentName,
-                    };
-                } else if (isOnMaterialPart) {
-                    // Click was on the material section (blue)
-                    selectedDetails = {
-                        locationId: cell.details.locationId,
-                        status: "Đang chứa hàng",
-                        quantity: cell.details.quantity,
-                        lotNumber: cell.details.lotNumber,
-                        storagePercentage: cell.materialStoragePercentage,
+                        status: isClickedMaterialSubLotFull ? "Đã đầy" : "Đang chứa hàng",
+                        quantity: clickedMaterialSublot.existingQuantity,
+                        lotNumber: clickedMaterialSublot.lotNumber,
+                        storagePercentage: clickedMaterialSublot.storagePercentage,
                         warehouseId: cell.details.warehouseId,
                         warehouseName: cell.details.warehouseName,
                         equipmentName: cell.details.equipmentName,
@@ -248,16 +256,19 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
             // Determine status based on receipt sublots and material percentage
             let status = "Trống"; // Default to empty
             
-            // If material storage nearly 100%, mark as full
-            if (materialStoragePercentage >= 0.95) {
+            // Check if any single materialSubLot has storagePercentage of 100%
+            const hasFullMaterialSubLot = location.materialSubLots && 
+                location.materialSubLots.some(subLot => subLot.storagePercentage > 0.95);
+                
+            if (hasFullMaterialSubLot) {
                 status = "Đã đầy";
-            } else if (materialStoragePercentage > 0 ) {
+            } else if (materialStoragePercentage > 0) {
                 status = "Đang chứa hàng";
             } else if (receiptStoragePercentage > 0) {
                 status = "Được phân bổ";
             }
             
-            // Get material display value
+            // Get first material display value for status display
             let materialDisplayValue = "";
             if (location.materialSubLots && location.materialSubLots.length > 0) {
                 const existingQuantity = location.materialSubLots[0].existingQuantity;
@@ -306,6 +317,11 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                 }
             };
             
+            // Add all material sublots to the cell for rendering multiple sections
+            if (location.materialSubLots && location.materialSubLots.length > 0) {
+                cell.allMaterialSubLots = location.materialSubLots;
+            }
+            
             // Add all receipt sublots to the cell for rendering multiple sections
             if (location.receiptSubLots && location.receiptSubLots.length > 0) {
                 cell.allReceiptSubLots = location.receiptSubLots;
@@ -329,8 +345,23 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
     const isOverColoredPart = (cell, mousePositionPercentage) => {
         if (!cell) return false;
         
-        // Check if over material part
-        const isOnMaterialPart = mousePositionPercentage <= cell.materialStoragePercentage;
+        // Check if over any material part
+        let isOnMaterialPart = false;
+        if (cell.allMaterialSubLots && cell.allMaterialSubLots.length > 0) {
+            let startPosition = 0;
+            
+            for (let i = 0; i < cell.allMaterialSubLots.length; i++) {
+                const sublot = cell.allMaterialSubLots[i];
+                const endPosition = startPosition + sublot.storagePercentage;
+                
+                if (mousePositionPercentage > startPosition && mousePositionPercentage <= endPosition) {
+                    isOnMaterialPart = true;
+                    break;
+                }
+                
+                startPosition = endPosition;
+            }
+        }
         
         // Check if over any receipt part
         let isOnReceiptPart = false;
@@ -350,9 +381,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
             }
         }
         
-        const isFullCell = cell.status === "Đã đầy";
-        
-        return isOnMaterialPart || isOnReceiptPart || isFullCell;
+        return isOnMaterialPart || isOnReceiptPart;
     };
     
     // Mouse move handler for cell
@@ -409,59 +438,73 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                         left: 0,
                         width: "100%",
                         height: "100%",
-                        backgroundColor: cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
+                        backgroundColor: "#FFF",
                         zIndex: 1,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         textAlign: "center"
                     }}
-                >
-                    {cell && cell.status === "Đã đầy" && (
-                        <div style={{ color: "#FFF", whiteSpace: "normal", wordBreak: "break-word", padding: "2px" }}>
-                            {cell.materialDisplayValue}
-                        </div>
-                    )}
-                </div>
+                />
                 
-                {/* Material storage percentage div - blue */}
-                {cell && cell.materialStoragePercentage > 0 && cell.status !== "Đã đầy" && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: `${Math.min(cell.materialStoragePercentage * 100, 100)}%`,
-                            height: "100%",
-                            backgroundColor: "#0089D7",
-                            zIndex: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            textAlign: "center",
-                            overflow: "hidden",
-                            fontSize: cell.materialStoragePercentage < 0.18 ? 
-                                "6px" : 
-                                (cell.materialStoragePercentage < 0.4 ? 
-                                    `${Math.max(10, cell.materialStoragePercentage * 20)}px` : 
-                                    "14px"),
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                            boxSizing: "border-box",
-                            padding: "0 2px",
-                            borderRight: "1px solid #000",
-                        }}
-                    >
-                        <span style={{ color: "#FFF" }}>
-                            {cell.materialStoragePercentage < 0.1 ? 
-                                cell.materialDisplayValue.split(' ')[0] : 
-                                cell.materialDisplayValue}
-                        </span>
-                    </div>
+                {/* Multiple Material storage percentage divs - blue */}
+                {cell && cell.allMaterialSubLots && (
+                    <>
+                        {cell.allMaterialSubLots.map((subLot, index) => {
+                            // Calculate the starting position for this sublot
+                            const previousSublotsWidth = cell.allMaterialSubLots
+                                .slice(0, index)
+                                .reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            
+                            // Starting position after previous material sublots
+                            const startPosition = previousSublotsWidth;
+                            
+                            // Check if total storage percentage is full
+                            const totalStoragePercentage = cell.allMaterialSubLots.reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
+                            const isTotalFull = totalStoragePercentage > 0.95;
+                            const backgroundColor = isTotalFull ? "#00294D" : "#0089D7";
+                            
+                            return subLot.storagePercentage > 0 ? (
+                                <div
+                                    key={subLot.materialSublotId || `material-${index}`}
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: `${Math.min(startPosition * 100, 100)}%`,
+                                        width: `${Math.min(subLot.storagePercentage * 100, 100 - startPosition * 100)}%`,
+                                        height: "100%",
+                                        backgroundColor: backgroundColor,
+                                        zIndex: 2,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        textAlign: "center",
+                                        overflow: "hidden",
+                                        fontSize: subLot.storagePercentage < 0.18 ? 
+                                            "6px" : 
+                                            (subLot.storagePercentage < 0.4 ? 
+                                                `${Math.max(10, subLot.storagePercentage * 20)}px` : 
+                                                "14px"),
+                                        whiteSpace: "normal",
+                                        wordBreak: "break-word",
+                                        boxSizing: "border-box",
+                                        padding: "0 2px",
+                                        borderRight: "1px solid #000",
+                                    }}
+                                >
+                                    <span style={{ color: "#FFF" }}>
+                                        {subLot.storagePercentage < 0.1 ? 
+                                            subLot.lotNumber : 
+                                            `${subLot.lotNumber} (${subLot.existingQuantity})`}
+                                    </span>
+                                </div>
+                            ) : null;
+                        })}
+                    </>
                 )}
                 
                 {/* Multiple Receipt storage percentage divs - red */}
-                {cell && cell.allReceiptSubLots && cell.status !== "Đã đầy" && (
+                {cell && cell.allReceiptSubLots && (
                     <>
                         {cell.allReceiptSubLots.map((subLot, index) => {
                             // Calculate the starting position for this sublot
@@ -474,7 +517,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                             
                             return subLot.storagePercentage > 0 ? (
                                 <div
-                                    key={subLot.receiptSublotId}
+                                    key={subLot.receiptSublotId || `receipt-${index}`}
                                     style={{
                                         position: "absolute",
                                         top: 0,
@@ -540,7 +583,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                             const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
                                 const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
                                 const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
-                                return rackNumA - rackNumB;
+                                return rackNumB - rackNumA;
                             });
                             
                             return (

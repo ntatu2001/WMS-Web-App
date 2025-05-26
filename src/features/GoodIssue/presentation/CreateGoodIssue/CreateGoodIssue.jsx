@@ -51,11 +51,14 @@ const CreateGoodIssue = () => {
   const [materialOptionUnits, setMaterialOptionUnits] = useState(null);
   const [MaterialsList, setMaterialsList] = useState([]);
   const [lotNumberList, setLotNumberList] = useState([]);
+  const [existingQuantity, setExistingQuantity] = useState(null);
+  const [quantityError, setQuantityError] = useState('');
   // const createReceipt = async() => {
   //    const receipt = {}
   //    await inventoryReceiptApi.createReceipt()
   // }
-  console.log(lotNumberList);
+  // console.log(purchaseOrderNumber);
+  // console.log(existingQuantity);
   useEffect(() => {
     const GetApi = async() => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -72,7 +75,7 @@ const CreateGoodIssue = () => {
     const fetchMaterials = async () => {
       if (selectedZone) {
         try {
-          const materialList = await materialApi.getMaterialsByWarehouseId(selectedZone);
+          const materialList = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(selectedZone);
 
           const optionNameList = materialList.map(material => material.materialName);
           // const optionIdList = materialList.map(material => material.materialId);
@@ -131,29 +134,12 @@ const CreateGoodIssue = () => {
           try{
             const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
             const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
-            toast.info("Tìm thấy Mã lô/Số PO!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true, 
-              draggable: true,
-              progress: undefined,
-            });
+
             setLotNumberList(lotNumberList);
           }
           catch {
             const lotNumberList = [];
             setLotNumberList(lotNumberList);
-            toast.warning("Không tìm thấy Mã lô/Số PO!", {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true, 
-              draggable: true,
-              progress: undefined,
-            });
 
           }
         }
@@ -169,6 +155,20 @@ const CreateGoodIssue = () => {
       setError('');
     }
   }, [selectedWarehouse, selectedZone, selectedCustomer, selectedPerson, selectedDate]);
+
+
+  useEffect(() => {
+    const getMaterialLotById = async() => {
+      if(purchaseOrderNumber){
+        const materialLot = await materiaLotApi.GetQuantityByMaterialLotId(purchaseOrderNumber);
+        console.log(materialLot);
+        setExistingQuantity(materialLot.availableQuantity);
+        setQuantityError('');
+        setRequestedQuantity(0);
+      }
+    }
+    getMaterialLotById();
+  }, [purchaseOrderNumber]);
 
   const createIssue = async () => {
     if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
@@ -208,13 +208,68 @@ const CreateGoodIssue = () => {
         draggable: true,
         progress: undefined,
       });
+      
+      // Clear all form data after successful creation
+      setSelectedWarehouse(null);
+      setSelectedZone(null);
+      setSelectedCustomer(null);
+      setSelectedPerson(null);
+      setSelectedDate(null);
+      setMaterials([]);
+      setCount(1);
+      setMaterialName('');
+      setMaterialId('');
+      setUnit('');
+      setPurchaseOrderNumber('');
+      setRequestedQuantity(0);
+      setMaterialOptionIds(null);
+      setMaterialOptionUnits(null);
+      setQuantityError('');
+      setExistingQuantity(null);
     } catch (err) {
       setError(err.message || 'An error occurred while creating the issue.');
     }
     
   };
   
+  const handleQuantityChange = (e) => {
+    const value = parseInt(e.target.value);
+    setRequestedQuantity(value);
+    
+    if (existingQuantity !== null && value > existingQuantity) {
+      setQuantityError(`Số lượng vượt quá tồn kho (${existingQuantity})`);
+    } else {
+      setQuantityError('');
+    }
+  };
+  
   const addMaterial = () => {
+    if (!materialName || !purchaseOrderNumber) {
+      toast.error("Vui lòng chọn đủ tên sản phẩm và Mã lô/số PO!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return false;
+    }
+
+    if (quantityError) {
+      toast.error("Số lượng vượt quá tồn kho!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return false;
+    }
+    
     const newMaterial = { materialName, materialId, unit, purchaseOrderNumber, requestedQuantity };
     setMaterials([...materials, newMaterial]);
     // Reset input fields
@@ -225,7 +280,8 @@ const CreateGoodIssue = () => {
     setUnit('');
     setPurchaseOrderNumber('');
     setRequestedQuantity(0);
-  
+    setQuantityError('');
+    return true;
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -234,8 +290,10 @@ const CreateGoodIssue = () => {
   };
   
   const handleAddMaterial = () => {
-     addMaterial();
-     setCount(count + 1);
+     const success = addMaterial();
+     if (success) {
+       setCount(count + 1);
+     }
   }
   
   return (
@@ -405,17 +463,39 @@ const CreateGoodIssue = () => {
                   </SelectContainer>
                 </TableCell>
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
-                    type="number"
-                    min="0"
-                    step="1"
-                    placeholder="Số lượng xuất" 
-                    value={requestedQuantity}
-                    onChange={(e) => setRequestedQuantity(e.target.value)}
-                  />
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="Số lượng xuất" 
+                      value={requestedQuantity}
+                      onChange={handleQuantityChange}
+                    />
+                    {quantityError && (
+                      <div style={{ 
+                        color: 'red', 
+                        fontSize: '11px', 
+                        position: 'absolute', 
+                        bottom: '-18px', 
+                        left: '0',
+                        width: '100%',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {quantityError}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <button onClick={handleAddMaterial} style={{paddingRight: "70%"}}>
+                  <button 
+                    onClick={handleAddMaterial} 
+                    style={{
+                      paddingRight: "70%", 
+                      opacity: (!materialName || !purchaseOrderNumber) ? 0.5 : 1,
+                      cursor: (!materialName || !purchaseOrderNumber) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <AiOutlinePlus size={18}/>
                   </button>
                 </TableCell>

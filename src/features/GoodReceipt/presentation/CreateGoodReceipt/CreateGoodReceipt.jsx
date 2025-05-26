@@ -169,6 +169,22 @@ const CreateGoodReceipt = () => {
         draggable: true,
         progress: undefined,
       });
+      
+      // Clear all form data after successful creation
+      setSelectedWarehouse(null);
+      setSelectedZone(null);
+      setSelectedSupplier(null);
+      setSelectedPerson(null);
+      setSelectedDate(null);
+      setMaterials([]);
+      setCount(1);
+      setMaterialName('');
+      setMaterialId('');
+      setUnit('');
+      setLotNumber('');
+      setImportedQuantity(0);
+      setMaterialOptionIds(null);
+      setMaterialOptionUnits(null);
     } catch (err) {
       setError(err.message || 'An error occurred while creating the receipt.');
     }
@@ -176,6 +192,19 @@ const CreateGoodReceipt = () => {
   };
   
   const addMaterial = () => {
+    if (!materialName || !lotNumber || !importedQuantity) {
+      toast.error("Vui lòng chọn đủ tên sản phẩm, nhập Mã lô/số PO và số lượng nhập!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return false;
+    }
+    
     const newMaterial = { materialName, materialId, unit, lotNumber, importedQuantity };
     setMaterials([...materials, newMaterial]);
     // Reset input fields
@@ -186,7 +215,7 @@ const CreateGoodReceipt = () => {
     setUnit('');
     setLotNumber('');
     setImportedQuantity(0);
-  
+    return true;
   };
   const removeMaterial = (index) => {
     const updatedMaterials = materials.filter((_, i) => i !== index);
@@ -195,8 +224,10 @@ const CreateGoodReceipt = () => {
   };
   
   const handleAddMaterial = () => {
-     addMaterial();
-     setCount(count + 1);
+     const success = addMaterial();
+     if (success) {
+       setCount(count + 1);
+     }
   }
   
   return (
@@ -376,7 +407,14 @@ const CreateGoodReceipt = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <button onClick={handleAddMaterial} style={{paddingRight: "70%"}}>
+                  <button 
+                    onClick={handleAddMaterial} 
+                    style={{
+                      paddingRight: "70%", 
+                      opacity: (!materialName || !lotNumber || !importedQuantity) ? 0.5 : 1,
+                      cursor: (!materialName || !lotNumber || !importedQuantity) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <AiOutlinePlus size={18}/>
                   </button>
                 </TableCell>

@@ -1,5 +1,4 @@
 export const lotStatusData = {
-    "Chờ xử lý" : "#767676",
     "Đang thực hiện" : "#1D84C9",
     "Hoàn thành" : "#149117",
     "Đã hủy" : "#F03B28",
@@ -9,10 +8,9 @@ export const lotStatusData = {
 
 
 export const lotStatusChangeData = {
-    "Pending" : "Chờ xử lý",
     "InProgress" : "Đang thực hiện",
     "Done" : "Hoàn thành",
     "Cancelled" : "Đã hủy",
-    "Suspended" : "Tạm hoãn",
-    "Blocked" : "Bị chặn"
+    "HoldOn" : "Tạm hoãn",
+    "IsBlocked" : "Bị chặn"
 };

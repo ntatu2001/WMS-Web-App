@@ -120,7 +120,7 @@ const InforIssueModal = ({ data, onClose, position, isLoading }) => {
                       </div>
                       <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
                                 <Label>Tỷ lệ lưu trữ:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{Math.round(data.selectedDetails?.storagePercentage * 100)}%</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{(data.selectedDetails?.storagePercentage * 100).toFixed(1)}%</span>
                       </div>
                 </div>
                 
