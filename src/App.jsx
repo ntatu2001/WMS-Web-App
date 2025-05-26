@@ -82,10 +82,10 @@ function App() {
             isLogin ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <div className="loginContainer">
-                <h1 className="loginTitle">Warehouse Management System</h1>
+              
+                
                 <LoginScreen />
-              </div>
+             
             )
           }
         />

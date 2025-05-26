@@ -180,11 +180,11 @@ const Dashboard = () => {
             // Kiểm kê
             setDataCheck(
                 Array(data.stockTakeOverview?.totalStockTakes || 0)
-                    .fill({ status: "Định kỳ" })
+                    .fill({ status: "Hoàn thành" })
                     .map((item, idx) =>
                         idx < (data.stockTakeOverview?.periodicStockTakes || 0)
-                            ? { ...item, status: "Định kỳ" }
-                            : { ...item, status: "Khác" }
+                            ? { ...item, status: "Hoàn thành" }
+                            : { ...item, status: "Chưa hoàn thành" }
                     )
             )
             setFilterDataCheck([
@@ -261,8 +261,8 @@ const Dashboard = () => {
                     plotOptions: {
                         bar: {
                             horizontal: false,
-                            columnWidth: "35%", // giảm columnWidth để cột cao hơn
-                            distributed: true,
+                            columnWidth: "35%" // giảm columnWidth để cột cao hơn
+                            ,distributed: true,
                             endingShape: "flat", // giữ nguyên đầu cột
                         },
                     },
@@ -566,18 +566,19 @@ const Dashboard = () => {
                         <HeaderItem>Kiểm kê</HeaderItem>
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
-                        <div className="flex-col justify-around w-[30%] h-full items-center text-center">
+                        <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${dataCheck.length}`}</p>
                             <p>Tổng</p>
                         </div>
-                        <div className="flex-col justify-around w-[30%] h-full items-center text-center">
+                        <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataCheck[1]}`}</p>
-                            <p>Định kỳ</p>
+                            <p>Hoàn thành</p>
                         </div>
-                        <div className="flex-col justify-around w-[30%] h-full items-center text-center">
+                        <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${((filterDataCheck[1] / dataCheck.length) * 100).toFixed(0)}%`}</p>
                             <p>Tỉ lệ</p>
                         </div>
+                        
                     </div>
                     <div className="h-[60%] w-[100%] ">
                         <PieDonutChart
@@ -588,7 +589,10 @@ const Dashboard = () => {
                             label={"Tổng"}
                             unit={""}
                             dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
-                            dataChartValue={filterDataCheck}
+                            dataChartValue={[
+                                (dataCheck.length || 0) - (filterDataCheck[1] || 0),
+                                filterDataCheck[1] || 0,
+                            ]}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",
                             //     "rgba(60,220,120,0.85)",

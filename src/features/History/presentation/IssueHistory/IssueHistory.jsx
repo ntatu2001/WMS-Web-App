@@ -351,23 +351,27 @@ const IssueHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {listIssueStorage.map((item, index) => (
-                    <tr
-                      key={index}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
-                      }}
-                    >
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.materialName || "--"}</TableCell>
-                      <TableCell>{item.materialId || "--"}</TableCell>
-                      <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                      <TableCell>{item.warehouseID || "--"}</TableCell>
-                      <TableCell>{item.requestedQuantity || "--"}</TableCell>
-                      <TableCell>--</TableCell>
-                    </tr>
-                  ))}
+                  {listIssueStorage.flatMap((item, index) =>
+                    Array.isArray(item.issueSubLotDTOs) && item.issueSubLotDTOs.length > 0
+                      ? item.issueSubLotDTOs.map((subLot, subIdx) => (
+                          <tr
+                            key={`${index}-${subIdx}`}
+                            style={{
+                              cursor: "pointer",
+                              backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
+                            }}
+                          >
+                            <TableCell>{index + 1}{item.issueSubLotDTOs.length > 1 ? `.${subIdx + 1}` : ""}</TableCell>
+                            <TableCell>{item.materialName || "--"}</TableCell>
+                            <TableCell>{item.materialId || "--"}</TableCell>
+                            <TableCell>{item.unitOfMeasure || "--"}</TableCell>
+                            <TableCell>{subLot.materialSublot?.locationId || "--"}</TableCell>
+                            <TableCell>{item.requestedQuantity || "--"}</TableCell>
+                            <TableCell>--</TableCell>
+                          </tr>
+                        ))
+                      : null
+                  )}
                 </tbody>
               </Table>
             </div>

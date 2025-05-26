@@ -324,23 +324,27 @@ const ReceiptHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {listReceiptStorage.map((item, index) => (
-                    <tr
-                      key={index}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
-                      }}
-                    >
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.materialName || "--"}</TableCell>
-                      <TableCell>{item.materialId || "--"}</TableCell>
-                      <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                      <TableCell>{item.warehouseID || "--"}</TableCell>
-                      <TableCell>{item.importedQuantity || "--"}</TableCell>
-                      <TableCell>{"--"}</TableCell>
-                    </tr>
-                  ))}
+                  {listReceiptStorage.flatMap((item, index) =>
+                    Array.isArray(item.receiptSubLots) && item.receiptSubLots.length > 0
+                      ? item.receiptSubLots.map((subLot, subIdx) => (
+                          <tr
+                            key={`${index}-${subIdx}`}
+                            style={{
+                              cursor: "pointer",
+                              backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
+                            }}
+                          >
+                            <TableCell>{index + 1}{item.receiptSubLots.length > 1 ? `.${subIdx + 1}` : ""}</TableCell>
+                            <TableCell>{item.materialName || "--"}</TableCell>
+                            <TableCell>{item.materialId || "--"}</TableCell>
+                            <TableCell>{item.unitOfMeasure || "--"}</TableCell>
+                            <TableCell>{subLot.locationId || "--"}</TableCell>
+                            <TableCell>{subLot.importedQuantity || "--"}</TableCell>
+                            <TableCell>{"--"}</TableCell>
+                          </tr>
+                        ))
+                      : null // Remove the fallback row to avoid duplication
+                  )}
                 </tbody>
               </Table>
             </div>
