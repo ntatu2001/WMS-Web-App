@@ -224,7 +224,7 @@ const LoginScreen = () => {
           </StyledButton>
         </div>
       </LoginForm>
-      <Footer>© 2025 Smart Warehouse</Footer>
+      <Footer>© 2025 WMS-Web-App</Footer>
     </BG>
   );
 };

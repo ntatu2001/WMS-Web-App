@@ -23,6 +23,7 @@ import wareHouseApi from '../../../../api/wareHouseApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
 import personApi from '../../../../api/personApi.js';
 import materialApi from '../../../../api/materialApi.js';
+import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
@@ -34,6 +35,7 @@ const CreateGoodReceipt = () => {
   const [materialId, setMaterialId] = useState('');
   const [unit, setUnit] = useState('');
   const [lotNumber, setLotNumber] = useState('');
+  const [lotNumberError, setLotNumberError] = useState('');
   const [importedQuantity, setImportedQuantity] = useState(0);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
@@ -48,6 +50,7 @@ const CreateGoodReceipt = () => {
   const [materialOptionIds, setMaterialOptionIds] = useState(null);
   const [materialOptionUnits, setMaterialOptionUnits] = useState(null); 
   const [MaterialsList, setMaterialsList] = useState([]);
+  const [receiptLotIdList, setReceiptLotIdList] = useState([]);
   // console.log(materialName);
   // // console.log(materialOptions)
   // console.log(materialOptionUnits)
@@ -57,10 +60,12 @@ const CreateGoodReceipt = () => {
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const supplierList = await supplierApi.getAllSupplier();
         const personList = await personApi.getAllPerson();
-        
+        const receiptLotList = await receiptLotApi.getAllReceiptLots();
+        const receiptLotIdList = receiptLotList.map(lot => lot.receiptLotId);
         setPeople(personList);
         setWareHouses(wareHouseList);
         setSuppliers(supplierList);
+        setReceiptLotIdList(receiptLotIdList);
     };
 
     GetApi();
@@ -204,6 +209,19 @@ const CreateGoodReceipt = () => {
       });
       return false;
     }
+
+    if (lotNumberError) {
+      toast.error("Vui lòng chọn Mã lô/số PO khác!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return false;
+    }
     
     const newMaterial = { materialName, materialId, unit, lotNumber, importedQuantity };
     setMaterials([...materials, newMaterial]);
@@ -214,6 +232,7 @@ const CreateGoodReceipt = () => {
     setMaterialOptionUnits('');
     setUnit('');
     setLotNumber('');
+    setLotNumberError('');
     setImportedQuantity(0);
     return true;
   };
@@ -389,12 +408,40 @@ const CreateGoodReceipt = () => {
                 </TableCell>
 
                 <TableCell>
-                  <input style={{textAlign: "center", width: "100%", fontSize: "90%"}}
-                    type="text" 
-                    placeholder="Mã lô/Số PO" 
-                    value={lotNumber}
-                    onChange={(e) => setLotNumber(e.target.value)}
-                  />
+                  <div style={{ position: 'relative', width: '100%' }}>
+                    <input 
+                      style={{
+                        textAlign: "center", 
+                        width: "100%", 
+                        fontSize: "90%"
+                      }}
+                      type="text" 
+                      placeholder="Mã lô/Số PO" 
+                      value={lotNumber}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setLotNumber(value);
+                        if (receiptLotIdList.includes(value)) {
+                          setLotNumberError('Mã lô này đã tồn tại!');
+                        } else {
+                          setLotNumberError('');
+                        }
+                      }}
+                    />
+                    {lotNumberError && (
+                      <div style={{ 
+                        color: 'red', 
+                        fontSize: '11px', 
+                        position: 'absolute', 
+                        bottom: '-18px', 
+                        left: '0',
+                        width: '100%',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {lotNumberError}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <input style={{textAlign: "center", width: "100%", paddingLeft: "12%", fontSize: "90%"}}

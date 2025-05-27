@@ -82,10 +82,11 @@ const ManageGoodIssue = () => {
   
   const handleStatusChange = async (itemId, newStatus) => {
     try {
+      const issueLot = getAllIssueLots.find(lot => lot.materialLotId === itemId);
       // Find the issue entry to check its current status
       const entryToUpdate = [...issueEntries, ...todayIssueEntries, ...lastWeekIssueEntries]
-        .find(entry => entry.lotNumber === itemId);
-      
+        .find(entry => entry.issueLot.issueLotId === issueLot.issueLotId);
+      console.log(entryToUpdate)
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
         console.log("Cannot modify completed issue lots");
@@ -102,8 +103,6 @@ const ManageGoodIssue = () => {
         return;
       }
     
-
-      const issueLot = getAllIssueLots.find(lot => lot.materialLotId === itemId);
       const updateIssueLotStatus = {
         issueLotId: issueLot.issueLotId,
         issueLotStatus: reversedStatus

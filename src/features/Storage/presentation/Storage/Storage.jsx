@@ -31,6 +31,7 @@ const Storage = () => {
     const [selectedLotNumber, setSelectedLotNumber] = useState(null);
     const [selectedLotForDetail, setSelectedLotForDetail] = useState(null);
 
+    console.log(selectedDetails)
     useEffect(() => {
         const GetInforByLocationId = async() => {
             setIsModalLoading(true);
