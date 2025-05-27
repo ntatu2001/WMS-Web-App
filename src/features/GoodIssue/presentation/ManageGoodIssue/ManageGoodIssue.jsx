@@ -19,14 +19,11 @@ const ManageGoodIssue = () => {
   const [todayIssueEntries, setTodayIssueEntries] = useState([]);
   const [lastWeekIssueEntries, setLastWeekIssueEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [getAllIssueLots, setGetAllIssueLots] = useState([]);
   useEffect(() => {
     const GetApi = async() => {
       try {
         setLoading(true);
         const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
-        const getAllIssueLots = await issueLotApi.getAllIssueLots();
-        setGetAllIssueLots(getAllIssueLots);
         const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot.issueLotStatus !== "Pending");
         setIssueEntries(issueEntryNotPending);
         
@@ -82,10 +79,19 @@ const ManageGoodIssue = () => {
   
   const handleStatusChange = async (itemId, newStatus) => {
     try {
-      const issueLot = getAllIssueLots.find(lot => lot.materialLotId === itemId);
+
+      // Find the reverse mapping for the new status (from UI display status to backend status)
+      const reversedStatus = Object.keys(lotStatusChangeData).find(
+          key => lotStatusChangeData[key] === newStatus
+      );
+          
+      if (!reversedStatus) {
+            console.error("Invalid status mapping");
+      return;
+      }
       // Find the issue entry to check its current status
       const entryToUpdate = [...issueEntries, ...todayIssueEntries, ...lastWeekIssueEntries]
-        .find(entry => entry.issueLot.issueLotId === issueLot.issueLotId);
+        .find(entry => entry.issueLot.issueLotId === itemId);
       console.log(entryToUpdate)
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
@@ -93,18 +99,8 @@ const ManageGoodIssue = () => {
         return;
       }
       
-      // Find the reverse mapping for the new status (from UI display status to backend status)
-      const reversedStatus = Object.keys(lotStatusChangeData).find(
-        key => lotStatusChangeData[key] === newStatus
-      );
-      
-      if (!reversedStatus) {
-        console.error("Invalid status mapping");
-        return;
-      }
-    
       const updateIssueLotStatus = {
-        issueLotId: issueLot.issueLotId,
+        issueLotId: itemId,
         issueLotStatus: reversedStatus
       }
       console.log(updateIssueLotStatus)
@@ -192,7 +188,7 @@ const ManageGoodIssue = () => {
                         <TableCell style={{ textAlign: 'center' }}>
                           <IssueProgress 
                             item={{
-                              id: item.lotNumber,
+                              id: item.issueLot.issueLotId,
                               status: lotStatusChangeData[item.issueLot.issueLotStatus]
                             }}
                             handleStatusChange={handleStatusChange}
@@ -245,7 +241,7 @@ const ManageGoodIssue = () => {
                         <TableCell style={{ textAlign: 'center' }}>
                           <IssueProgress 
                             item={{
-                              id: item.lotNumber,
+                              id: item.issueLot.issueLotId,
                               status: lotStatusChangeData[item.issueLot.issueLotStatus]
                             }}
                             handleStatusChange={handleStatusChange}
