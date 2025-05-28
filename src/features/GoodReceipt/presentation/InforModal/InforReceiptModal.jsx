@@ -6,7 +6,7 @@ import clsx from 'clsx';
 import styles from './InforReceiptModal.module.scss';
 import Label from "../../../../common/components/Label/Label";
 import { ClipLoader } from 'react-spinners';
-
+import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
 
 const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
     // State for handling draggable functionality
@@ -124,8 +124,16 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
                       </div>
                       {data.selectedDetails?.storageLevel && (
                         <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
-                          <Label style={{width: "90%"}}>Giới hạn tầng lưu trữ:</Label>
-                          <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.storageLevel}</span>
+                          <Label style={{width: "60%"}}>Giới hạn tầng lưu trữ:</Label>
+                          <span style={{
+                                          backgroundColor: storageLevel[data.selectedDetails?.storageLevel],
+                                          color: "white",
+                                          fontWeight: "bold",
+                                          fontSize: "14px",
+                                          padding: "4px 8px",
+                                          borderRadius: "4px",
+                                          }}> Tầng {data.selectedDetails?.storageLevel}
+                          </span>
                         </div>
                       )}
                 </div>
