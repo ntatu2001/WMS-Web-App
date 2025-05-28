@@ -123,6 +123,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                         quantity: clickedReceiptSublot.importedQuantity,
                         lotNumber: clickedReceiptSublot.lotNumber,
                         storagePercentage: clickedReceiptSublot.storagePercentage,
+                        storageLevel: clickedReceiptSublot.storageLevel,
                         warehouseId: cell.details.warehouseId,
                         warehouseName: cell.details.warehouseName,
                         equipmentName: cell.details.equipmentName,
@@ -314,6 +315,9 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                     warehouseId: location.warehouseId || "",
                     warehouseName: location.warehouseName || "",
                     equipmentName: location.equipmentName || "",
+                    storageLevel: location.receiptSubLots && location.receiptSubLots.length > 0 
+                        ? location.receiptSubLots[0].storageLevel 
+                        : "",
                 }
             };
             

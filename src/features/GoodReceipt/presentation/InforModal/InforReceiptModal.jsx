@@ -119,9 +119,15 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
                                  }}>{data.selectedDetails?.status}</span>
                       </div>
                       <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
-                                <Label>Tỷ lệ lưu trữ:</Label>
+                                <Label style={{width: "50%"}}>Tỷ lệ lưu trữ:</Label>
                                  <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{(data.selectedDetails?.storagePercentage * 100).toFixed(1)}%</span>
                       </div>
+                      {data.selectedDetails?.storageLevel && (
+                        <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
+                          <Label style={{width: "90%"}}>Giới hạn tầng lưu trữ:</Label>
+                          <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.storageLevel}</span>
+                        </div>
+                      )}
                 </div>
                 
               </div>
