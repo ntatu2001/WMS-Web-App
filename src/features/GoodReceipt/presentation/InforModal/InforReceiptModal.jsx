@@ -120,7 +120,7 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
                       </div>
                       <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
                                 <Label style={{width: "50%"}}>Tỷ lệ lưu trữ:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{(data.selectedDetails?.storagePercentage * 100).toFixed(1)}%</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{(data.selectedDetails?.storagePercentage * 100).toFixed(2)}%</span>
                       </div>
                       {data.selectedDetails?.storageLevel && (
                         <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>

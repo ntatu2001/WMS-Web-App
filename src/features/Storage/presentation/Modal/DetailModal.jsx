@@ -155,11 +155,15 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                       </div>
                       <div style={{display: "flex", marginLeft: "-1%",justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Thể tích sử dụng:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.usableVolume.toFixed(2)}</span>
                       </div>
                       <div style={{display: "flex", marginLeft: "-5.5%", justifyContent: "space-between"}}>
                                 <Label style={{width: "60%"}}>Thể tích tối đa:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails?.maxVolume.toFixed(2)}</span>
+                      </div>
+                      <div style={{display: "flex", marginLeft: "-9%", justifyContent: "space-between"}}>
+                                <Label style={{width: "60%"}}>Tỷ lệ lấp đầy:</Label>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{((data.selectedDetails?.usableVolume / data.selectedDetails?.maxVolume) * 100).toFixed(2)}%</span>
                       </div>
                 </div>
               </div>
