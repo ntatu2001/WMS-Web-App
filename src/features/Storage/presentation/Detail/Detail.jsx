@@ -20,7 +20,7 @@ const Detail = ({data, activeTab}) => {
         const [selectedDate, setSelectedDate] = useState(null);
         const [selectedDate1, setSelectedDate1] = useState(null);
         const [stockLocationHistories, setStockLocationHistories] = useState([]);
-        console.log(stockLocationHistories)
+        // console.log(stockLocationHistories)
 
         useEffect(() => {
                 const fetchStockLocationHistories = async () => {
@@ -102,7 +102,7 @@ const Detail = ({data, activeTab}) => {
                                                         </div> 
                                                         <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px"}}>Tỷ lệ lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{Math.round(data.selectedDetails?.storageRate * 100) / 100}%</span>
+                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.usableVolume >= data.selectedDetails?.maxVolume ? "100%" : ((data.selectedDetails?.usableVolume / data.selectedDetails?.maxVolume) * 100).toFixed(2) + "%"}</span>
                                                         </div>  
 
                                                 </div>
@@ -126,11 +126,11 @@ const Detail = ({data, activeTab}) => {
                                                         </div>
                                                         <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px", width: "45%"}}>Thể tích sử dụng:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{Math.round(data.selectedDetails?.usableVolume * 100) / 100}</span>
+                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.usableVolume >= data.selectedDetails?.maxVolume ? data.selectedDetails?.maxVolume.toFixed(2) : data.selectedDetails?.usableVolume.toFixed(2)}</span>
                                                         </div> 
                                                         <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
                                                                 <Label style={{fontSize: "16px", width: "45%"}}>Thể tích tối đa:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{Math.round(data.selectedDetails?.maxVolume * 100) / 100}</span>
+                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.maxVolume.toFixed(2)}</span>
                                                         </div>      
                                                 </div>
                         
