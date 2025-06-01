@@ -26,9 +26,10 @@ import materialApi from '../../../../api/materialApi.js';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
-
+import { ClipLoader} from 'react-spinners';
 
 const CreateGoodReceipt = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [materialName, setMaterialName] = useState('');
@@ -57,6 +58,8 @@ const CreateGoodReceipt = () => {
   console.log(materialOptionIds)
   useEffect(() => {
     const GetApi = async() => {
+      try {
+        setIsLoading(true);
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const supplierList = await supplierApi.getAllSupplier();
         const personList = await personApi.getAllPerson();
@@ -66,6 +69,12 @@ const CreateGoodReceipt = () => {
         setWareHouses(wareHouseList);
         setSuppliers(supplierList);
         setReceiptLotIdList(receiptLotIdList);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error("Lỗi khi tải dữ liệu!");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     GetApi();
@@ -251,129 +260,134 @@ const CreateGoodReceipt = () => {
   
   return (
     <ContentContainer style = {{display: "block"}}>
-      {/* Left Section - Import Form */}
-        <div style={{display: "flex"}}>
-        <FormSection>
-        <SectionTitle>Phiếu nhập kho</SectionTitle>
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <ClipLoader color="#36D7B7" loading={isLoading} size={50} />
+        </div>
+      ) : (
+        <>
+          <div style={{display: "flex"}}>
+          <FormSection>
+          <SectionTitle>Phiếu nhập kho</SectionTitle>
 
-        <FormGroup>
-          <Label>Kho hàng:</Label>
-          <SelectContainer>
-            <Select 
-              value={selectedWarehouse} 
-              onChange={(e) => setSelectedWarehouse(e.target.value)}
-              placeholder="Chọn loại kho hàng"
-            >
-              {wareHouses.map((warehouse, index) => (
-                <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
-                  {warehouse.warehouseName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Kho hàng:</Label>
+            <SelectContainer>
+              <Select 
+                value={selectedWarehouse} 
+                onChange={(e) => setSelectedWarehouse(e.target.value)}
+                placeholder="Chọn loại kho hàng"
+              >
+                {wareHouses.map((warehouse, index) => (
+                  <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
+                    {warehouse.warehouseName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Mã kho hàng:</Label>
-          <SelectContainer>
-            <Select 
-              value={selectedZone} 
-              onChange={(e) => setSelectedZone(e.target.value)}
-              placeholder="Chọn mã kho hàng"
-            >
-              {wareHouses.map((wareHouses, index) => (
-                <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
-                  {wareHouses.warehouseId}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Mã kho hàng:</Label>
+            <SelectContainer>
+              <Select 
+                value={selectedZone} 
+                onChange={(e) => setSelectedZone(e.target.value)}
+                placeholder="Chọn mã kho hàng"
+              >
+                {wareHouses.map((wareHouses, index) => (
+                  <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
+                    {wareHouses.warehouseId}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Nhà cung cấp:</Label>
-          <SelectContainer>
-            <Select 
-              value={selectedSupplier} 
-              onChange={(e) => setSelectedSupplier(e.target.value)}
-              placeholder="Chọn nhà cung cấp"
-            >
-              {suppliers.map((supplier, index) => (
-                <option key = {`supplier-${index}`} value= {supplier.supplierName}>
-                  {supplier.supplierName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Nhà cung cấp:</Label>
+            <SelectContainer>
+              <Select 
+                value={selectedSupplier} 
+                onChange={(e) => setSelectedSupplier(e.target.value)}
+                placeholder="Chọn nhà cung cấp"
+              >
+                {suppliers.map((supplier, index) => (
+                  <option key = {`supplier-${index}`} value= {supplier.supplierName}>
+                    {supplier.supplierName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Nhân viên:</Label>
-          <SelectContainer>
-            <Select 
-              value={selectedPerson} 
-              onChange={(e) => setSelectedPerson(e.target.value)}
-              placeholder="Chọn nhân viên"
-            >
-              {people.map((person, index) => (
-                <option key = {`person-${index}`} value={person.personName}>
-                  {person.personName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Nhân viên:</Label>
+            <SelectContainer>
+              <Select 
+                value={selectedPerson} 
+                onChange={(e) => setSelectedPerson(e.target.value)}
+                placeholder="Chọn nhân viên"
+              >
+                {people.map((person, index) => (
+                  <option key = {`person-${index}`} value={person.personName}>
+                    {person.personName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Ngày nhập kho:</Label>
-          <SelectContainer>
-            <DateInput
-              selectedDate={selectedDate}
-              onChange={setSelectedDate}
-            />
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Ngày nhập kho:</Label>
+            <SelectContainer>
+              <DateInput
+                selectedDate={selectedDate}
+                onChange={setSelectedDate}
+              />
+            </SelectContainer>
+          </FormGroup>
 
-        {error && <div style={{ color: 'red' }}>{error}</div>}
+          {error && <div style={{ color: 'red' }}>{error}</div>}
 
-      </FormSection>
+        </FormSection>
 
-      {/* Right Section - Import List */}
-      <ListSection style={{width: "50%"}}>
-        <SectionTitle>Danh sách nhập kho</SectionTitle>
+        {/* Right Section - Import List */}
+        <ListSection style={{width: "50%"}}>
+          <SectionTitle>Danh sách nhập kho</SectionTitle>
 
-        <div style={{maxHeight: "400px", overflowY: "scroll"}}>
-          <Table style={{ tableLayout: "fixed", width: "100%"}}> 
-            <thead>
-              <tr>
-                <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
-                <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
-                <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "20%" }}>Mã lô/Số PO</TableHeader>
-                <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
-                <TableHeader style={{ width: "10%" }}></TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {materials.map((material, index) => (
-                <tr key={index}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{material.materialName}</TableCell>
-                  <TableCell>{material.materialId}</TableCell>
-                  <TableCell>{material.unit}</TableCell>
-                  <TableCell>{material.lotNumber}</TableCell>
-                  <TableCell>{material.importedQuantity}</TableCell>
-                  <TableCell>
-                    <DeleteButton onClick={() => removeMaterial(index)}>
-                      <FaTrash size={18} color="#FF2115"/>
-                    </DeleteButton>
-                  </TableCell>
+          <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+            <Table style={{ tableLayout: "fixed", width: "100%"}}> 
+              <thead>
+                <tr>
+                  <TableHeader style={{ width: "7%" }}>STT</TableHeader>
+                  <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
+                  <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
+                  <TableHeader style={{ width: "20%" }}>ĐVT</TableHeader>
+                  <TableHeader style={{ width: "20%" }}>Mã lô/Số PO</TableHeader>
+                  <TableHeader style={{ width: "25%" }}>Số lượng nhập</TableHeader>
+                  <TableHeader style={{ width: "10%" }}></TableHeader>
                 </tr>
-              ))}
-              <tr>
-                <TableCell>{count}</TableCell>
-                <TableCell>
+              </thead>
+              <tbody>
+                {materials.map((material, index) => (
+                  <tr key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{material.materialName}</TableCell>
+                    <TableCell>{material.materialId}</TableCell>
+                    <TableCell>{material.unit}</TableCell>
+                    <TableCell>{material.lotNumber}</TableCell>
+                    <TableCell>{material.importedQuantity}</TableCell>
+                    <TableCell>
+                      <DeleteButton onClick={() => removeMaterial(index)}>
+                        <FaTrash size={18} color="#FF2115"/>
+                      </DeleteButton>
+                    </TableCell>
+                  </tr>
+                ))}
+                <tr>
+                  <TableCell>{count}</TableCell>
+                  <TableCell>
     
                     <SelectContainer>
                     <Select 
@@ -474,11 +488,14 @@ const CreateGoodReceipt = () => {
 
       
       </ListSection>
-        </div>
-       <ActionButton style={{ marginTop: '2rem' }} onClick={createReceipt}>Tạo phiếu nhập kho</ActionButton >
-     
+          </div>
+         <ActionButton style={{ marginTop: '2rem' }} onClick={createReceipt}>
+          Tạo phiếu nhập kho
+        </ActionButton>
+        </>
+      )}
     </ContentContainer>
   );
 };
 
-export default CreateGoodReceipt; 
+export default CreateGoodReceipt;

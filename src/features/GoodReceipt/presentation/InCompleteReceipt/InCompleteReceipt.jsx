@@ -32,7 +32,7 @@ import receiptSubLotApi from '../../../../api/receiptSubLotApi.js';
 
 // import {receiptDetailScheduling as receiptDetailSchedulingData} from '../../../../app/mockData/LocationData.js';
 
-const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
+const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewResult }) => {
     
     const [receiptLots, setReceiptLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -45,6 +45,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState(null);
+    const [prevWarehouseId, setPrevWarehouseId] = useState(null);
     console.log("receiptDetailScheduling", receiptDetailScheduling);
     console.log("updatedItems", updatedItems);
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
@@ -57,19 +58,26 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
             setWarehouseId(warehouseId);
             if (warehouseId) {
                 onWarehouseChange(warehouseId);
+                // Save previous warehouse ID
+                setPrevWarehouseId(warehouseId);
             }
         }
     }, [selectedWarehouse, warehouses, onWarehouseChange]);
 
     // Function to fetch receipt detail scheduling
-    const fetchReceiptDetailScheduling = async() => {
+    const fetchReceiptDetailScheduling = async(skipAPICall = false) => {
         if (!selectedWarehouse) return;
         
         const warehouseId = warehouses.find(warehouse => warehouse.warehouseName === selectedWarehouse)?.warehouseId;
         if (!warehouseId) return;
-        
-        // Skip if we already fetched data for this warehouse
-        if (schedulingFetchedRef.current[warehouseId]) {
+
+        // Skip API call if:
+        // 1. Coming from viewResult AND
+        // 2. We have data for this warehouse AND
+        // 3. The warehouse hasn't changed
+        if (isComingFromViewResult && 
+            schedulingFetchedRef.current[warehouseId] && 
+            warehouseId === prevWarehouseId) {
             return;
         }
         
@@ -87,10 +95,27 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange }) => {
                 lotNumber: item.lotNumber || ""
             }));
             setUpdatedItems(initialUpdatedItems);
+            toast.success("Thực hiện giải thuật thành công!", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
-        } catch (error) {
-            console.error("Error fetching receipt detail scheduling:", error);
+        } catch {
+            toast.error("Thực hiện giải thuật thất bại", {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         } finally {
             setLoadingScheduling(false);
         }

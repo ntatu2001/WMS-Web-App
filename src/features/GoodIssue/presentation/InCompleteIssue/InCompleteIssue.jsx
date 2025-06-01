@@ -30,7 +30,7 @@ import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import issueSubLotApi from '../../../../api/issueSubLotApi.js';
 
-const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
+const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewResult }) => {
     
     const [issueLots, setIssueLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -43,7 +43,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState(null);
-    
+    const [prevWarehouseId, setPrevWarehouseId] = useState(null);
 
     console.log("updatedItems", updatedItems);
 
@@ -51,23 +51,33 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
     const schedulingFetchedRef = useRef({});
 
-    // Update the parent component when selected warehouse changes
+    // Update warehouse change effect
     useEffect(() => {
         if (selectedWarehouse && onWarehouseChange) {
             const warehouseId = warehouses.find(warehouse => warehouse.warehouseName === selectedWarehouse)?.warehouseId;
             setWarehouseId(warehouseId);
             if (warehouseId) {
                 onWarehouseChange(warehouseId);
+                // Save previous warehouse ID
+                setPrevWarehouseId(warehouseId);
             }
         }
     }, [selectedWarehouse, warehouses, onWarehouseChange]);
 
     // Function to fetch issue detail scheduling
-    const fetchIssueDetailScheduling = async() => {
-        if (!warehouseId) return;
+    const fetchIssueDetailScheduling = async(skipAPICall = false) => {
+        if (!selectedWarehouse) return;
         
-        // Skip if we already fetched data for this warehouse
-        if (schedulingFetchedRef.current[warehouseId]) {
+        const warehouseId = warehouses.find(warehouse => warehouse.warehouseName === selectedWarehouse)?.warehouseId;
+        if (!warehouseId) return;
+
+        // Skip API call if:
+        // 1. Coming from viewResult AND
+        // 2. We have data for this warehouse AND
+        // 3. The warehouse hasn't changed
+        if (isComingFromViewResult && 
+            schedulingFetchedRef.current[warehouseId] && 
+            warehouseId === prevWarehouseId) {
             return;
         }
         
@@ -87,11 +97,27 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange }) => {
                 issueLotId: item.issueLotId || "",
             }));
             setUpdatedItems(initialUpdatedItems);
-            
+            toast.success("Thực hiện giải thuật thành công!", {
+                            position: "top-right",
+                            autoClose: 3000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: true,
+                            draggable: true,
+                            progress: undefined,
+                        });
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
-        } catch (error) {
-            console.error("Error fetching issue detail scheduling:", error);
+        } catch {
+                       toast.error("Thực hiện giải thuật thất bại", {
+                           position: "top-right",
+                           autoClose: 3000,
+                           hideProgressBar: false,
+                           closeOnClick: true,
+                           pauseOnHover: true,
+                           draggable: true,
+                           progress: undefined,
+                       });
         } finally {
             setLoadingScheduling(false);
         }

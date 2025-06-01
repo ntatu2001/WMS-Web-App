@@ -15,6 +15,7 @@ const GoodIssue = () => {
   const [activeTab, setActiveTab] = useState('create');
   const [incompleteIssueMounted, setIncompleteIssueMounted] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  const [isComingFromViewResult, setIsComingFromViewResult] = useState(false);
   
   const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
                      activeTab === 'manage' ? "Quản lý xuất kho" :
@@ -25,10 +26,10 @@ const GoodIssue = () => {
   
   // Function to handle the issue distribution button click
   const handleIssueDistributionClick = () => {
+    setIsComingFromViewResult(false); // Reset the flag when clicking the button
     setActiveTab('incomplete');
-    // Call the fetchIssueDetailScheduling function when the button is clicked
     if (fetchIssueDetailSchedulingRef.current) {
-      fetchIssueDetailSchedulingRef.current();
+      fetchIssueDetailSchedulingRef.current(false); // Pass false to force API call
     }
   };
   
@@ -49,6 +50,24 @@ const GoodIssue = () => {
       setIncompleteIssueMounted(true);
     }
   }, [activeTab]);
+
+  // Modify the tab change handler for the "Xem kết quả phân bổ" button
+  const handleViewResultClick = () => {
+    setIsComingFromViewResult(true);
+    setActiveTab('viewResult');
+  };
+
+  // Function to handle clicking the "Xuất kho chưa hoàn thành" tab
+  const handleIncompleteTabClick = () => {
+    if (activeTab === 'viewResult') {
+      // Coming from viewResult tab - set flag to skip API call
+      setIsComingFromViewResult(true);
+    } else {
+      // Coming from other tabs - clear flag to allow API call
+      setIsComingFromViewResult(false);
+    }
+    setActiveTab('incomplete');
+  };
 
   return (
     <div style={{ backgroundColor: '#f5f5f5' }}>
@@ -73,7 +92,7 @@ const GoodIssue = () => {
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
-                  onClick={() => setActiveTab('viewResult')}
+                  onClick={handleViewResultClick}
                   style={activeTab === 'viewResult' ? 
                     { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0} : 
                     { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0}
@@ -97,7 +116,7 @@ const GoodIssue = () => {
                 
                 <TabButton
                   active={activeTab === 'incomplete'}
-                  onClick={() => setActiveTab('incomplete')}
+                  onClick={handleIncompleteTabClick}
                 >
                   Xuất kho chưa hoàn thành
                 </TabButton>
@@ -125,6 +144,7 @@ const GoodIssue = () => {
             <InCompleteIssue 
               onButtonClick={setFetchFunction} 
               onWarehouseChange={handleWarehouseChange}
+              isComingFromViewResult={isComingFromViewResult}
             />
           </div>
           <div style={{ display: activeTab === 'viewResult' ? 'block' : 'none' }}>

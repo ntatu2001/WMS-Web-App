@@ -26,10 +26,10 @@ import materialApi from '../../../../api/materialApi.js';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
-
-
+import { ClipLoader } from 'react-spinners';
 
 const CreateGoodIssue = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [materialName, setMaterialName] = useState('');
@@ -61,12 +61,20 @@ const CreateGoodIssue = () => {
   // console.log(existingQuantity);
   useEffect(() => {
     const GetApi = async() => {
+      try {
+        setIsLoading(true);
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const customerList = await customerApi.getAllCustomers();
         const personList = await personApi.getAllPerson();
         setPeople(personList);
         setWareHouses(wareHouseList);
         setCustomers(customerList);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error("Lỗi khi tải dữ liệu!");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     GetApi();
@@ -298,221 +306,229 @@ const CreateGoodIssue = () => {
   
   return (
     <ContentContainer style = {{display: "block"}}>
-      {/* Left Section - Import Form */}
-        <div style={{display: "flex"}}>
-        <FormSection>
-        <SectionTitle>Phiếu xuất kho</SectionTitle>
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <ClipLoader color="#36D7B7" loading={isLoading} size={50} />
+        </div>
+      ) : (
+        <>
+          <div style={{display: "flex"}}>
+          <FormSection>
+          <SectionTitle>Phiếu xuất kho</SectionTitle>
 
-        <FormGroup>
-          <Label>Kho hàng:</Label>
-          <SelectContainer>
-            <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
-              <option value="" disabled selected>Chọn loại kho hàng</option>
-              {wareHouses.map((warehouse, index) => (
-                <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
-                  {warehouse.warehouseName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Kho hàng:</Label>
+            <SelectContainer>
+              <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
+                <option value="" disabled selected>Chọn loại kho hàng</option>
+                {wareHouses.map((warehouse, index) => (
+                  <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
+                    {warehouse.warehouseName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Mã kho hàng:</Label>
-          <SelectContainer>
-            <Select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)}>
-              <option value="" disabled selected>Chọn mã kho hàng</option>
-              {wareHouses.map((wareHouses, index) => (
-                <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
-                  {wareHouses.warehouseId}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Mã kho hàng:</Label>
+            <SelectContainer>
+              <Select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)}>
+                <option value="" disabled selected>Chọn mã kho hàng</option>
+                {wareHouses.map((wareHouses, index) => (
+                  <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
+                    {wareHouses.warehouseId}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Khách hàng:</Label>
-          <SelectContainer>
-            <Select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}>
-              <option value="" disabled selected>Chọn khách hàng</option>
-              {customers.map((customer, index) => (
-                <option key = {`customer-${index}`} value= {customer.customerName}>
-                  {customer.customerName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Khách hàng:</Label>
+            <SelectContainer>
+              <Select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}>
+                <option value="" disabled selected>Chọn khách hàng</option>
+                {customers.map((customer, index) => (
+                  <option key = {`customer-${index}`} value= {customer.customerName}>
+                    {customer.customerName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Nhân viên:</Label>
-          <SelectContainer>
-            <Select value={selectedPerson} onChange={(e) => setSelectedPerson(e.target.value)}>
-              <option value="" disabled selected>Chọn nhân viên</option>
-              {people.map((person, index) => (
-                <option key = {`person-${index}`} value={person.personName}>
-                  {person.personName}
-                </option>
-              ))}
-            </Select>
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Nhân viên:</Label>
+            <SelectContainer>
+              <Select value={selectedPerson} onChange={(e) => setSelectedPerson(e.target.value)}>
+                <option value="" disabled selected>Chọn nhân viên</option>
+                {people.map((person, index) => (
+                  <option key = {`person-${index}`} value={person.personName}>
+                    {person.personName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+          </FormGroup>
 
-        <FormGroup>
-          <Label>Ngày xuất kho:</Label>
-          <SelectContainer>
-            <DateInput
-              selectedDate={selectedDate}
-              onChange={setSelectedDate}
-            />
-          </SelectContainer>
-        </FormGroup>
+          <FormGroup>
+            <Label>Ngày xuất kho:</Label>
+            <SelectContainer>
+              <DateInput
+                selectedDate={selectedDate}
+                onChange={setSelectedDate}
+              />
+            </SelectContainer>
+          </FormGroup>
 
-        {error && <div style={{ color: 'red' }}>{error}</div>}
+          {error && <div style={{ color: 'red' }}>{error}</div>}
 
-      </FormSection>
+        </FormSection>
 
-      {/* Right Section - Import List */}
-      <ListSection style={{width: "50%"}}>
-        <SectionTitle>Danh sách xuất kho</SectionTitle>
+        {/* Right Section - Import List */}
+        <ListSection style={{width: "50%"}}>
+          <SectionTitle>Danh sách xuất kho</SectionTitle>
 
-        <div style={{maxHeight: "400px", overflowY: "scroll"}}>
-          <Table style={{ tableLayout: "fixed", width: "100%"}}> 
-            <thead>
-              <tr>
-                <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
-                <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
-                <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
-                <TableHeader style={{ width: "30%" }}>Mã lô/Số PO</TableHeader>
-                <TableHeader style={{ width: "25%" }}>Số lượng xuất</TableHeader>
-                <TableHeader style={{ width: "10%" }}></TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {materials.map((material, index) => (
-                <tr key={index}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{material.materialName}</TableCell>
-                  <TableCell>{material.materialId}</TableCell>
-                  <TableCell>{material.unit}</TableCell>
-                  <TableCell>{material.purchaseOrderNumber}</TableCell>
-                  <TableCell>{material.requestedQuantity}</TableCell>
-                  <TableCell>
-                    <DeleteButton onClick={() => removeMaterial(index)}>
-                      <FaTrash size={18} color="#FF2115"/>
-                    </DeleteButton>
-                  </TableCell>
+          <div style={{maxHeight: "400px", overflowY: "scroll"}}>
+            <Table style={{ tableLayout: "fixed", width: "100%"}}> 
+              <thead>
+                <tr>
+                  <TableHeader style={{ width: "7%" }}>STT</TableHeader>
+                  <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
+                  <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
+                  <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
+                  <TableHeader style={{ width: "30%" }}>Mã lô/Số PO</TableHeader>
+                  <TableHeader style={{ width: "25%" }}>Số lượng xuất</TableHeader>
+                  <TableHeader style={{ width: "10%" }}></TableHeader>
                 </tr>
-              ))}
-              <tr>
-                <TableCell>{count}</TableCell>
-                <TableCell>
-                  <SelectContainer >
-                      <Select 
-                      value={materialName} 
-                      onChange={(e) => setMaterialName(e.target.value)}
-                      placeholder="Tên sản phẩm"
-                      style = {{fontSize: "90%"}}
-                      >
-                       
-                        {materialOptionNames.map((materialOptionName, index) => (
-                          <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
-                            {materialOptionName}
-                          </option>
-                        ))}
-                      </Select>
-                  </SelectContainer>
-                </TableCell>
-                <TableCell>
-                  <SelectContainer >
-                      <span style={{color: materialOptionIds? "#000" : "#767676", fontSize: "90%"}}>
-                          {materialOptionIds || "Mã sản phẩm"}
-                      </span>
+              </thead>
+              <tbody>
+                {materials.map((material, index) => (
+                  <tr key={index}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{material.materialName}</TableCell>
+                    <TableCell>{material.materialId}</TableCell>
+                    <TableCell>{material.unit}</TableCell>
+                    <TableCell>{material.purchaseOrderNumber}</TableCell>
+                    <TableCell>{material.requestedQuantity}</TableCell>
+                    <TableCell>
+                      <DeleteButton onClick={() => removeMaterial(index)}>
+                        <FaTrash size={18} color="#FF2115"/>
+                      </DeleteButton>
+                    </TableCell>
+                  </tr>
+                ))}
+                <tr>
+                  <TableCell>{count}</TableCell>
+                  <TableCell>
+                    <SelectContainer >
+                        <Select 
+                        value={materialName} 
+                        onChange={(e) => setMaterialName(e.target.value)}
+                        placeholder="Tên sản phẩm"
+                        style = {{fontSize: "90%"}}
+                        >
+                         
+                          {materialOptionNames.map((materialOptionName, index) => (
+                            <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
+                              {materialOptionName}
+                            </option>
+                          ))}
+                        </Select>
                     </SelectContainer>
-                </TableCell>
-                <TableCell>
-                  <SelectContainer >
-                      <span style={{color: materialOptionUnits? "#000" : "#767676", fontSize: "90%"}}>
-                          {materialOptionUnits || "ĐVT"}
-                      </span>
-                  </SelectContainer>
-                </TableCell>
-                <TableCell>
-                  {/* <input style={{textAlign: "center", width: "100%"}}
-                    type="text" 
-                    placeholder="Mã lô/Số PO" 
-                    value={purchaseOrderNumber}
-                    onChange={(e) => setPurchaseOrderNumber(e.target.value)}
-                  /> */}
-                  <SelectContainer >
-                      <Select 
+                  </TableCell>
+                  <TableCell>
+                    <SelectContainer >
+                        <span style={{color: materialOptionIds? "#000" : "#767676", fontSize: "90%"}}>
+                            {materialOptionIds || "Mã sản phẩm"}
+                        </span>
+                      </SelectContainer>
+                  </TableCell>
+                  <TableCell>
+                    <SelectContainer >
+                        <span style={{color: materialOptionUnits? "#000" : "#767676", fontSize: "90%"}}>
+                            {materialOptionUnits || "ĐVT"}
+                        </span>
+                    </SelectContainer>
+                  </TableCell>
+                  <TableCell>
+                    {/* <input style={{textAlign: "center", width: "100%"}}
+                      type="text" 
+                      placeholder="Mã lô/Số PO" 
                       value={purchaseOrderNumber}
                       onChange={(e) => setPurchaseOrderNumber(e.target.value)}
-                      placeholder="Mã lô/Số PO" 
-                      style = {{fontSize: "90%"}}
-                      >
-                       
-                        {lotNumberList.map((lotNumber, index) => (
-                          <option key = {`lotNumber-${index}`} value= {lotNumber}> 
-                            {lotNumber}
-                          </option>
-                        ))}
-                      </Select>
-                  </SelectContainer>
-                </TableCell>
-                <TableCell>
-                  <div style={{ position: 'relative', width: '100%' }}>
-                    <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="Số lượng xuất" 
-                      value={requestedQuantity}
-                      onChange={handleQuantityChange}
-                    />
-                    {quantityError && (
-                      <div style={{ 
-                        color: 'red', 
-                        fontSize: '11px', 
-                        position: 'absolute', 
-                        bottom: '-18px', 
-                        left: '0',
-                        width: '100%',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {quantityError}
-                      </div>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <button 
-                    onClick={handleAddMaterial} 
-                    style={{
-                      paddingRight: "70%", 
-                      opacity: (!materialName || !purchaseOrderNumber) ? 0.5 : 1,
-                      cursor: (!materialName || !purchaseOrderNumber) ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    <AiOutlinePlus size={18}/>
-                  </button>
-                </TableCell>
-              </tr>
-            </tbody>
-          </Table>
-        </div>
+                    /> */}
+                    <SelectContainer >
+                        <Select 
+                        value={purchaseOrderNumber}
+                        onChange={(e) => setPurchaseOrderNumber(e.target.value)}
+                        placeholder="Mã lô/Số PO" 
+                        style = {{fontSize: "90%"}}
+                        >
+                         
+                          {lotNumberList.map((lotNumber, index) => (
+                            <option key = {`lotNumber-${index}`} value= {lotNumber}> 
+                              {lotNumber}
+                            </option>
+                          ))}
+                        </Select>
+                    </SelectContainer>
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Số lượng xuất" 
+                        value={requestedQuantity}
+                        onChange={handleQuantityChange}
+                      />
+                      {quantityError && (
+                        <div style={{ 
+                          color: 'red', 
+                          fontSize: '11px', 
+                          position: 'absolute', 
+                          bottom: '-18px', 
+                          left: '0',
+                          width: '100%',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {quantityError}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <button 
+                      onClick={handleAddMaterial} 
+                      style={{
+                        paddingRight: "70%", 
+                        opacity: (!materialName || !purchaseOrderNumber) ? 0.5 : 1,
+                        cursor: (!materialName || !purchaseOrderNumber) ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      <AiOutlinePlus size={18}/>
+                    </button>
+                  </TableCell>
+                </tr>
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Modal for additional information */}
+          {/* Modal for additional information */}
 
-      
-      </ListSection>
-        </div>
-       <ActionButton style={{ marginTop: '2rem' }} onClick={createIssue}>Tạo phiếu xuất kho</ActionButton >
-     
+        
+        </ListSection>
+          </div>
+         <ActionButton style={{ marginTop: '2rem' }} onClick={createIssue}>
+          Tạo phiếu xuất kho
+        </ActionButton>
+        </>
+      )}
     </ContentContainer>
   );
 };
 
-export default CreateGoodIssue; 
+export default CreateGoodIssue;
