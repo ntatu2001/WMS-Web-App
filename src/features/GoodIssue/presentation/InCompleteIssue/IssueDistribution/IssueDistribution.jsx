@@ -447,38 +447,29 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                         left: 0,
                         width: "100%",
                         height: "100%",
-                        backgroundColor: cell && cell.status === "Đã đầy" ? "#00294D" : "#FFF",
+                        backgroundColor: "#FFF",
                         zIndex: 1,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         textAlign: "center"
                     }}
-                >
-                    {cell && cell.status === "Đã đầy" && (
-                        <div style={{ color: "#FFF", whiteSpace: "normal", wordBreak: "break-word", padding: "2px" }}>
-                            {cell.materialDisplayValue}
-                        </div>
-                    )}
-                </div>
+                />
                 
                 {/* Multiple Material storage percentage divs - blue */}
-                {cell && cell.allMaterialSubLots && cell.status !== "Đã đầy" && (
+                {cell && cell.allMaterialSubLots && (
                     <>
                         {cell.allMaterialSubLots.map((subLot, index) => {
-                            // Calculate the starting position for this sublot
                             const previousSublotsWidth = cell.allMaterialSubLots
                                 .slice(0, index)
                                 .reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
-                            
-                            // Starting position after previous material sublots
+                        
                             const startPosition = previousSublotsWidth;
-                            
-                            // Check if total storage percentage is full
+                        
                             const totalStoragePercentage = cell.allMaterialSubLots.reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
                             const isTotalFull = totalStoragePercentage > 0.95;
                             const backgroundColor = isTotalFull ? "#00294D" : "#0089D7";
-                            
+                        
                             return subLot.storagePercentage > 0 ? (
                                 <div
                                     key={subLot.materialSublotId || `material-${index}`}
@@ -519,17 +510,15 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 )}
                 
                 {/* Multiple Issue storage percentage divs - red */}
-                {cell && cell.allIssueSubLots && cell.status !== "Đã đầy" && (
+                {cell && cell.allIssueSubLots && (
                     <>
                         {cell.allIssueSubLots.map((subLot, index) => {
-                            // Calculate the starting position for this sublot
                             const previousSublotsWidth = cell.allIssueSubLots
                                 .slice(0, index)
                                 .reduce((sum, sl) => sum + (sl.storagePercentage || 0), 0);
-                            
-                            // Starting position is after material storage + previous issue sublots
+                        
                             const startPosition = cell.materialStoragePercentage + previousSublotsWidth;
-                            
+                        
                             return subLot.storagePercentage > 0 ? (
                                 <div
                                     key={subLot.issueSublotId || `issue-${index}`}
@@ -538,7 +527,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                         top: 0,
                                         left: `${Math.min(startPosition * 100, 100)}%`,
                                         width: `${Math.min(subLot.storagePercentage * 100, 100 - startPosition * 100)}%`,
-                                        height: "100%", 
+                                        height: "100%",
                                         backgroundColor: "#FF2115",
                                         zIndex: 2,
                                         display: "flex",
@@ -547,7 +536,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                         textAlign: "center",
                                         overflow: "hidden",
                                         fontSize: subLot.storagePercentage < 0.18 ? 
-                                            "6px" :     
+                                            "6px" : 
                                             (subLot.storagePercentage < 0.4 ? 
                                                 `${Math.max(10, subLot.storagePercentage * 20)}px` : 
                                                 "14px"),
