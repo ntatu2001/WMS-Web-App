@@ -477,7 +477,7 @@ const RequestLotAdjustment = () => {
 
                             <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
 
-                                <FormGroup style={{ position: "relative", marginBottom: 0 }}>
+                                <FormGroup style={{ position: "relative"}}>
                                     <Label style={{ width: "35%", marginLeft: "30px" }}>Mã lô kiểm kê:</Label>
                                     <span type="text" style={{
                                         border: "1px solid #767676",
@@ -490,18 +490,18 @@ const RequestLotAdjustment = () => {
                                         fontSize: "13px"
                                     }}
                                     >{selectedLotNumber || ""}</span>
-                                    <button style={{
+                                    {/* <button style={{
                                         width: "20px",
                                         position: "absolute",
                                         right: "0",
                                         marginRight: "10%"
                                     }}>
                                         <img src={QRicon} alt="QR Icon" />
-                                    </button>
+                                    </button> */}
 
                                 </FormGroup>
 
-                                <TextNote>*Nhập hoặc quét mã lô hàng</TextNote>
+                                {/* <TextNote>*Nhập hoặc quét mã lô hàng</TextNote> */}
 
                                 <FormGroup>
                                     <Label style={{ width: "35%", marginLeft: "30px" }}>Loại kiểm kê:</Label>
