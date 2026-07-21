@@ -6,14 +6,16 @@ import ActionButton from '../../../../common/components/Button/ActionButton/Acti
 import Label from '../../../../common/components/Label/Label.jsx';
 import materialApi from '../../../../api/materialApi.js'; // Ensure this import is correct
 import materialClassApi from '../../../../api/materialClassApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 
 const fetchMaterials = async () => {
   try {
-    const response = await materialApi.getAllMaterials(); // Ensure this endpoint exists and is correct
-    return response.items;
+    // Material/GetAllMaterials is paginated and requires pageNumber/itemsPerPage (API Guide mục 3)
+    const response = await materialApi.getAllMaterials({ pageNumber: 1, itemsPerPage: 1000 });
+    return response.results;
   } catch (error) {
     console.error('Error fetching materials:', error);
     return [];
@@ -202,7 +204,7 @@ const InventoryHistory = () => {
       console.error("Error creating new product:", error);
 
       // Show failure notification
-      toast.error("Tạo sản phẩm thất bại. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Tạo sản phẩm thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,

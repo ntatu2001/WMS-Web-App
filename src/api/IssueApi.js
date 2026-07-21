@@ -1,11 +1,11 @@
 import axiosClient from "./axiosClient";
 
 const IssueApi = {
-    getAllIssue(lotNumber, supplierId = "", startTime = "", endTime = "") {
+    getAllIssue(lotNumber, customerId = "", startTime = "", endTime = "") {
         const params = new URLSearchParams();
 
         params.append("lotNumber", lotNumber || "");
-        params.append("supplierId", supplierId);
+        params.append("customerId", customerId);
         params.append("startTime", startTime);
         params.append("endTime", endTime);
 

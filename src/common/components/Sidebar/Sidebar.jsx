@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
@@ -13,14 +14,14 @@ import {
   AiOutlineCheckSquare,
   AiOutlineHistory,
   AiOutlineUnorderedList,
-  AiOutlineUser,
-  AiOutlineEdit,
+  AiOutlineTeam,
   AiOutlineClose,
 } from 'react-icons/ai';
 
 const Sidebar = () => {
   const location = useLocation();
   const [showSubSidebar, setShowSubSidebar] = useState(false);
+  const roles = useSelector((state) => state.auth.roles);
 
   const menuItems = [
     { id: 1, title: 'Tổng quan', icon: <AiOutlineHome />, path: '/dashboard' },
@@ -37,12 +38,14 @@ const Sidebar = () => {
       path: '/setting',
       isParent: true,
       subItems: [
-        { id: 8.1, title: 'Tài khoản', icon: <AiOutlineUser />, path: '/setting/account' },
-        { id: 8.2, title: 'Cập nhật', icon: <AiOutlineEdit />, path: '/setting/update' },
-        { id: 8.3, title: 'Đăng xuất', icon: <AiOutlineClose />, path: '/setting/logout' },
+        // Tài khoản/Cập nhật tạm ẩn vì đăng nhập bằng JWT không còn trả về employeeId để tra cứu Employee
+        { id: 8.1, title: 'Quản lý tài khoản', icon: <AiOutlineTeam />, path: '/setting/users', roles: ['Admin'] },
+        { id: 8.2, title: 'Đăng xuất', icon: <AiOutlineClose />, path: '/setting/logout' },
       ],
     },
   ];
+
+  const isVisible = (item) => !item.roles || item.roles.some((role) => roles.includes(role));
 
   return (
     <div className={clsx(styles.sidebar)}>
@@ -68,7 +71,7 @@ const Sidebar = () => {
             </MenuItem>
             {item.isParent && showSubSidebar && (
               <div className={clsx(styles.subSidebar)}>
-                {item.subItems.map((subItem) => (
+                {item.subItems.filter(isVisible).map((subItem) => (
                   <MenuItem
                     key={subItem.id}
                     to={subItem.path}

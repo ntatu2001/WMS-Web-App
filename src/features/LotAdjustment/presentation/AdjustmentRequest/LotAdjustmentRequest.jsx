@@ -18,7 +18,7 @@ import DeleteButton from '../../../../common/components/Button/DeleteButton/Dele
 import QRicon from '../../../../assets/QRicon.png';
 import TextNote from '../../../../common/components/Text/TextNote';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
-import personApi from '../../../../api/personApi.js';
+import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materialLotApi from '../../../../api/materiaLotApi.js';
 import { reasonData } from '../../../../app/mockData/reasonData.js';
@@ -26,6 +26,7 @@ import lotAdjustmentApi from '../../../../api/lotAdjustmentApi.js';
 import { reasonMapData } from '../../../../app/mockData/reasonData.js';
 import { adjustmentTypeMap, AdjustmentType } from '../../../../app/mockData/AdjustmentType.js';
 import materialSubLotApi from '../../../../api/materialSubLotApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader} from 'react-spinners';
@@ -67,9 +68,9 @@ const RequestLotAdjustment = () => {
             setIsInitialLoading(true);
             try {
                 const wareHouseList = await wareHouseApi.getAllWareHouses();
-                const personList = await personApi.getAllPerson();
- 
-                setPeople(personList);
+                const employeeList = await employeeApi.getAllEmployees();
+
+                setPeople(employeeList);
                 setWareHouses(wareHouseList);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
@@ -116,7 +117,7 @@ const RequestLotAdjustment = () => {
                     // Initialize real quantities array with objects containing realQuantity and locationId
                     const initialRealQuantities = materialSubLotsByLotNumber.map(subLot => ({
                         materialSubLotId: subLot.materialSubLotId,
-                        previousQuantity: subLot.existingQuality,
+                        previousQuantity: subLot.existingQuantity,
                         realQuantity: subLot.realTimeQuality || 0,
                         locationId: subLot.locationId
                     }));
@@ -203,10 +204,10 @@ const RequestLotAdjustment = () => {
     
         try {
           setIsCreateLoading(true);
-          const personId = people.find(x => x.personName === selectedPerson).personId;
+          const employeeId = people.find(x => x.employeeName === selectedPerson).employeeId;
           const newLotAdjustment = {
             warehouseId: selectedZone,
-            personId: personId,
+            employeeId: employeeId,
             adjustmentDate: selectedDate,
             lotNumber : selectedLotNumber,
             reason : reasonMapData[selectedReason],
@@ -214,7 +215,7 @@ const RequestLotAdjustment = () => {
             note: '--'
           }
           console.log(newLotAdjustment);
-          const lotAdjustmentId = await lotAdjustmentApi.createNewMaterialLotAdjustment(newLotAdjustment);
+          const lotAdjustmentId = await lotAdjustmentApi.createNewStockTake(newLotAdjustment);
           setLotAdjustmentId(lotAdjustmentId);
           console.log(lotAdjustmentId);
           toast.success("Tạo yêu cầu kiểm kê thành công!", {
@@ -227,7 +228,7 @@ const RequestLotAdjustment = () => {
             progress: undefined,
           });
         } catch (err) {
-          setError(err.message || 'An error occurred while creating the receipt.');
+          setError(getApiErrorMessage(err, 'An error occurred while creating the receipt.'));
         } finally {
           setIsCreateLoading(false);
         }
@@ -256,13 +257,17 @@ const RequestLotAdjustment = () => {
         try {
             setIsUpdateLoading(true);
             const updatedMaterialLotAdjustment = {
-                materialSubLots: realQuantities,
                 lotNumber: selectedLotNumber,
                 materialLotAdjustmentId: lotAdjustmentId,
+                materialSubLots: realQuantities.map((item, index) => ({
+                    ...item,
+                    subLotStatus: subLots[index]?.subLotStatus,
+                    unitOfMeasure: subLots[index]?.unitOfMeasure,
+                })),
             }
             console.log(updatedMaterialLotAdjustment)
-            // Call API to update the material lot adjustment
-            await lotAdjustmentApi.updateMaterialLotAdjustment(updatedMaterialLotAdjustment);
+            // Call API to update the material sub lots for the stock take
+            await materialSubLotApi.updateMaterialSubLot(updatedMaterialLotAdjustment);
             toast.success("Duyệt kiểm kê thành công!", {
                 position: "top-right",
                 autoClose: 3000,
@@ -292,7 +297,7 @@ const RequestLotAdjustment = () => {
             setError('');
         }
         catch (err) {
-            setError(err.message || 'An error occurred while updating the material lot adjustment.');
+            setError(getApiErrorMessage(err, 'An error occurred while updating the material lot adjustment.'));
         } finally {
             setIsUpdateLoading(false);
         }
@@ -416,8 +421,8 @@ const RequestLotAdjustment = () => {
                                 placeholder="Chọn nhân viên"
                                 >
                                 {people.map((person, index) => (
-                                    <option key = {`person-${index}`} value={person.personName}>
-                                    {person.personName}
+                                    <option key = {`person-${index}`} value={person.employeeName}>
+                                    {person.employeeName}
                                     </option>
                                 ))}
                             </Select>
@@ -654,7 +659,7 @@ const RequestLotAdjustment = () => {
                                             <tr key={index}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>{item.locationId}</TableCell>
-                                                <TableCell>{item.existingQuality}</TableCell>
+                                                <TableCell>{item.existingQuantity}</TableCell>
                                                 <TableCell>
                                                 <input style={{textAlign: "center", width: "50%", border: "1px solid #767676", borderRadius: "6px"}}
                                                     type="number"
@@ -664,10 +669,10 @@ const RequestLotAdjustment = () => {
                                                     onChange={(e) => handleRealQuantityChange(index, e.target.value)}
                                                 />
                                                 </TableCell>
-                                                <TableCell>{item.existingQuality - (realQuantities[index]?.realQuantity || 0)}</TableCell>
+                                                <TableCell>{item.existingQuantity - (realQuantities[index]?.realQuantity || 0)}</TableCell>
                                                 <TableCell>
                                                     {(() => {
-                                                        const diff = item.existingQuality - (realQuantities[index]?.realQuantity || 0);
+                                                        const diff = item.existingQuantity - (realQuantities[index]?.realQuantity || 0);
                                                         if (diff > 0) return "Thiếu";
                                                         if (diff < 0) return "Dư";
                                                         return "Đủ";

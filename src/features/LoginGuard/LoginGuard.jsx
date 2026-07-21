@@ -1,37 +1,47 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { login } from '../../store/slices/authSlice';
-import { useEffect } from 'react';
+import { tokensRefreshed, bootstrapFailed } from '../../store/slices/authSlice';
+import { setLoading } from '../../store/slices/appSlice';
+import authApi, { decodeRoles } from '../../api/authApi';
 
 const LoginGuard = () => {
   const isLogin = useSelector((state) => state.auth.isLogin);
+  const accessToken = useSelector((state) => state.auth.accessToken);
+  const refreshToken = useSelector((state) => state.auth.refreshToken);
+  const isBootstrapping = useSelector((state) => state.auth.isBootstrapping);
   const dispatch = useDispatch();
-  
-  // Kiểm tra token trong localStorage
+
+  // Sau khi F5, Redux mất accessToken (chỉ refreshToken còn trong localStorage) — thử refresh ngầm 1 lần
+  // trước khi quyết định điều hướng /login, để tránh bị đá ra ngoài dù phiên đăng nhập vẫn còn hiệu lực.
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedUserName = localStorage.getItem('userName');
-    
-    if (storedToken && storedUserName && !isLogin) {
-      // Khôi phục trạng thái đăng nhập từ localStorage
-      dispatch(login({ 
-        user: { userName: storedUserName },
-        token: storedToken
-      }));
-      console.log("LoginGuard: Restored login state from localStorage");
+    if (!accessToken && refreshToken && isBootstrapping) {
+      dispatch(setLoading(true));
+      authApi.refresh(refreshToken)
+        .then((data) => {
+          dispatch(tokensRefreshed({
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            roles: decodeRoles(data.accessToken),
+          }));
+        })
+        .catch(() => {
+          dispatch(bootstrapFailed());
+        })
+        .finally(() => {
+          dispatch(setLoading(false));
+        });
     }
-  }, [isLogin, dispatch]);
+  }, [accessToken, refreshToken, isBootstrapping, dispatch]);
 
-  // Kiểm tra cả Redux state và localStorage
-  const isAuthenticated = isLogin || localStorage.getItem('token');
+  if (isBootstrapping) {
+    return null;
+  }
 
-  // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
-  if (!isAuthenticated) {
+  if (!isLogin) {
     return <Navigate to="/login" replace />;
   }
 
-  // Nếu đã đăng nhập, cho phép truy cập vào route
   return <Outlet />;
 };
 

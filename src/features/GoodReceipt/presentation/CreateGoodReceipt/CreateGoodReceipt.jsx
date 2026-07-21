@@ -21,9 +21,10 @@ import inventoryReceiptApi from '../../../../api/inventoryReceiptApi.js';
 import {AiOutlinePlus} from 'react-icons/ai'
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
-import personApi from '../../../../api/personApi.js';
+import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader} from 'react-spinners';
@@ -62,10 +63,10 @@ const CreateGoodReceipt = () => {
         setIsLoading(true);
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const supplierList = await supplierApi.getAllSupplier();
-        const personList = await personApi.getAllPerson();
+        const employeeList = await employeeApi.getAllEmployees();
         const receiptLotList = await receiptLotApi.getAllReceiptLots();
         const receiptLotIdList = receiptLotList.map(lot => lot.receiptLotId);
-        setPeople(personList);
+        setPeople(employeeList);
         setWareHouses(wareHouseList);
         setSuppliers(supplierList);
         setReceiptLotIdList(receiptLotIdList);
@@ -163,11 +164,11 @@ const CreateGoodReceipt = () => {
 
     try {
       const supplierId = suppliers.find(x => x.supplierName === selectedSupplier).supplierId;
-      const personId = people.find(x => x.personName === selectedPerson).personId;
+      const employeeId = people.find(x => x.employeeName === selectedPerson).employeeId;
       const newReceipt = {
         warehouseId: selectedZone,
         supplierId: supplierId,
-        personId: personId,
+        employeeId: employeeId,
         receiptDate: selectedDate,
         entries: materials
       }
@@ -200,9 +201,9 @@ const CreateGoodReceipt = () => {
       setMaterialOptionIds(null);
       setMaterialOptionUnits(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while creating the receipt.');
+      setError(getApiErrorMessage(err, 'An error occurred while creating the receipt.'));
     }
-    
+
   };
   
   const addMaterial = () => {
@@ -330,8 +331,8 @@ const CreateGoodReceipt = () => {
                 placeholder="Chọn nhân viên"
               >
                 {people.map((person, index) => (
-                  <option key = {`person-${index}`} value={person.personName}>
-                    {person.personName}
+                  <option key = {`person-${index}`} value={person.employeeName}>
+                    {person.employeeName}
                   </option>
                 ))}
               </Select>

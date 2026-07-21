@@ -5,6 +5,7 @@ import SelectContainer from '../../../../common/components/Selection/SelectConta
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import locationApi from '../../../../api/locationApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
@@ -98,7 +99,7 @@ const InventoryHistory = () => {
       console.error("Error creating new location:", error);
 
       // Show failure notification
-      toast.error("Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -117,22 +118,8 @@ const InventoryHistory = () => {
     }
     setIsLoading(true); // Start loading
     try {
-      // Fetch data from the specified URL
-      const response = await fetch(
-        `https://wmsapis20250504173355.azurewebsites.net/WarehouseAPI/Location/GetLocationById/${searchCode}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch location data');
-      }
-
-      const location = await response.json();
+      // Fetch data through the shared axios client (consistent base URL + error handling)
+      const location = await locationApi.getLocationById(searchCode);
 
       if (!location || !location.locationPropertyDTOs || location.locationPropertyDTOs.length === 0) {
         // Show notification if no data is returned
@@ -180,7 +167,7 @@ const InventoryHistory = () => {
       console.error("Error fetching location:", error);
 
       // Show failure notification
-      toast.error("Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,

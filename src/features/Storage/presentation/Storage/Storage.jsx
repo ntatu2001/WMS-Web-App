@@ -256,7 +256,7 @@ const Storage = () => {
             if (hasLotInfors) {
                 cell.allLotInfors = lotInfors.map((lot, index) => ({
                     lotNumber: lot.lotnumber,
-                    quantity: lot.existingQuantity,
+                    quantity: lot.quantity,
                     startPosition: index * equalDivisionWidth,
                     width: equalDivisionWidth
                 }));
