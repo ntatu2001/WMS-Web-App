@@ -6,6 +6,7 @@ import { loginSuccess } from '../../store/slices/authSlice';
 import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
 import authApi, { decodeRoles } from '../../api/authApi';
 import { getApiErrorMessage } from '../../api/apiError';
+import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
 import bkLogo from '../../assets/bk_logo.png';
 import { FaUser, FaLock } from 'react-icons/fa';
 
@@ -153,13 +154,14 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const data = await authApi.login(userName, password);
+      const roles = decodeRoles(data.accessToken);
       dispatch(loginSuccess({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
-        roles: decodeRoles(data.accessToken),
+        roles,
         userName,
       }));
-      navigate('/dashboard');
+      navigate(getDefaultRouteForRoles(roles));
     } catch (err) {
       setError(getApiErrorMessage(err, 'Tên đăng nhập hoặc mật khẩu không đúng'));
     } finally {

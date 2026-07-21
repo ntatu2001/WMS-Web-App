@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
@@ -12,6 +13,8 @@ import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistrib
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 
 const GoodIssue = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const canManage = roles.includes('Manager') || roles.includes('Admin');
   const [activeTab, setActiveTab] = useState('create');
   const [incompleteIssueMounted, setIncompleteIssueMounted] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
@@ -114,22 +117,26 @@ const GoodIssue = () => {
                   Tạo phiếu xuất kho
                 </TabButton>
                 
-                <TabButton
-                  active={activeTab === 'incomplete'}
-                  onClick={handleIncompleteTabClick}
-                >
-                  Xuất kho chưa hoàn thành
-                </TabButton>
+                {canManage && (
+                  <>
+                    <TabButton
+                      active={activeTab === 'incomplete'}
+                      onClick={handleIncompleteTabClick}
+                    >
+                      Xuất kho chưa hoàn thành
+                    </TabButton>
 
 
-                <TabButton
-                  active={activeTab === 'manage'}
-                  onClick={() => setActiveTab('manage')}
-                >
-                  Quản lý xuất kho
-                </TabButton>
+                    <TabButton
+                      active={activeTab === 'manage'}
+                      onClick={() => setActiveTab('manage')}
+                    >
+                      Quản lý xuất kho
+                    </TabButton>
+                  </>
+                )}
 
-                
+
               </TabContainer>
             </>
           )}

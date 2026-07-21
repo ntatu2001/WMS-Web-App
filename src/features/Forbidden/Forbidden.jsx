@@ -1,8 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
 
 const Forbidden = () => {
   const navigate = useNavigate();
+  const roles = useSelector((state) => state.auth.roles);
 
   return (
     <div
@@ -21,7 +24,7 @@ const Forbidden = () => {
         Bạn không có quyền truy cập chức năng này.
       </p>
       <button
-        onClick={() => navigate('/dashboard')}
+        onClick={() => navigate(getDefaultRouteForRoles(roles))}
         style={{
           padding: '10px 20px',
           backgroundColor: '#002B49',

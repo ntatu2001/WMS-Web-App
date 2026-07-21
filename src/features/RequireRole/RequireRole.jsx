@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const RequireRole = ({ role, children }) => {
+const RequireRole = ({ roles: allowedRoles, children }) => {
   const isLogin = useSelector((state) => state.auth.isLogin);
   const roles = useSelector((state) => state.auth.roles);
 
@@ -10,7 +10,7 @@ const RequireRole = ({ role, children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!roles.includes(role)) {
+  if (!allowedRoles.some((role) => roles.includes(role))) {
     return <Navigate to="/403" replace />;
   }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
@@ -43,6 +44,8 @@ const fetchMaterialClass = async () => {
 };
 
 const InventoryHistory = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const isAdmin = roles.includes('Admin');
   const [formData, setFormData] = useState({
     goodName: "",
     goodCode: "",
@@ -270,6 +273,7 @@ const InventoryHistory = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px" }}>
+      {isAdmin && (
       <div style={{ backgroundColor: "white", padding: "20px", borderBottom: "2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
           <SectionTitle
@@ -479,6 +483,7 @@ const InventoryHistory = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Below Section */}
       <div style={{ backgroundColor: "white", padding: "20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>

@@ -22,16 +22,17 @@ import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
 import FeatureUnavailable from "./features/Setting/presentation/FeatureUnavailable/FeatureUnavailable.jsx";
 import UserManagement from "./features/Setting/presentation/UserManagement/UserManagement.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
+import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
 import { AiOutlineTeam, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
   const isLogin = useSelector((state) => state.auth.isLogin);
   const roles = useSelector((state) => state.auth.roles);
-  const [lastAccessedRoute, setLastAccessedRoute] = useState({
-    mainContent: "/dashboard",
+  const [lastAccessedRoute, setLastAccessedRoute] = useState(() => ({
+    mainContent: getDefaultRouteForRoles(roles),
     sidebarContent: null,
-  });
+  }));
   const [isSidebarVisible, setIsSidebarVisible] = useState(true); // State to control sidebar visibility
   const [activeContent, setActiveContent] = useState(null); // State to track active content
   const location = useLocation();
@@ -72,12 +73,12 @@ function App() {
           path="/login"
           element={
             isLogin ? (
-              <Navigate to="/dashboard" replace />
+              <Navigate to={getDefaultRouteForRoles(roles)} replace />
             ) : (
-              
-                
+
+
                 <LoginScreen />
-              
+
             )
           }
         />
@@ -87,13 +88,13 @@ function App() {
         {/* Protected routes */}
         <Route element={<LoginGuard />}>
           <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/storage" element={<Storage />} />
+            <Route path="/dashboard" element={<RequireRole roles={["Admin"]}><Dashboard /></RequireRole>} />
+            <Route path="/storage" element={<RequireRole roles={["Manager", "Admin"]}><Storage /></RequireRole>} />
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
             <Route path="/inventory" element={<LotAdjustment />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/catalogue" element={<Catalogue />} />
+            <Route path="/history" element={<RequireRole roles={["Manager", "Admin"]}><History /></RequireRole>} />
+            <Route path="/catalogue" element={<RequireRole roles={["Manager", "Admin"]}><Catalogue /></RequireRole>} />
             <Route
               path="/setting/*"
               element={
@@ -272,7 +273,7 @@ function App() {
                           <Route
                             path="users"
                             element={
-                              <RequireRole role="Admin">
+                              <RequireRole roles={["Admin"]}>
                                 <div
                                   className="modalContent"
                                   style={{
@@ -309,7 +310,7 @@ function App() {
           path="/"
           element={
             isLogin ? (
-              <Navigate to="/dashboard" replace />
+              <Navigate to={getDefaultRouteForRoles(roles)} replace />
             ) : (
               <Navigate to="/login" replace />
             )
