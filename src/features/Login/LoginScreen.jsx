@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { login } from '../../store/slices/authSlice';
+import { loginSuccess } from '../../store/slices/authSlice';
 import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
-import LoginApi from '../../api/LoginApi';
+import authApi, { decodeRoles } from '../../api/authApi';
+import { getApiErrorMessage } from '../../api/apiError';
+import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
 import bkLogo from '../../assets/bk_logo.png';
 import { FaUser, FaLock } from 'react-icons/fa';
 
@@ -138,32 +140,32 @@ const Footer = styled.div`
 `;
 
 const LoginScreen = () => {
-  const [userName, setuserName] = useState('');
+  const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // Thêm state loading
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true); // Bắt đầu loading
+    setLoading(true);
     try {
-      const response = await LoginApi.getAllUser(userName, password);
-      if (response === true) {
-        localStorage.setItem('userName', userName);
-        localStorage.setItem('token', 'mock-token');
-        dispatch(login({ user: { userName }, token: 'mock-token' }));
-        navigate('/dashboard');
-      } else {
-        setError('Tên đăng nhập hoặc mật khẩu không đúng');
-      }
-    } catch (error) {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng');
+      const data = await authApi.login(userName, password);
+      const roles = decodeRoles(data.accessToken);
+      dispatch(loginSuccess({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        roles,
+        userName,
+      }));
+      navigate(getDefaultRouteForRoles(roles));
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Tên đăng nhập hoặc mật khẩu không đúng'));
     } finally {
-      setLoading(false); // Kết thúc loading
+      setLoading(false);
     }
   };
 
@@ -187,7 +189,7 @@ const LoginScreen = () => {
               type="text"
               placeholder="Tên đăng nhập"
               value={userName}
-              onChange={(e) => setuserName(e.target.value)}
+              onChange={(e) => setUserName(e.target.value)}
               required
               autoFocus
             />
@@ -215,12 +217,7 @@ const LoginScreen = () => {
           </CheckboxRow>
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <StyledButton type="submit" disabled={loading}>
-            {loading ? (
-              // Spinner đơn giản, có thể thay thế bằng spinner đẹp hơn nếu muốn
-              <span>Đang đăng nhập...</span>
-            ) : (
-              'ĐĂNG NHẬP'
-            )}
+            {loading ? 'Đang đăng nhập...' : 'ĐĂNG NHẬP'}
           </StyledButton>
         </div>
       </LoginForm>

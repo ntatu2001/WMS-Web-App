@@ -21,9 +21,10 @@ import inventoryIssueApi from '../../../../api/inventoryIssueApi.js';
 import {AiOutlinePlus} from 'react-icons/ai'
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import customerApi from '../../../../api/customerApi.js';
-import personApi from '../../../../api/personApi.js';
+import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
@@ -65,8 +66,8 @@ const CreateGoodIssue = () => {
         setIsLoading(true);
         const wareHouseList = await wareHouseApi.getAllWareHouses();
         const customerList = await customerApi.getAllCustomers();
-        const personList = await personApi.getAllPerson();
-        setPeople(personList);
+        const employeeList = await employeeApi.getAllEmployees();
+        setPeople(employeeList);
         setWareHouses(wareHouseList);
         setCustomers(customerList);
       } catch (error) {
@@ -197,11 +198,11 @@ const CreateGoodIssue = () => {
 
     try {
       const customerId = customers.find(x => x.customerName === selectedCustomer).customerId;
-      const personId = people.find(x => x.personName === selectedPerson).personId;
+      const employeeId = people.find(x => x.employeeName === selectedPerson).employeeId;
       const newIssue = {
         warehouseId: selectedZone,
         customerId: customerId,
-        personId: personId,
+        employeeId: employeeId,
         issueDate: selectedDate,
         entries: materials
       }
@@ -235,9 +236,9 @@ const CreateGoodIssue = () => {
       setQuantityError('');
       setExistingQuantity(null);
     } catch (err) {
-      setError(err.message || 'An error occurred while creating the issue.');
+      setError(getApiErrorMessage(err, 'An error occurred while creating the issue.'));
     }
-    
+
   };
   
   const handleQuantityChange = (e) => {
@@ -364,8 +365,8 @@ const CreateGoodIssue = () => {
               <Select value={selectedPerson} onChange={(e) => setSelectedPerson(e.target.value)}>
                 <option value="" disabled selected>Chọn nhân viên</option>
                 {people.map((person, index) => (
-                  <option key = {`person-${index}`} value={person.personName}>
-                    {person.personName}
+                  <option key = {`person-${index}`} value={person.employeeName}>
+                    {person.employeeName}
                   </option>
                 ))}
               </Select>

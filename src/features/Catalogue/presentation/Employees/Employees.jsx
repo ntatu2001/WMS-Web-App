@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
-import personApi from '../../../../api/personApi.js';
+import employeeApi from '../../../../api/employeeApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 const InventoryHistory = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const isAdmin = roles.includes('Admin');
   const [savedData, setSavedData] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -16,9 +20,9 @@ const InventoryHistory = () => {
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Add loading state
   const [formData, setFormData] = useState({
-    personName: "",
-    personId: "",
-    personClassId: "--",
+    employeeName: "",
+    employeeId: "",
+    employeeClassId: "--",
     DateOfBirth: "",
     Email: "",
     startTime: "",
@@ -31,18 +35,18 @@ const InventoryHistory = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.personId) {
-      return; // Prevent saving if personId is empty
+    if (!formData.employeeId) {
+      return; // Prevent saving if employeeId is empty
     }
 
-    // Set default value for personClassId if not selected
-    const personClassId = formData.personClassId === "--" ? "QLK" : formData.personClassId;
+    // Set default value for employeeClassId if not selected
+    const employeeClassId = formData.employeeClassId === "--" ? "QLK" : formData.employeeClassId;
 
     // Prepare the newEmployee object for the API
     const newEmployee = {
-      personName: formData.personName,
-      personId: formData.personId,
-      personClassId: personClassId, // Use the default or selected value
+      employeeName: formData.employeeName,
+      employeeId: formData.employeeId,
+      employeeClassId: employeeClassId, // Use the default or selected value
       properties: [
         {
           propertyName: "DateOfBirth",
@@ -66,7 +70,7 @@ const InventoryHistory = () => {
       console.log("New Employee Data to POST:", newEmployee); // Log the data being sent to the API
 
       // POST the newEmployee data to the API
-      const response = await personApi.createPerson(newEmployee); // Ensure the API method is correct
+      const response = await employeeApi.createEmployee(newEmployee);
       if (response) {
         // Show success notification
         toast.success("Nhân viên đã được tạo thành công!", {
@@ -81,9 +85,9 @@ const InventoryHistory = () => {
 
         // Reset form data
         setFormData({
-          personName: "",
-          personId: "",
-          personClassId: "--",
+          employeeName: "",
+          employeeId: "",
+          employeeClassId: "--",
           DateOfBirth: "",
           Email: "",
           startTime: "",
@@ -94,7 +98,7 @@ const InventoryHistory = () => {
       console.error("Error creating new employee:", error);
 
       // Show failure notification
-      toast.error("Tạo nhân viên thất bại. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Tạo nhân viên thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -114,7 +118,7 @@ const InventoryHistory = () => {
     setIsLoading(true); // Start loading
     try {
       // Fetch employee data from the API
-      const response = await personApi.getAllPerson(); // Replace with your API endpoint
+      const response = await employeeApi.getAllEmployees();
       const employees = response || [];
 
       if (employees.length === 0) {
@@ -132,23 +136,23 @@ const InventoryHistory = () => {
         return;
       }
 
-      // Map and extract properties from personPropertyDTOs
+      // Map and extract properties from employeePropertyDTOs
       const mappedEmployees = employees.map((employee) => {
-        const dateOfBirth = employee.personPropertyDTOs.find(
+        const dateOfBirth = employee.employeePropertyDTOs.find(
           (prop) => prop.propertyName === "DateOfBirth"
         )?.propertyValue || "--";
 
-        const email = employee.personPropertyDTOs.find(
+        const email = employee.employeePropertyDTOs.find(
           (prop) => prop.propertyName === "Email"
         )?.propertyValue || "--";
 
-        const dailyWorkingTime = employee.personPropertyDTOs.find(
+        const dailyWorkingTime = employee.employeePropertyDTOs.find(
           (prop) => prop.propertyName === "DailyWorkingTime"
         )?.propertyValue || "--";
 
         return {
           ...employee,
-          personClassId: employee.personCLassId, // Corrected to use the correct property
+          employeeClassId: employee.employeeCLassId, // ⚠️ EmployeeDTO.employeeCLassId (chữ "L" hoa) theo API Guide
           dateOfBirth,
           email,
           dailyWorkingTime,
@@ -157,7 +161,7 @@ const InventoryHistory = () => {
 
       // Filter employees based on the search code
       const result = mappedEmployees.filter((item) =>
-        item.personId.includes(searchCode)
+        item.employeeId.includes(searchCode)
       );
 
       if (result.length === 0) {
@@ -182,16 +186,17 @@ const InventoryHistory = () => {
     }
   };
 
-  const handleDelete = (personId) => {
-    setSavedData((prev) => prev.filter((item) => item.personId !== personId));
-    setFilteredData((prev) => prev.filter((item) => item.personId !== personId));
+  const handleDelete = (employeeId) => {
+    setSavedData((prev) => prev.filter((item) => item.employeeId !== employeeId));
+    setFilteredData((prev) => prev.filter((item) => item.employeeId !== employeeId));
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px",}}>
+        {isAdmin && (
         <div style={{backgroundColor:"white", padding:"20px", borderBottom:"2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
-        <SectionTitle 
+        <SectionTitle
           style={{ 
             fontSize: "30px", 
             marginBottom: "20px",
@@ -234,8 +239,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input 
                     type="text" 
-                    name="personName"
-                    value={formData.personName}
+                    name="employeeName"
+                    value={formData.employeeName}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-20px" }} 
                   />
@@ -246,8 +251,8 @@ const InventoryHistory = () => {
                 <SelectContainer>
                   <input 
                     type="text" 
-                    name="personId"
-                    value={formData.personId}
+                    name="employeeId"
+                    value={formData.employeeId}
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-45px"  }} 
                   />
@@ -257,8 +262,8 @@ const InventoryHistory = () => {
                 <Label>Chức vụ:</Label>
                 <SelectContainer>
                   <select 
-                    name="personClassId"
-                    value={formData.personClassId} 
+                    name="employeeClassId"
+                    value={formData.employeeClassId} 
                     onChange={handleInputChange}
                     style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }}
                   >
@@ -319,13 +324,13 @@ const InventoryHistory = () => {
             <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
               <ActionButton
                 onClick={handleSave} 
-                disabled={!formData.personId} 
+                disabled={!formData.employeeId} 
                 style={{ 
                   marginTop: "-10px",
                   padding: "10px 20px", 
                   width: "240px", 
-                  backgroundColor: formData.personId ? "#007bff" : "#ccc", 
-                  cursor: formData.personId ? "pointer" : "not-allowed",
+                  backgroundColor: formData.employeeId ? "#007bff" : "#ccc", 
+                  cursor: formData.employeeId ? "pointer" : "not-allowed",
                 }}
               >
                 Tạo mới nhân viên
@@ -334,6 +339,7 @@ const InventoryHistory = () => {
           </div>
         )}
         </div>
+        )}
 
       {/* Below Section */}
         <div style={{backgroundColor:"white", padding:"20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
@@ -428,9 +434,9 @@ const InventoryHistory = () => {
                     {(searchCode ? filteredData : savedData).map((item, index) => (
                       <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
                         <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.personName}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.personId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.personClassId}</td>
+                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeName}</td>
+                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeId}</td>
+                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeClassId}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.dateOfBirth}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.email}</td>
                         <td style={{ padding: "8px", textAlign: "center" }}>{item.dailyWorkingTime}</td>

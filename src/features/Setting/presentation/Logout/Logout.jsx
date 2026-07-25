@@ -1,10 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../../store/slices/authSlice';
+import authApi from '../../../../api/authApi';
 
 const Logout = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const refreshToken = useSelector((state) => state.auth.refreshToken);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (refreshToken) {
+      // Thu hồi refresh token ở backend — best-effort, không chặn logout ở FE nếu lỗi
+      await authApi.logout(refreshToken).catch((error) => {
+        console.error('Error calling Auth/Logout:', error);
+      });
+    }
+    dispatch(logout());
     localStorage.clear();
     sessionStorage.clear();
     console.log("User logged out");

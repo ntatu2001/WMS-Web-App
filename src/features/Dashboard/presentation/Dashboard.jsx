@@ -85,6 +85,7 @@ const Dashboard = () => {
             return [dataEnter.length, dataExport.length, dataCheck.length]
         })
     }, [dataEnter, dataExport, dataCheck])
+    
     /**
      * Lấy dữ liệu tổng quan cho Today, ThisWeek, ThisMonth từ API overViewApi.
      * @returns {Promise<{Today: object, ThisWeek: object, ThisMonth: object}>}

@@ -2,8 +2,8 @@
 import axiosClient from "./axiosClient";
 
 const AccountApi = {
-    GetAccountInfo(userName) {
-        const url = `User/GetPersonInforByUserName/${userName}`;
+    GetAccountInfo(employeeId) {
+        const url = `Employee/GetEmployeeById/${employeeId}`;
         return axiosClient.get(url);
     }
 };

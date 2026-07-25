@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { FaChevronDown } from 'react-icons/fa'; // Import FaChevronDown icon
 import styles from './UpdateAccount.module.scss'; // Import the CSS module
 import UpdateAccountApi from '../../../../api/UpdateAccountApi';
+import { getApiErrorMessage } from '../../../../api/apiError';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css"; // Import toast styles
 
@@ -23,7 +24,7 @@ const UpdateAccount = ({ onCancel }) => {
 
   useEffect(() => {
     // Retrieve data from localStorage or Account.jsx
-    const personName = localStorage.getItem('personName') || '';
+    const employeeName = localStorage.getItem('employeeName') || '';
     const gender = localStorage.getItem('Gender') || '';
     const dateOfBirth = localStorage.getItem('DateOfBirth') || ''; // Format: "DD-MM-YYYY"
     const email = localStorage.getItem('Email') || ''; // Retrieve email from localStorage
@@ -31,7 +32,7 @@ const UpdateAccount = ({ onCancel }) => {
     if (dateOfBirth) {
       const [day, month, year] = dateOfBirth.split('-');
       const initialData = {
-        displayName: personName,
+        displayName: employeeName,
         gender,
         day,
         month,
@@ -42,7 +43,7 @@ const UpdateAccount = ({ onCancel }) => {
       setInitialFormData(initialData); // Save initial data
     } else {
       const initialData = {
-        displayName: personName,
+        displayName: employeeName,
         gender,
         day: '',
         month: '',
@@ -72,16 +73,16 @@ const UpdateAccount = ({ onCancel }) => {
       return;
     }
 
-    const personId = localStorage.getItem('userId'); // Retrieve personId from localStorage
-    console.log('Retrieved personId:', personId); // Debug log to check personId
-    if (!personId) {
+    const employeeId = localStorage.getItem('employeeId'); // Retrieve employeeId from localStorage
+    console.log('Retrieved employeeId:', employeeId); // Debug log to check employeeId
+    if (!employeeId) {
       alert('Không tìm thấy thông tin người dùng.');
       return;
     }
 
     const params = {
-      personId,
-      personName: displayName,
+      employeeId,
+      employeeName: displayName,
       properties: [
         { propertyName: 'Gender', propertyValue: gender },
         { propertyName: 'DateOfBirth', propertyValue: `${day}-${month}-${year}` },
@@ -115,7 +116,7 @@ const UpdateAccount = ({ onCancel }) => {
       navigate('/setting'); // Navigate back to the "Setting" sidebar
     } catch (error) {
       console.error('Error updating account:', error);
-      alert('Đã xảy ra lỗi khi cập nhật thông tin.');
+      alert(getApiErrorMessage(error, 'Đã xảy ra lỗi khi cập nhật thông tin.'));
     } finally {
       setIsSubmitting(false); // Stop loading
     }

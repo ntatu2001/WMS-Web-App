@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
@@ -12,6 +13,8 @@ import ReceiptDistribution from '../InCompleteReceipt/ReceiptDistribution/Receip
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 
 const GoodReceipt = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const canManage = roles.includes('Manager') || roles.includes('Admin');
   const [activeTab, setActiveTab] = useState('create');
   const [incompleteReceiptMounted, setIncompleteReceiptMounted] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
@@ -114,22 +117,26 @@ const GoodReceipt = () => {
                   Tạo phiếu nhập kho
                 </TabButton>
                 
-                <TabButton
-                  active={activeTab === 'incomplete'}
-                  onClick={handleIncompleteTabClick}  // Changed this line
-                >
-                  Nhập kho chưa hoàn thành
-                </TabButton>
+                {canManage && (
+                  <>
+                    <TabButton
+                      active={activeTab === 'incomplete'}
+                      onClick={handleIncompleteTabClick}  // Changed this line
+                    >
+                      Nhập kho chưa hoàn thành
+                    </TabButton>
 
 
-                <TabButton
-                  active={activeTab === 'manage'}
-                  onClick={() => setActiveTab('manage')}
-                >
-                  Quản lý nhập kho
-                </TabButton>
+                    <TabButton
+                      active={activeTab === 'manage'}
+                      onClick={() => setActiveTab('manage')}
+                    >
+                      Quản lý nhập kho
+                    </TabButton>
+                  </>
+                )}
 
-                
+
               </TabContainer>
             </>
           )}

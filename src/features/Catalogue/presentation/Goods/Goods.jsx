@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
@@ -6,14 +7,16 @@ import ActionButton from '../../../../common/components/Button/ActionButton/Acti
 import Label from '../../../../common/components/Label/Label.jsx';
 import materialApi from '../../../../api/materialApi.js'; // Ensure this import is correct
 import materialClassApi from '../../../../api/materialClassApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 
 const fetchMaterials = async () => {
   try {
-    const response = await materialApi.getAllMaterials(); // Ensure this endpoint exists and is correct
-    return response.items;
+    // Material/GetAllMaterials is paginated and requires pageNumber/itemsPerPage (API Guide mục 3)
+    const response = await materialApi.getAllMaterials({ pageNumber: 1, itemsPerPage: 1000 });
+    return response.results;
   } catch (error) {
     console.error('Error fetching materials:', error);
     return [];
@@ -41,6 +44,8 @@ const fetchMaterialClass = async () => {
 };
 
 const InventoryHistory = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const isAdmin = roles.includes('Admin');
   const [formData, setFormData] = useState({
     goodName: "",
     goodCode: "",
@@ -202,7 +207,7 @@ const InventoryHistory = () => {
       console.error("Error creating new product:", error);
 
       // Show failure notification
-      toast.error("Tạo sản phẩm thất bại. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Tạo sản phẩm thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -268,6 +273,7 @@ const InventoryHistory = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px" }}>
+      {isAdmin && (
       <div style={{ backgroundColor: "white", padding: "20px", borderBottom: "2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
           <SectionTitle
@@ -477,6 +483,7 @@ const InventoryHistory = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Below Section */}
       <div style={{ backgroundColor: "white", padding: "20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>

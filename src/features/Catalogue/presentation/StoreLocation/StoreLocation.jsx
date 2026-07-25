@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import locationApi from '../../../../api/locationApi.js';
+import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 const InventoryHistory = () => {
+  const roles = useSelector((state) => state.auth.roles);
+  const isAdmin = roles.includes('Admin');
   const [savedData, setSavedData] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -98,7 +102,7 @@ const InventoryHistory = () => {
       console.error("Error creating new location:", error);
 
       // Show failure notification
-      toast.error("Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -117,22 +121,8 @@ const InventoryHistory = () => {
     }
     setIsLoading(true); // Start loading
     try {
-      // Fetch data from the specified URL
-      const response = await fetch(
-        `https://wmsapis20250504173355.azurewebsites.net/WarehouseAPI/Location/GetLocationById/${searchCode}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch location data');
-      }
-
-      const location = await response.json();
+      // Fetch data through the shared axios client (consistent base URL + error handling)
+      const location = await locationApi.getLocationById(searchCode);
 
       if (!location || !location.locationPropertyDTOs || location.locationPropertyDTOs.length === 0) {
         // Show notification if no data is returned
@@ -180,7 +170,7 @@ const InventoryHistory = () => {
       console.error("Error fetching location:", error);
 
       // Show failure notification
-      toast.error("Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!", {
+      toast.error(getApiErrorMessage(error, "Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -204,6 +194,7 @@ const InventoryHistory = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px",}}>
+        {isAdmin && (
         <div style={{backgroundColor:"white", padding:"20px", borderBottom:"2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
         <SectionTitle 
@@ -353,6 +344,7 @@ const InventoryHistory = () => {
           </div>
         )}
         </div>
+        )}
 
       {/* Below Section */}
         <div style={{backgroundColor:"white", padding:"20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>

@@ -10,25 +10,29 @@ import MainLayout from "./common/components/layout/MainLayout";
 import LoginScreen from "./features/Login/LoginScreen.jsx";
 import Dashboard from "./features/Dashboard/presentation/Dashboard.jsx";
 import LoginGuard from "./features/LoginGuard/LoginGuard.jsx";
+import RequireRole from "./features/RequireRole/RequireRole.jsx";
+import Forbidden from "./features/Forbidden/Forbidden.jsx";
 import GoodReceipt from "./features/GoodReceipt/presentation/GoodReceipt/GoodReceipt.jsx";
 import GoodIssue from "./features/GoodIssue/presentation/GoodIssue/GoodIssue.jsx";
 import History from "./features/History/presentation/History/History.jsx";
 import Storage from "./features/Storage/presentation/Storage/Storage.jsx";
 import Catalogue from "./features/Catalogue/presentation/Catalogue/Catalogue.jsx";
-import Account from "./features/Setting/presentation/Account/Account.jsx";
 import Logout from "./features/Setting/presentation/Logout/Logout.jsx";
 import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
-import UpdateAccount from "./features/Setting/presentation/UpdateAccount/UpdateAccount.jsx";
+import FeatureUnavailable from "./features/Setting/presentation/FeatureUnavailable/FeatureUnavailable.jsx";
+import UserManagement from "./features/Setting/presentation/UserManagement/UserManagement.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
-import { AiOutlineUser, AiOutlineEdit, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
+import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
+import { AiOutlineTeam, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
   const isLogin = useSelector((state) => state.auth.isLogin);
-  const [lastAccessedRoute, setLastAccessedRoute] = useState({
-    mainContent: "/dashboard",
+  const roles = useSelector((state) => state.auth.roles);
+  const [lastAccessedRoute, setLastAccessedRoute] = useState(() => ({
+    mainContent: getDefaultRouteForRoles(roles),
     sidebarContent: null,
-  });
+  }));
   const [isSidebarVisible, setIsSidebarVisible] = useState(true); // State to control sidebar visibility
   const [activeContent, setActiveContent] = useState(null); // State to track active content
   const location = useLocation();
@@ -45,18 +49,7 @@ function App() {
   }, [location]);
 
   const renderActiveContent = () => {
-    if (activeContent === "account") {
-      return <Account closeHandler={() => setActiveContent(null)} />; // Pass closeHandler to Account
-    } else if (activeContent === "update") {
-      return (
-        <UpdateAccount
-          onCancel={() => {
-            setActiveContent(null); // Reset active content
-            setIsSidebarVisible(true); // Ensure the sidebar remains visible
-          }}
-        />
-      ); // Pass closeHandler to UpdateAccount
-    } else if (activeContent === "logout") {
+    if (activeContent === "logout") {
       return (
         <Logout
           onCancel={() => {
@@ -80,26 +73,28 @@ function App() {
           path="/login"
           element={
             isLogin ? (
-              <Navigate to="/dashboard" replace />
+              <Navigate to={getDefaultRouteForRoles(roles)} replace />
             ) : (
-              
-                
+
+
                 <LoginScreen />
-              
+
             )
           }
         />
 
+        <Route path="/403" element={<Forbidden />} />
+
         {/* Protected routes */}
         <Route element={<LoginGuard />}>
           <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/storage" element={<Storage />} />
+            <Route path="/dashboard" element={<RequireRole roles={["Admin"]}><Dashboard /></RequireRole>} />
+            <Route path="/storage" element={<RequireRole roles={["Manager", "Admin"]}><Storage /></RequireRole>} />
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
             <Route path="/inventory" element={<LotAdjustment />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/catalogue" element={<Catalogue />} />
+            <Route path="/history" element={<RequireRole roles={["Manager", "Admin"]}><History /></RequireRole>} />
+            <Route path="/catalogue" element={<RequireRole roles={["Manager", "Admin"]}><Catalogue /></RequireRole>} />
             <Route
               path="/setting/*"
               element={
@@ -152,82 +147,41 @@ function App() {
                         >
                           {/* Dropdown menu content */}
                           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                            <li
-                              className="AccountSetting"
-                              style={{
-                                height: "60px",
-                                width: "200px",
-                                padding: "16px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "flex-start",
-                                cursor: "pointer",
-                                boxSizing: "border-box",
-                                fontSize: "20px",
-                                fontWeight: "700",
-                                color: activeContent === "account" ? "#002B49" : "#FFFFFF", // Keep color if active
-                                backgroundColor: activeContent === "account" ? "#FFFFFF" : "#002B49", // Keep background if active
-                                transition: "all 0.3s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (activeContent !== "account") {
+                            {/* Tài khoản/Cập nhật tạm ẩn — xem FeatureUnavailable.jsx để biết lý do */}
+                            {roles.includes("Admin") && (
+                              <li
+                                className="UserManagementSetting"
+                                style={{
+                                  height: "60px",
+                                  width: "200px",
+                                  padding: "16px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "flex-start",
+                                  cursor: "pointer",
+                                  boxSizing: "border-box",
+                                  fontSize: "20px",
+                                  fontWeight: "700",
+                                  color: "#FFFFFF",
+                                  backgroundColor: "#002B49",
+                                  transition: "all 0.3s ease",
+                                }}
+                                onMouseEnter={(e) => {
                                   e.target.style.backgroundColor = "#FFFFFF";
                                   e.target.style.color = "#000000";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (activeContent !== "account") {
+                                }}
+                                onMouseLeave={(e) => {
                                   e.target.style.backgroundColor = "#002B49";
                                   e.target.style.color = "#FFFFFF";
-                                }
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveContent("account");
-                                document.body.style.backgroundColor = "#FFFFFF";
-                                document.body.style.color = "#002B49";
-                              }}
-                            >
-                              <AiOutlineUser style={{ marginRight: "8px", fontSize: "24px" }} /> Tài khoản
-                            </li>
-                            <li
-                              className="UpdateAccount"
-                              style={{
-                                height: "60px",
-                                width: "200px",
-                                padding: "16px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "flex-start",
-                                cursor: "pointer",
-                                boxSizing: "border-box",
-                                fontSize: "20px",
-                                fontWeight: "700",
-                                color: activeContent === "update" ? "#002B49" : "#FFFFFF", // Keep color if active
-                                backgroundColor: activeContent === "update" ? "#FFFFFF" : "#002B49", // Keep background if active
-                                transition: "all 0.3s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (activeContent !== "update") {
-                                  e.target.style.backgroundColor = "#FFFFFF";
-                                  e.target.style.color = "#000000";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (activeContent !== "update") {
-                                  e.target.style.backgroundColor = "#002B49";
-                                  e.target.style.color = "#FFFFFF";
-                                }
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveContent("update");
-                                document.body.style.backgroundColor = "#FFFFFF";
-                                document.body.style.color = "#002B49";
-                              }}
-                            >
-                              <AiOutlineEdit style={{ marginRight: "8px", fontSize: "24px" }} /> Cập nhật
-                            </li>
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate("/setting/users");
+                                }}
+                              >
+                                <AiOutlineTeam style={{ marginRight: "8px", fontSize: "24px" }} /> Quản lý tài khoản
+                              </li>
+                            )}
                             <li
                               style={{
                                 height: "60px", // Total height including padding
@@ -296,7 +250,7 @@ function App() {
                       >
                         <Routes>
                           <Route path="/" element={<Setting onCancel={() => setIsSidebarVisible(true)} />} />
-                          <Route path="account" element={<Account />} />
+                          <Route path="account" element={<FeatureUnavailable />} />
                           <Route path="logout" element={<Logout />} />
                           <Route
                             path="update"
@@ -312,13 +266,33 @@ function App() {
                                 }}
                                 onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
                               >
-                                <UpdateAccount
-                                  onCancel={() => {
-                                    setIsSidebarVisible(true); // Ensure the sidebar remains visible
-                                    navigate("/setting"); // Navigate back to the setting page
-                                  }}
-                                />
+                                <FeatureUnavailable />
                               </div>
+                            }
+                          />
+                          <Route
+                            path="users"
+                            element={
+                              <RequireRole roles={["Admin"]}>
+                                <div
+                                  className="modalContent"
+                                  style={{
+                                    position: "relative",
+                                    margin: "auto",
+                                    borderRadius: "8px",
+                                    width: "50%",
+                                    zIndex: 2,
+                                  }}
+                                  onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
+                                >
+                                  <UserManagement
+                                    onCancel={() => {
+                                      setIsSidebarVisible(true); // Ensure the sidebar remains visible
+                                      navigate("/setting"); // Navigate back to the setting page
+                                    }}
+                                  />
+                                </div>
+                              </RequireRole>
                             }
                           />
                         </Routes>
@@ -336,7 +310,7 @@ function App() {
           path="/"
           element={
             isLogin ? (
-              <Navigate to="/dashboard" replace />
+              <Navigate to={getDefaultRouteForRoles(roles)} replace />
             ) : (
               <Navigate to="/login" replace />
             )
