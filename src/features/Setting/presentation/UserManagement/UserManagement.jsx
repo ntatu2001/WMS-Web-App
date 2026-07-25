@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { FaChevronDown } from 'react-icons/fa';
-import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
+import { AiOutlineStar, AiOutlineUserSwitch, AiOutlineUser, AiOutlineInfoCircle } from 'react-icons/ai';
 import authApi from '../../../../api/authApi.js';
 import employeeApi from '../../../../api/employeeApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
@@ -10,13 +10,17 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ClipLoader } from 'react-spinners';
 import styles from './UserManagement.module.scss';
 
-const ROLE_OPTIONS = ['Admin', 'Manager', 'Staff'];
+const ROLE_OPTIONS = [
+  { id: 'Admin', label: 'Admin', desc: 'Toàn quyền hệ thống', icon: AiOutlineStar },
+  { id: 'Manager', label: 'Manager', desc: 'Quản lý kho & nhân viên', icon: AiOutlineUserSwitch },
+  { id: 'Staff', label: 'Staff', desc: 'Thao tác nhập/xuất kho', icon: AiOutlineUser },
+];
 
 const initialFormData = {
   userName: '',
   email: '',
   password: '',
-  roles: [],
+  role: '',
   employeeId: '',
 };
 
@@ -44,18 +48,13 @@ const UserManagement = ({ onCancel }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleRoleToggle = (role) => {
-    setFormData((prev) => ({
-      ...prev,
-      roles: prev.roles.includes(role)
-        ? prev.roles.filter((r) => r !== role)
-        : [...prev.roles, role],
-    }));
+  const handleSelectRole = (role) => {
+    setFormData((prev) => ({ ...prev, role }));
   };
 
   const handleSubmit = async () => {
-    if (!formData.userName || !formData.email || !formData.password || formData.roles.length === 0) {
-      toast.error('Vui lòng điền đầy đủ tên đăng nhập, email, mật khẩu và chọn ít nhất 1 role.');
+    if (!formData.userName || !formData.email || !formData.password || !formData.role) {
+      toast.error('Vui lòng điền đầy đủ tên đăng nhập, email, mật khẩu và chọn 1 role.');
       return;
     }
     if (formData.password.length < 8) {
@@ -67,7 +66,7 @@ const UserManagement = ({ onCancel }) => {
       userName: formData.userName,
       email: formData.email,
       password: formData.password,
-      roles: formData.roles,
+      roles: [formData.role],
       ...(formData.employeeId ? { employeeId: formData.employeeId } : {}),
     };
 
@@ -89,92 +88,113 @@ const UserManagement = ({ onCancel }) => {
   };
 
   return (
-    <div className={styles.container}>
-      {onCancel && (
-        <button className={styles.closeButton} onClick={onCancel} aria-label="Đóng">
-          ×
-        </button>
-      )}
-
-      <SectionTitle>Quản lý tài khoản</SectionTitle>
-      <p className={styles.subtitle}>
-        Chỉ Admin mới tạo được tài khoản mới. Hiện chưa có danh sách tài khoản đã tạo (backend chưa cung cấp API tương ứng).
-      </p>
-
-      <div className={styles.section}>
-        <p className={styles.sectionTitle}>Thông tin đăng nhập</p>
-
-        <label className={styles.label} htmlFor="userName">Tên đăng nhập</label>
-        <input
-          id="userName"
-          className={styles.inputField}
-          type="text"
-          name="userName"
-          value={formData.userName}
-          onChange={handleInputChange}
-        />
-
-        <label className={styles.label} htmlFor="email">Email</label>
-        <input
-          id="email"
-          className={styles.inputField}
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-        />
-
-        <label className={styles.label} htmlFor="password">Mật khẩu</label>
-        <input
-          id="password"
-          className={styles.inputField}
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
-          placeholder="Tối thiểu 8 ký tự"
-        />
+    <div className={styles.backdrop} onClick={onCancel}>
+    <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.header}>
+        <div className={styles.title}>Tạo tài khoản mới</div>
+        {onCancel && (
+          <button className={styles.closeButton} onClick={onCancel} aria-label="Đóng">
+            ×
+          </button>
+        )}
       </div>
 
-      <div className={styles.section}>
-        <p className={styles.sectionTitle}>Phân quyền</p>
-
-        <label className={styles.label}>Role</label>
-        <div className={styles.roleChips}>
-          {ROLE_OPTIONS.map((role) => (
-            <label key={role} className={clsx(styles.roleChip, formData.roles.includes(role) && styles.roleChipActive)}>
-              <input
-                type="checkbox"
-                className={styles.visuallyHidden}
-                checked={formData.roles.includes(role)}
-                onChange={() => handleRoleToggle(role)}
-              />
-              {role}
-            </label>
-          ))}
+      <div className={styles.body}>
+        <div className={styles.banner}>
+          <AiOutlineInfoCircle size={18} color="#1a6f7a" style={{ flexShrink: 0, marginTop: 1 }} />
+          <div>
+            Chỉ Admin có quyền được tạo tài khoản mới trong ứng dụng WMS
+          </div>
         </div>
 
-        <label className={styles.label} htmlFor="employeeId" style={{ marginTop: '16px' }}>Liên kết nhân viên</label>
-        <div className={styles.dropdownContainer}>
-          <select
-            id="employeeId"
-            className={styles.dropdown}
-            name="employeeId"
-            value={formData.employeeId}
-            onChange={handleInputChange}
-          >
-            <option value="">Không liên kết</option>
-            {employees.map((employee) => (
-              <option key={employee.employeeId} value={employee.employeeId}>
-                {employee.employeeName} ({employee.employeeId})
-              </option>
-            ))}
-          </select>
-          <FaChevronDown className={styles.dropdownIcon} />
+        <div className={styles.grid}>
+          <div>
+            <div className={styles.sectionTitle}>Thông tin đăng nhập</div>
+
+            <label className={styles.label} htmlFor="userName">Tên đăng nhập</label>
+            <input
+              id="userName"
+              className={styles.inputField}
+              type="text"
+              name="userName"
+              placeholder="vd: nguyenvana"
+              value={formData.userName}
+              onChange={handleInputChange}
+            />
+
+            <label className={styles.label} htmlFor="email">Email</label>
+            <input
+              id="email"
+              className={styles.inputField}
+              type="email"
+              name="email"
+              placeholder="email@company.com"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+
+            <label className={styles.label} htmlFor="password">Mật khẩu</label>
+            <input
+              id="password"
+              className={styles.inputField}
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Tối thiểu 8 ký tự"
+            />
+          </div>
+
+          <div>
+            <div className={styles.sectionTitle}>Phân quyền</div>
+
+            <label className={styles.label}>Vai trò (Role)</label>
+            <div className={styles.roleCards}>
+              {ROLE_OPTIONS.map((role) => {
+                const isSelected = formData.role === role.id;
+                const RoleIcon = role.icon;
+                return (
+                  <div
+                    key={role.id}
+                    className={clsx(styles.roleCard, isSelected && styles.roleCardSelected)}
+                    onClick={() => handleSelectRole(role.id)}
+                  >
+                    <div className={clsx(styles.roleIconTile, isSelected && styles.roleIconTileSelected)}>
+                      <RoleIcon size={19} />
+                    </div>
+                    <div className={styles.roleText}>
+                      <div className={styles.roleLabel}>{role.label}</div>
+                      <div className={styles.roleDesc}>{role.desc}</div>
+                    </div>
+                    <div className={clsx(styles.roleDot, isSelected && styles.roleDotSelected)} />
+                  </div>
+                );
+              })}
+            </div>
+
+            <label className={styles.label} htmlFor="employeeId">Liên kết nhân viên</label>
+            <div className={styles.dropdownContainer}>
+              <select
+                id="employeeId"
+                className={styles.dropdown}
+                name="employeeId"
+                value={formData.employeeId}
+                onChange={handleInputChange}
+              >
+                <option value="">Không liên kết</option>
+                {employees.map((employee) => (
+                  <option key={employee.employeeId} value={employee.employeeId}>
+                    {employee.employeeName} ({employee.employeeId})
+                  </option>
+                ))}
+              </select>
+              <FaChevronDown className={styles.dropdownIcon} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className={styles.actions}>
+      <div className={styles.footer}>
         {onCancel && (
           <button className={styles.cancelButton} onClick={onCancel}>
             Huỷ
@@ -184,6 +204,7 @@ const UserManagement = ({ onCancel }) => {
           {isSubmitting ? <ClipLoader size={16} color="#fff" /> : 'Tạo tài khoản'}
         </button>
       </div>
+    </div>
     </div>
   );
 };

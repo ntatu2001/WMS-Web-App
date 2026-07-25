@@ -8,6 +8,7 @@ const initialState = {
   refreshToken: storedRefreshToken,
   roles: [],
   userName: null,
+  employeeId: null,
   // Nếu có refreshToken cũ trong localStorage, LoginGuard sẽ thử refresh ngầm trước khi quyết định điều hướng /login
   isBootstrapping: !!storedRefreshToken,
 };
@@ -17,22 +18,26 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess: (state, action) => {
-      const { accessToken, refreshToken, roles, userName } = action.payload;
+      const { accessToken, refreshToken, roles, userName, employeeId } = action.payload;
       state.isLogin = true;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       state.roles = roles || [];
       state.userName = userName;
+      state.employeeId = employeeId || null;
       state.isBootstrapping = false;
       localStorage.setItem('refreshToken', refreshToken);
     },
     tokensRefreshed: (state, action) => {
-      const { accessToken, refreshToken, roles } = action.payload;
+      const { accessToken, refreshToken, roles, employeeId } = action.payload;
       state.isLogin = true;
       state.accessToken = accessToken;
       state.refreshToken = refreshToken;
       if (roles) {
         state.roles = roles;
+      }
+      if (employeeId !== undefined) {
+        state.employeeId = employeeId;
       }
       state.isBootstrapping = false;
       localStorage.setItem('refreshToken', refreshToken);
@@ -46,6 +51,7 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.roles = [];
       state.userName = null;
+      state.employeeId = null;
       state.isBootstrapping = false;
       localStorage.removeItem('refreshToken');
     },

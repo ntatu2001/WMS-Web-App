@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    body { margin: 0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  </style>
+</helmet>
+
+<div style="display:flex; height:100vh; width:100%; background:oklch(0.87 0.005 250); overflow:hidden; position:relative;">
+
+  <div style="width:260px; flex-shrink:0; height:100%; background:#0a1830; display:flex; flex-direction:column; position:relative;">
+
+    <div style="padding:28px 24px 22px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+      <div style="width:44px; height:44px; border-radius:10px; background:linear-gradient(135deg,#2dd4bf,#1a6f7a); display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; font-size:13px; letter-spacing:0.5px;">BK</div>
+      <div style="color:#fff; font-weight:800; font-size:19px; letter-spacing:0.2px;">WMS Portal</div>
+    </div>
+
+    <div style="flex:1; padding:14px 12px; display:flex; flex-direction:column; gap:2px; background:linear-gradient(180deg,#0e3a45,#0c2f3a);">
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:#fff; background:rgba(45,212,191,0.16); font-weight:700; font-size:15px;" style-hover="background:rgba(45,212,191,0.22);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7M5 10v10h14V10"></path></svg>
+        Tổng quan
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="5" rx="1"></rect><path d="M5 9v10h14V9"></path><path d="M10 13h4"></path></svg>
+        Lưu trữ
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 8l5-5 5 5"></path><path d="M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"></path></svg>
+        Nhập kho
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9M7 16l5 5 5-5"></path><path d="M4 5v4a2 2 0 002 2h12a2 2 0 002-2V5"></path></svg>
+        Xuất kho
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>
+        Kiểm kê
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+        Lịch sử
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:rgba(255,255,255,0.85); font-weight:600; font-size:15px; cursor:pointer;" style-hover="background:rgba(255,255,255,0.06);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        Danh mục
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div style="position:relative; margin-top:8px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.1);">
+        <div onClick="{{ toggleSettings }}" style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; color:#fff; font-weight:700; font-size:15px; cursor:pointer; background:{{ settingsRowBg }};" style-hover="background:rgba(255,255,255,0.1);">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"></path></svg>
+          <span style="flex:1;">Cài đặt</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transform:{{ chevronTransform }}; transition:transform .18s;"><path d="M9 6l6 6-6 6"></path></svg>
+        </div>
+
+        <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute; left:calc(100% + 10px); bottom:0; width:232px; background:#0a1830; border:1px solid rgba(255,255,255,0.1); border-radius:14px; box-shadow:0 20px 45px rgba(0,0,0,0.45); padding:8px; z-index:20; animation:fadeIn .15s ease-out;">
+            <div style="position:absolute; left:-7px; bottom:20px; width:14px; height:14px; background:#0a1830; border-left:1px solid rgba(255,255,255,0.1); border-bottom:1px solid rgba(255,255,255,0.1); transform:rotate(45deg);"></div>
+
+            <div style="padding:5px 8px 8px; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:rgba(255,255,255,0.4);">Tài khoản</div>
+
+            <div style="display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:9px; color:#fff; font-weight:600; font-size:14.5px; cursor:pointer;" style-hover="background:rgba(45,212,191,0.14);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 00-3-3.87"></path><path d="M16 3.13a4 4 0 010 7.75"></path></svg>
+              Tạo tài khoản mới
+            </div>
+
+            <div onClick="{{ openAccountModal }}" style="display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:9px; color:#fff; font-weight:600; font-size:14.5px; cursor:pointer; background:rgba(45,212,191,0.16);" style-hover="background:rgba(45,212,191,0.24);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+              Quản lý tài khoản
+            </div>
+
+            <div style="height:1px; background:rgba(255,255,255,0.1); margin:7px 4px;"></div>
+
+            <div style="display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:9px; color:#f87171; font-weight:600; font-size:14.5px; cursor:pointer;" style-hover="background:rgba(248,113,113,0.12);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+              Đăng xuất
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; color:oklch(0.55 0.005 250); font-size:14px; font-weight:500;">Khu vực nội dung trang</div>
+
+  <sc-if value="{{ accountModalOpen }}" hint-placeholder-val="{{ true }}">
+    <div style="width:820px; flex-shrink:0; height:100%; background:#fff; box-shadow:-8px 0 30px rgba(0,0,0,0.12); display:flex; flex-direction:column;">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:26px 36px; border-bottom:1px solid oklch(0.92 0.005 250);">
+        <div style="font-size:23px; font-weight:800; color:#0e2a3a;">Tạo tài khoản mới</div>
+        <div onClick="{{ closeAccountModal }}" style="width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6b7280;" style-hover="background:oklch(0.94 0.005 250);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </div>
+      </div>
+
+      <div style="flex:1; overflow-y:auto; padding:28px 36px;">
+
+        <div style="display:flex; gap:12px; align-items:flex-start; background:oklch(0.965 0.02 200); border:1px solid oklch(0.9 0.03 200); border-radius:12px; padding:14px 16px; margin-bottom:26px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a6f7a" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v5M12 16.5h.01"></path></svg>
+          <div style="font-size:13.5px; color:#245a63; line-height:1.5;">Chỉ Admin mới tạo được tài khoản mới.&nbsp;</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:36px;">
+
+          <div>
+            <div style="font-size:15px; font-weight:800; color:#0e2a3a; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid oklch(0.92 0.005 250);">Thông tin đăng nhập</div>
+
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:22px;">
+              <div style="width:64px; height:64px; border-radius:50%; background:repeating-linear-gradient(45deg, oklch(0.94 0.005 250), oklch(0.94 0.005 250) 6px, oklch(0.9 0.005 250) 6px, oklch(0.9 0.005 250) 12px); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid oklch(0.88 0.005 250); cursor:pointer;" style-hover="border-color:#2dd4bf;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2"><rect x="3" y="6" width="18" height="14" rx="2"></rect><circle cx="12" cy="13" r="3.5"></circle><path d="M8 6l1.5-2h5L16 6"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:13.5px; font-weight:700; color:#0e2a3a;">Ảnh đại diện</div>
+                <div style="font-size:12px; color:#8a8f98; margin-top:2px; font-family:monospace;">kéo &amp; thả ảnh · JPG/PNG</div>
+              </div>
+            </div>
+
+            <label style="display:block; font-size:13.5px; font-weight:700; color:#374151; margin-bottom:7px;">Tên đăng nhập</label>
+            <input placeholder="vd: nguyenvana" style="width:100%; box-sizing:border-box; padding:12px 14px; border-radius:9px; border:1.5px solid oklch(0.88 0.005 250); font-size:14.5px; margin-bottom:18px; outline:none;" style-focus="border-color:#2dd4bf;">
+
+            <label style="display:block; font-size:13.5px; font-weight:700; color:#374151; margin-bottom:7px;">Email</label>
+            <input placeholder="email@company.com" style="width:100%; box-sizing:border-box; padding:12px 14px; border-radius:9px; border:1.5px solid oklch(0.88 0.005 250); font-size:14.5px; margin-bottom:18px; outline:none;" style-focus="border-color:#2dd4bf;">
+
+            <label style="display:block; font-size:13.5px; font-weight:700; color:#374151; margin-bottom:7px;">Mật khẩu</label>
+            <input placeholder="Tối thiểu 8 ký tự" style="width:100%; box-sizing:border-box; padding:12px 14px; border-radius:9px; border:1.5px solid oklch(0.88 0.005 250); font-size:14.5px; outline:none;" style-focus="border-color:#2dd4bf;">
+          </div>
+
+          <div>
+            <div style="font-size:15px; font-weight:800; color:#0e2a3a; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid oklch(0.92 0.005 250);">Phân quyền</div>
+
+            <label style="display:block; font-size:13.5px; font-weight:700; color:#374151; margin-bottom:9px;">Vai trò (Role)</label>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+              <sc-for list="{{ roles }}" as="role" hint-placeholder-count="3">
+                <div onClick="{{ role.onClick }}" style="display:flex; align-items:center; gap:13px; padding:13px 15px; border-radius:11px; cursor:pointer; border:1.5px solid {{ role.borderColor }}; background:{{ role.bg }};">
+                  <div style="width:38px; height:38px; border-radius:9px; background:{{ role.iconBg }}; color:{{ role.iconColor }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <sc-if value="{{ role.isAdmin }}" hint-placeholder-val="{{ false }}">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 1-4.5 4.5L18 20l-6-3.5L6 20l1.5-6.5L3 9l6-1z"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ role.isManager }}" hint-placeholder-val="{{ false }}">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M17 11l2 2 4-4"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ role.isStaff }}" hint-placeholder-val="{{ false }}">
+                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg>
+                    </sc-if>
+                  </div>
+                  <div style="flex:1;">
+                    <div style="font-size:14.5px; font-weight:700; color:#0e2a3a;">{{ role.label }}</div>
+                    <div style="font-size:12.5px; color:#8a8f98; margin-top:1px;">{{ role.desc }}</div>
+                  </div>
+                  <div style="width:20px; height:20px; border-radius:50%; border:2px solid {{ role.dotBorder }}; background:{{ role.dotBg }}; flex-shrink:0;"></div>
+                </div>
+              </sc-for>
+            </div>
+
+            <label style="display:block; font-size:13.5px; font-weight:700; color:#374151; margin-bottom:7px;">Liên kết nhân viên</label>
+            <select style="width:100%; box-sizing:border-box; padding:12px 14px; border-radius:9px; border:1.5px solid oklch(0.88 0.005 250); font-size:14.5px; background:#fff; outline:none;">
+              <option>Không liên kết</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:20px 36px; border-top:1px solid oklch(0.92 0.005 250);">
+        <div onClick="{{ closeAccountModal }}" style="padding:11px 22px; border-radius:9px; background:oklch(0.94 0.005 250); color:#374151; font-weight:700; font-size:14.5px; cursor:pointer;" style-hover="background:oklch(0.9 0.005 250);">Huỷ</div>
+        <div style="padding:11px 24px; border-radius:9px; background:linear-gradient(135deg,#2dd4bf,#1a8f8f); color:#fff; font-weight:700; font-size:14.5px; cursor:pointer; box-shadow:0 6px 16px rgba(45,212,191,0.35);" style-hover="filter:brightness(1.06);">Tạo tài khoản</div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    settingsOpen: true,
+    accountModalOpen: true,
+    selectedRole: 'Manager'
+  };
+
+  renderVals() {
+    const selectedRole = this.state.selectedRole;
+    const roleDefs = [
+      { id: 'Admin', label: 'Admin', desc: 'Toàn quyền hệ thống' },
+      { id: 'Manager', label: 'Manager', desc: 'Quản lý kho & nhân viên' },
+      { id: 'Staff', label: 'Staff', desc: 'Thao tác nhập/xuất kho' }
+    ];
+
+    const roles = roleDefs.map(r => {
+      const isSel = r.id === selectedRole;
+      return {
+        ...r,
+        isAdmin: r.id === 'Admin',
+        isManager: r.id === 'Manager',
+        isStaff: r.id === 'Staff',
+        borderColor: isSel ? '#2dd4bf' : 'oklch(0.9 0.005 250)',
+        bg: isSel ? 'oklch(0.97 0.02 200)' : '#fff',
+        iconBg: isSel ? '#2dd4bf' : 'oklch(0.94 0.005 250)',
+        iconColor: isSel ? '#fff' : '#8a8f98',
+        dotBorder: isSel ? '#2dd4bf' : 'oklch(0.85 0.005 250)',
+        dotBg: isSel ? '#2dd4bf' : 'transparent',
+        onClick: () => this.setState({ selectedRole: r.id })
+      };
+    });
+
+    return {
+      settingsOpen: this.state.settingsOpen,
+      settingsRowBg: this.state.settingsOpen ? 'rgba(255,255,255,0.1)' : 'transparent',
+      chevronTransform: this.state.settingsOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+      toggleSettings: () => this.setState(s => ({ settingsOpen: !s.settingsOpen })),
+      accountModalOpen: this.state.accountModalOpen,
+      openAccountModal: () => this.setState({ accountModalOpen: true }),
+      closeAccountModal: () => this.setState({ accountModalOpen: false }),
+      roles
+    };
+  }
+}
+
+</script>
+</body>
+</html>

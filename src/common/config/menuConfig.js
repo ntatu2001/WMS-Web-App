@@ -7,9 +7,9 @@ import {
   AiOutlineCheckSquare,
   AiOutlineHistory,
   AiOutlineUnorderedList,
-  AiOutlineTeam,
+  AiOutlineUserAdd,
   AiOutlineUser,
-  AiOutlineClose,
+  AiOutlineLogout,
 } from 'react-icons/ai';
 
 // Nguồn dữ liệu menu dùng chung cho Sidebar và cho việc tính route mặc định theo role.
@@ -29,9 +29,9 @@ export const menuItems = [
     path: '/setting',
     isParent: true,
     subItems: [
-      { id: 8.1, title: 'Tạo tài khoản mới', icon: AiOutlineTeam, path: '/setting/users', roles: ['Admin'] },
+      { id: 8.1, title: 'Tạo tài khoản mới', icon: AiOutlineUserAdd, path: '/setting/users', roles: ['Admin'] },
       { id: 8.2, title: 'Quản lý tài khoản', icon: AiOutlineUser, path: '/setting/account' },
-      { id: 8.3, title: 'Đăng xuất', icon: AiOutlineClose, path: '/setting/logout' },
+      { id: 8.3, title: 'Đăng xuất', icon: AiOutlineLogout, path: '/setting/logout', danger: true },
     ],
   },
 ];

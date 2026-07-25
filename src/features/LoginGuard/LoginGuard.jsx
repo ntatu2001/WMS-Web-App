@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { tokensRefreshed, bootstrapFailed } from '../../store/slices/authSlice';
 import { setLoading } from '../../store/slices/appSlice';
-import authApi, { decodeRoles } from '../../api/authApi';
+import authApi, { decodeRoles, decodeEmployeeId } from '../../api/authApi';
 
 const LoginGuard = () => {
   const isLogin = useSelector((state) => state.auth.isLogin);
@@ -23,6 +23,7 @@ const LoginGuard = () => {
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
             roles: decodeRoles(data.accessToken),
+            employeeId: decodeEmployeeId(data.accessToken),
           }));
         })
         .catch(() => {
