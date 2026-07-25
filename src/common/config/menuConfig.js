@@ -8,6 +8,7 @@ import {
   AiOutlineHistory,
   AiOutlineUnorderedList,
   AiOutlineTeam,
+  AiOutlineUser,
   AiOutlineClose,
 } from 'react-icons/ai';
 
@@ -28,9 +29,9 @@ export const menuItems = [
     path: '/setting',
     isParent: true,
     subItems: [
-      // Tài khoản/Cập nhật tạm ẩn vì đăng nhập bằng JWT không còn trả về employeeId để tra cứu Employee
-      { id: 8.1, title: 'Quản lý tài khoản', icon: AiOutlineTeam, path: '/setting/users', roles: ['Admin'] },
-      { id: 8.2, title: 'Đăng xuất', icon: AiOutlineClose, path: '/setting/logout' },
+      { id: 8.1, title: 'Tạo tài khoản mới', icon: AiOutlineTeam, path: '/setting/users', roles: ['Admin'] },
+      { id: 8.2, title: 'Quản lý tài khoản', icon: AiOutlineUser, path: '/setting/account' },
+      { id: 8.3, title: 'Đăng xuất', icon: AiOutlineClose, path: '/setting/logout' },
     ],
   },
 ];

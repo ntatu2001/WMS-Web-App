@@ -1,80 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import AccountApi from '../../../../api/AccountApi';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
+import styles from './Account.module.scss';
 
-const Account = ({ closeHandler }) => {
-  const [accountInfo, setAccountInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchAccountInfo = async () => {
-      try {
-        const employeeId = localStorage.getItem('employeeId'); // Retrieve employeeId from localStorage
-        if (employeeId) {
-          const response = await AccountApi.GetAccountInfo(employeeId); // Call API with employeeId
-
-          const formattedResponse = {
-            ...response,
-            DateOfBirth: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'DateOfBirth')?.propertyValue || '--',
-            Email: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'Email')?.propertyValue || '--',
-            PhoneNumber: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'PhoneNumber')?.propertyValue || '--',
-            Gender: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'Gender')?.propertyValue || '--',
-          };
-
-          // Save employeeName, Gender, and DateOfBirth to localStorage
-          localStorage.setItem('employeeName', response.employeeName || '');
-          localStorage.setItem('Gender', formattedResponse.Gender || '');
-          localStorage.setItem('DateOfBirth', formattedResponse.DateOfBirth || '');
-          localStorage.setItem('Email', formattedResponse.Email || '');
-
-          setAccountInfo(formattedResponse);
-        } else {
-          console.error('No employeeId found in localStorage');
-        }
-      } catch (error) {
-        console.error('Error fetching account info:', error);
-      }
-    };
-
-    fetchAccountInfo();
-  }, []);
-
-  if (!accountInfo) {
-    return <div>Loading...</div>;
-  }
+const Account = ({ onCancel }) => {
+  const userName = useSelector((state) => state.auth.userName);
+  const roles = useSelector((state) => state.auth.roles);
 
   return (
-    <div className='AccountHide' style={{ width: '400px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', position: 'relative' }}>
-      <button
-        onClick={closeHandler}
-        style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '50%',
-          width: '32px',
-          height: '32px',
-          cursor: 'pointer',
-          fontSize: '30px',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        ×
-      </button>
-      <div style={{ backgroundColor: '#000', color: '#fff', padding: '16px', textAlign: 'center', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-        <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>{accountInfo.employeeName}</h2>
-      </div>
-      <div style={{ padding: '20px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Thông tin cá nhân:</h3>
-        <div style={{ backgroundColor: '#f9f9f9', padding: '16px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <p style={{ margin: '8px 0' }}><strong>Mã nhân viên:</strong> {accountInfo.employeeId}</p>
-          <p style={{ margin: '8px 0' }}><strong>Ngày sinh:</strong> {accountInfo.DateOfBirth}</p>
-          <p style={{ margin: '8px 0' }}><strong>Email:</strong> {accountInfo.Email}</p>
-          <p style={{ margin: '8px 0' }}><strong>Số điện thoại:</strong> {accountInfo.PhoneNumber}</p>
-          <p style={{ margin: '8px 0' }}><strong>Giới tính:</strong> {accountInfo.Gender}</p>
+    <div className={styles.container}>
+      {onCancel && (
+        <button className={styles.closeButton} onClick={onCancel} aria-label="Đóng">
+          ×
+        </button>
+      )}
+
+      <SectionTitle>Quản lý tài khoản</SectionTitle>
+
+      <div className={styles.section}>
+        <p className={styles.sectionTitle}>Thông tin tài khoản</p>
+
+        <label className={styles.label}>Tên đăng nhập</label>
+        <p className={styles.value}>{userName || '--'}</p>
+
+        <label className={styles.label}>Vai trò</label>
+        <div className={styles.roleChips}>
+          {roles && roles.length > 0 ? (
+            roles.map((role) => (
+              <span key={role} className={styles.roleChip}>
+                {role}
+              </span>
+            ))
+          ) : (
+            <p className={styles.value}>--</p>
+          )}
         </div>
       </div>
     </div>
@@ -82,4 +41,3 @@ const Account = ({ closeHandler }) => {
 };
 
 export default Account;
-

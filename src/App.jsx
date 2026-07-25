@@ -21,9 +21,10 @@ import Logout from "./features/Setting/presentation/Logout/Logout.jsx";
 import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
 import FeatureUnavailable from "./features/Setting/presentation/FeatureUnavailable/FeatureUnavailable.jsx";
 import UserManagement from "./features/Setting/presentation/UserManagement/UserManagement.jsx";
+import Account from "./features/Setting/presentation/Account/Account.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
-import { AiOutlineTeam, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
+import { AiOutlineTeam, AiOutlineUser, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
@@ -147,7 +148,6 @@ function App() {
                         >
                           {/* Dropdown menu content */}
                           <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                            {/* Tài khoản/Cập nhật tạm ẩn — xem FeatureUnavailable.jsx để biết lý do */}
                             {roles.includes("Admin") && (
                               <li
                                 className="UserManagementSetting"
@@ -179,9 +179,41 @@ function App() {
                                   navigate("/setting/users");
                                 }}
                               >
-                                <AiOutlineTeam style={{ marginRight: "8px", fontSize: "24px" }} /> Quản lý tài khoản
+                                <AiOutlineTeam style={{ marginRight: "8px", fontSize: "24px" }} /> Tạo tài khoản mới
                               </li>
                             )}
+                            <li
+                              className="AccountSetting"
+                              style={{
+                                height: "60px",
+                                width: "200px",
+                                padding: "16px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "flex-start",
+                                cursor: "pointer",
+                                boxSizing: "border-box",
+                                fontSize: "20px",
+                                fontWeight: "700",
+                                color: "#FFFFFF",
+                                backgroundColor: "#002B49",
+                                transition: "all 0.3s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = "#FFFFFF";
+                                e.target.style.color = "#000000";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = "#002B49";
+                                e.target.style.color = "#FFFFFF";
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/setting/account");
+                              }}
+                            >
+                              <AiOutlineUser style={{ marginRight: "8px", fontSize: "24px" }} /> Quản lý tài khoản
+                            </li>
                             <li
                               style={{
                                 height: "60px", // Total height including padding
@@ -250,7 +282,29 @@ function App() {
                       >
                         <Routes>
                           <Route path="/" element={<Setting onCancel={() => setIsSidebarVisible(true)} />} />
-                          <Route path="account" element={<FeatureUnavailable />} />
+                          <Route
+                            path="account"
+                            element={
+                              <div
+                                className="modalContent"
+                                style={{
+                                  position: "relative",
+                                  margin: "auto",
+                                  borderRadius: "8px",
+                                  width: "50%",
+                                  zIndex: 2,
+                                }}
+                                onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
+                              >
+                                <Account
+                                  onCancel={() => {
+                                    setIsSidebarVisible(true); // Ensure the sidebar remains visible
+                                    navigate("/setting"); // Navigate back to the setting page
+                                  }}
+                                />
+                              </div>
+                            }
+                          />
                           <Route path="logout" element={<Logout />} />
                           <Route
                             path="update"
