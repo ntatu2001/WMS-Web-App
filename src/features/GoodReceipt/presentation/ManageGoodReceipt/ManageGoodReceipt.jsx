@@ -84,7 +84,7 @@ const ManageGoodReceipt = () => {
     try {
       // Find the receipt entry to check its current status
       const entryToUpdate = [...receiptEntries, ...todayReceiptEntries, ...lastWeekReceiptEntries]
-        .find(entry => entry.lotNumber === itemId);
+        .find(entry => entry.receiptLot.receiptLotId === itemId);
       
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.receiptLot.receiptLotStatus === "Done") {
@@ -113,7 +113,7 @@ const ManageGoodReceipt = () => {
       // Update local state
       const updateEntries = entries => {
         return entries.map(entry => {
-          if (entry.lotNumber === itemId) {
+          if (entry.receiptLot.receiptLotId === itemId) {
             return {
               ...entry,
               receiptLot: {
@@ -189,9 +189,9 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.personName}</TableCell>
                         <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <ReceiptProgress 
+                          <ReceiptProgress
                             item={{
-                              id: item.lotNumber,
+                              id: item.receiptLot.receiptLotId,
                               status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
                             }}
                             handleStatusChange={handleStatusChange}
@@ -243,9 +243,9 @@ const ManageGoodReceipt = () => {
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <ReceiptProgress 
+                          <ReceiptProgress
                             item={{
-                              id: item.lotNumber,
+                              id: item.receiptLot.receiptLotId,
                               status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
                             }}
                             handleStatusChange={handleStatusChange}
