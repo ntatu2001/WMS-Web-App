@@ -5,6 +5,7 @@ import { ClipLoader } from 'react-spinners';
 // import { getReceiptLayoutScheduling } from '../../../../../app/mockData/LocationData.js';
 import schedulingApi from '../../../../../api/schedulingApi.js';
 import InforReceiptModal from './../../InforModal/InforReceiptModal.jsx';
+import styles from './ReceiptDistribution.module.scss';
 
 const ReceiptDistribution = ({warehouseId, isActive}) => {
     const [loading, setLoading] = useState(false);
@@ -421,15 +422,8 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
             <td
                 key={cellId}
                 data-cell-id={cellId}
-                style={{
-                    position: "relative",
-                    border: "2px solid #000",
-                    minWidth: "130px",
-                    height: "50px",
-                    overflow: "hidden",
-                    padding: 0,
-                    cursor: cursorStyle
-                }}
+                className={styles.cell}
+                style={{ cursor: cursorStyle }}
                 onClick={(e) => cell && handleCellClick(cell, e)}
                 onMouseMove={(e) => handleCellMouseMove(cell, e)}
                 onMouseLeave={handleCellMouseLeave}
@@ -568,64 +562,51 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                     <ClipLoader size={35} color="#0066CC" />
                 </div>
             ) : (
-                <div style={{
-                    backgroundColor: '#f5f5f5', 
-                    width: "100%",
-                    minHeight: "100vh",
-                }}>
-                    {Object.entries(dataTable || {})
-                        .sort(([sectionA], [sectionB]) => {
-                            // Extract the number part from section IDs like "TP01_4", "TP01_3", etc.
-                            const numA = parseInt(sectionA.split('_')[1] || '0', 10);
-                            const numB = parseInt(sectionB.split('_')[1] || '0', 10);
-                            // Sort in descending order (higher numbers first)
-                            return numB - numA;
-                        })
-                        .map(([sectionId, sectionData]) => {
-                            const { racks, parentSection } = sectionData;
-                            // Get rack entries and sort them
-                            const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
-                                const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
-                                const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
-                                return rackNumB - rackNumA;
-                            });
-                            
-                            return (
-                                <div key={sectionId} style={{ marginBottom: "20px" }}>
-                                    <div style={{display: "flex", alignItems: "center"}}>
-                                        <h2 style={{ width: '100px', textAlign: "center", fontWeight: "bold", fontSize: "20px", marginRight: "2%"}}>{parentSection}</h2>
-                <div>
+                <div className={styles.wrapper}>
+                    <div className={styles.gridArea}>
+                        {Object.entries(dataTable || {})
+                            .sort(([sectionA], [sectionB]) => {
+                                // Extract the number part from section IDs like "TP01_4", "TP01_3", etc.
+                                const numA = parseInt(sectionA.split('_')[1] || '0', 10);
+                                const numB = parseInt(sectionB.split('_')[1] || '0', 10);
+                                // Sort in descending order (higher numbers first)
+                                return numB - numA;
+                            })
+                            .map(([sectionId, sectionData]) => {
+                                const { racks, parentSection } = sectionData;
+                                // Get rack entries and sort them
+                                const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
+                                    const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
+                                    const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
+                                    return rackNumB - rackNumA;
+                                });
+
+                                return (
+                                    <div key={sectionId} className={styles.sectionBlock}>
+                                        <h2 className={styles.sectionTitle}>{parentSection}</h2>
+                                        <div>
                                             {/* First rack table */}
                                             {rackEntries.length > 0 && (
                                                 <div key={rackEntries[0][0]} style={{ marginBottom: "10px" }}>
-                                                    <table>
+                                                    <table className={styles.rackTable}>
                                                         <thead>
                                                             <tr>
                                                                 {rackEntries[0][1].columns.map((col, index) => (
-                                                                    <th 
-                                                                        key={index}
-                                                                        style={{ padding: "8px 16px", backgroundColor: "#f0f0f0", borderBottom: "1px solid #ccc", minWidth: "100px", textAlign: "center" }}
-                                                                    >
+                                                                    <th key={index} className={styles.rackHeaderCell}>
                                                                         {col}
                                                                     </th>
                                                                 ))}
-                                                                <th style={{ width: "30px", padding: "8px", backgroundColor: "#f0f0f0", borderBottom: "1px solid #ccc", textAlign: "center" }}></th>
+                                                                <th className={styles.rackHeaderCell} style={{ width: "30px" }}></th>
                                                             </tr>
                                                         </thead>
-                                                        
+
                                                         <tbody>
                                                             {rackEntries[0][1].rows.slice().reverse().map((row, rowIndex) => (
                                                                 <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) => 
+                                                                    {row.map((cell, cellIndex) =>
                                                                         renderCell(cell, cellIndex, rowIndex)
                                                                     )}
-                                                                    <td 
-                                                                        style={{
-                                                                            textAlign: "center",
-                                                                            height: "40px",
-                                                                            width: "30px"
-                                                                        }}
-                                                                    >
+                                                                    <td className={styles.rowIndexCell}>
                                                                         {DEFAULT_ROWS - rowIndex}
                                                                     </td>
                                                                 </tr>
@@ -634,24 +615,18 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                                                     </table>
                                                 </div>
                                             )}
-                                            
+
                                             {/* Second rack table - Header moved to bottom */}
                                             {rackEntries.length > 1 && (
                                                 <div key={rackEntries[1][0]}>
-                                                    <table>
+                                                    <table className={styles.rackTable}>
                                                         <tbody>
                                                             {rackEntries[1][1].rows.slice().reverse().map((row, rowIndex) => (
                                                                 <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) => 
+                                                                    {row.map((cell, cellIndex) =>
                                                                         renderCell(cell, cellIndex, rowIndex)
                                                                     )}
-                                                                    <td 
-                                                                        style={{
-                                                                            textAlign: "center",
-                                                                            height: "40px",
-                                                                            width: "30px"
-                                                                        }}
-                                                                    >
+                                                                    <td className={styles.rowIndexCell}>
                                                                         {DEFAULT_ROWS - rowIndex}
                                                                     </td>
                                                                 </tr>
@@ -660,62 +635,48 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                                                         <tfoot>
                                                             <tr>
                                                                 {rackEntries[1][1].columns.map((col, index) => (
-                                                                    <th 
-                                                                        key={index}
-                                                                        style={{ padding: "8px 16px", backgroundColor: "#f0f0f0", borderTop: "1px solid #ccc", minWidth: "100px", textAlign: "center" }}
-                                                                    >
+                                                                    <th key={index} className={styles.rackFooterCell}>
                                                                         {col}
                                                                     </th>
                                                                 ))}
-                                                                <th style={{ width: "30px", padding: "8px", backgroundColor: "#f0f0f0", borderTop: "1px solid #ccc", textAlign: "center" }}></th>
+                                                                <th className={styles.rackFooterCell} style={{ width: "30px" }}></th>
                                                             </tr>
                                                         </tfoot>
                                                     </table>
-                        </div>
-                    )}
-                </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    
+                                );
+                            })}
+                    </div>
+
                     {/* Legend */}
-                    <div style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        right: "1%", 
-                        top: '30%', 
-                        width: "auto", 
-                        backgroundColor: "rgba(245, 245, 245, 0.9)",
-                        padding: "10px",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        position: "fixed",
-                    }}>
-                        <div style={{display: 'flex', alignItems: "center", marginBottom: "20%"}}>
-                            <div style={{ backgroundColor: '#0089D7', height: '40px', width: '40px', borderRadius: "6px", marginRight: "10px"}}></div>
+                    <div className={styles.legend}>
+                        <div className={styles.legendRow}>
+                            <div className={styles.legendSwatch} style={{ backgroundColor: '#0089D7' }}></div>
                             <span>Đang chứa hàng</span>
                         </div>
-                        
-                        <div style={{display: 'flex', alignItems: "center", marginBottom: "20%"}}>
-                            <div style={{ backgroundColor: '#00294D', height: '40px', width: '40px', borderRadius: "6px", marginRight: "10px" }}></div>
+
+                        <div className={styles.legendRow}>
+                            <div className={styles.legendSwatch} style={{ backgroundColor: '#00294D' }}></div>
                             <span>Đã đầy</span>
                         </div>
-                        
-                        <div style={{display: 'flex', alignItems: "center", marginBottom: "20%"}}>
-                            <div style={{ backgroundColor: '#FF2115', height: '40px', width: '40px', borderRadius: "6px", marginRight: "10px" }}></div>
+
+                        <div className={styles.legendRow}>
+                            <div className={styles.legendSwatch} style={{ backgroundColor: '#FF2115' }}></div>
                             <span>Được phân bổ</span>
                         </div>
 
-                        <div style={{display: 'flex', alignItems: "center", marginBottom: "10px"}}>
-                            <div style={{ backgroundColor: '#FFFFFF', height: '40px', width: '40px', borderRadius: "6px", marginRight: "10px" }}></div>
+                        <div className={styles.legendRow}>
+                            <div className={styles.legendSwatch} style={{ backgroundColor: '#FFFFFF' }}></div>
                             <span>Đang trống</span>
                         </div>
                     </div>
 
                     {/* Modal */}
                     {showModal && selectedCell && (
-                        <InforReceiptModal 
+                        <InforReceiptModal
                             data={selectedCell}
                             onClose={handleCloseModal}
                             position={modalPosition}

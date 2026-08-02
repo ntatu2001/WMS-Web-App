@@ -1,0 +1,69 @@
+@use '../../../../common/styles/variables' as v;
+
+.detailHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.chevronButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: v.$radius-sm;
+    color: v.$color-navy;
+
+    &:hover {
+        background-color: rgba(45, 212, 191, 0.12);
+    }
+}
+
+.chevronIcon {
+    transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.readOnlyField {
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    padding: 0 5%;
+    height: 35px;
+    width: 50.3%;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    background-color: v.$color-surface;
+}
+
+.accentPanel {
+    background-color: rgba(45, 212, 191, 0.08);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: v.$radius-md;
+}
+
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    color: v.$color-text-muted;
+    text-align: center;
+    padding: 0 16px;
+}
+
+.statusPill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+}

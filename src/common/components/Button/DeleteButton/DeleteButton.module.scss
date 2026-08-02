@@ -1,3 +1,5 @@
+@use '../../../styles/variables' as v;
+
 .deleteButton {
     display: flex;
     align-items: center;
@@ -5,7 +7,20 @@
     cursor: pointer;
     background-color: transparent;
     justify-content: center;
+    border-radius: v.$radius-sm;
+    padding: 6px;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+
+    &:hover {
+        background-color: rgba(244, 63, 94, 0.1);
+    }
 }
 
+.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
 
-    
+    &:hover {
+        background-color: transparent;
+    }
+}

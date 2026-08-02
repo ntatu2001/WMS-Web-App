@@ -1,21 +1,49 @@
+@use '../../../styles/variables' as v;
+
 .actionButton {
-    background-color: #0288d1;
+    background-color: v.$color-navy;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: v.$radius-sm;
     padding: 20px;
     font-size: 20px;
     font-weight: bold;
     margin-top: 20px;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
     display: block;
     margin-left: auto;
     margin-right: auto;
     width: 50%;
-    
 
     &:hover {
-        background-color: #0277bd;
+        background-color: v.$color-navy-soft;
+    }
+}
+
+.secondary {
+    background-color: rgba(45, 212, 191, 0.14);
+    color: v.$color-navy;
+
+    &:hover {
+        background-color: rgba(45, 212, 191, 0.24);
+    }
+}
+
+.active {
+    background-color: v.$color-navy;
+    color: white;
+
+    &:hover {
+        background-color: v.$color-navy-soft;
+    }
+}
+
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+        background-color: v.$color-navy;
     }
 }

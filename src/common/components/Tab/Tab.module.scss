@@ -1,25 +1,36 @@
+@use '../../styles/variables' as v;
+
 .tabButton {
-    padding: 12px 0; 
-    font-size: 20px; 
-    font-weight: bold; 
-    text-align: center; 
-    cursor: pointer; 
-    border: 1px solid #d1d5db;  
-    width: 50%; 
+    padding: 14px 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid v.$color-border;
+    width: 50%;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .tabButton_active {
-    background-color: #005F73; 
-    color: white; 
+    background-color: v.$color-navy;
+    color: white;
+    border-color: v.$color-navy;
 }
 
 .tabButton_inactive {
-    background-color: white; 
-    color: black;
+    background-color: white;
+    color: v.$color-text;
+
+    &:hover {
+        background-color: rgba(45, 212, 191, 0.08);
+    }
 }
 
 .tabContainer {
     margin: 1.25rem;
     display: flex;
     width: 98%;
+    border-radius: v.$radius-md;
+    overflow: hidden;
+    box-shadow: v.$shadow-sm;
 }

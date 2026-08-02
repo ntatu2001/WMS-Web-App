@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer';
 import ListSection from '../../../../common/components/Section/ListSection';
 import HeaderItem from '../../../../common/components/Header/HeaderItem';
 import Table from '../../../../common/components/Table/Table';
 import TableHeader from '../../../../common/components/Table/TableHeader';
 import TableCell from '../../../../common/components/Table/TableCell';
+import SelectContainer from '../../../../common/components/Selection/SelectContainer';
+import Select from '../../../../common/components/Selection/Select';
+import SearchInput from '../../../../common/components/Input/SearchInput';
+import Tag from '../../../../common/components/Tag/Tag';
 import { lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
 import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
+import wareHouseApi from '../../../../api/wareHouseApi.js';
 import { ClipLoader} from 'react-spinners';
 import ReceiptProgress from '../Progress/ReceiptProgress';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
@@ -19,7 +24,10 @@ const ManageGoodReceipt = () => {
   const [todayReceiptEntries, setTodayReceiptEntries] = useState([]);
   const [lastWeekReceiptEntries, setLastWeekReceiptEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-    
+  const [warehouses, setWarehouses] = useState([]);
+  const [warehouseFilter, setWarehouseFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+
   useEffect(() => {
     const GetApi = async() => {
       try {
@@ -31,7 +39,7 @@ const ManageGoodReceipt = () => {
         // Filter entries for today
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Set to beginning of day
-        
+
         const todayEntries = receiptEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.receiptDate);
           entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
@@ -39,12 +47,12 @@ const ManageGoodReceipt = () => {
         });
 
         // Sort last week entries by date in descending order
-        const sortedTodayEntries = [...todayEntries].sort((a, b) => 
+        const sortedTodayEntries = [...todayEntries].sort((a, b) =>
           new Date(b.receiptDate) - new Date(a.receiptDate)
           );
-      
+
         setTodayReceiptEntries(sortedTodayEntries);
-        
+
         // Filter entries for last week (keeping existing code structure)
         const lastWeekEntries = receiptEntryNotPending.filter(entry => {
           const entryDate = new Date(entry.receiptDate);
@@ -52,12 +60,12 @@ const ManageGoodReceipt = () => {
           lastWeek.setDate(lastWeek.getDate() - 7);
           return entryDate >= lastWeek && entryDate < today;
         });
-        
+
         // Sort last week entries by date in descending order
-        const sortedLastWeekEntries = [...lastWeekEntries].sort((a, b) => 
+        const sortedLastWeekEntries = [...lastWeekEntries].sort((a, b) =>
           new Date(b.receiptDate) - new Date(a.receiptDate)
         );
-        
+
         setLastWeekReceiptEntries(sortedLastWeekEntries);
       } catch (error) {
         console.error("Error fetching receipt entries:", error);
@@ -69,7 +77,36 @@ const ManageGoodReceipt = () => {
     GetApi();
   },[])
 
+  useEffect(() => {
+    const fetchWarehouses = async () => {
+      try {
+        const wareHouseList = await wareHouseApi.getAllWareHouses();
+        setWarehouses(wareHouseList);
+      } catch (error) {
+        console.error("Error fetching warehouse data:", error);
+      }
+    };
 
+    fetchWarehouses();
+  }, []);
+
+  const matchesFilter = (entry) => {
+    const matchesWarehouse = !warehouseFilter || entry.warehouseName === warehouseFilter;
+    const term = searchTerm.trim().toLowerCase();
+    const matchesSearch = !term
+      || entry.lotNumber?.toLowerCase().includes(term)
+      || entry.materialName?.toLowerCase().includes(term);
+    return matchesWarehouse && matchesSearch;
+  };
+
+  const filteredTodayEntries = useMemo(
+    () => todayReceiptEntries.filter(matchesFilter),
+    [todayReceiptEntries, warehouseFilter, searchTerm]
+  );
+  const filteredLastWeekEntries = useMemo(
+    () => lastWeekReceiptEntries.filter(matchesFilter),
+    [lastWeekReceiptEntries, warehouseFilter, searchTerm]
+  );
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -79,29 +116,29 @@ const ManageGoodReceipt = () => {
       </div>
     </div>
   );
-  
+
   const handleStatusChange = async (itemId, newStatus) => {
     try {
       // Find the receipt entry to check its current status
       const entryToUpdate = [...receiptEntries, ...todayReceiptEntries, ...lastWeekReceiptEntries]
         .find(entry => entry.receiptLot.receiptLotId === itemId);
-      
+
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.receiptLot.receiptLotStatus === "Done") {
         console.log("Cannot modify completed receipt lots");
         return;
       }
-      
+
       // Find the reverse mapping for the new status (from UI display status to backend status)
       const reversedStatus = Object.keys(lotStatusChangeData).find(
         key => lotStatusChangeData[key] === newStatus
       );
-      
+
       if (!reversedStatus) {
         console.error("Invalid status mapping");
         return;
       }
-      
+
       const updateReceiptLotStatus = {
         receiptLotId: itemId,
         receiptLotStatus: reversedStatus
@@ -109,7 +146,7 @@ const ManageGoodReceipt = () => {
       console.log(updateReceiptLotStatus)
       // Make API call to update the status
       await receiptLotApi.updateReceiptLotStatus(updateReceiptLotStatus);
-      
+
       // Update local state
       const updateEntries = entries => {
         return entries.map(entry => {
@@ -125,7 +162,7 @@ const ManageGoodReceipt = () => {
           return entry;
         });
       };
-      
+
       setReceiptEntries(updateEntries(receiptEntries));
       setTodayReceiptEntries(updateEntries(todayReceiptEntries));
       setLastWeekReceiptEntries(updateEntries(lastWeekReceiptEntries));
@@ -151,17 +188,43 @@ const ManageGoodReceipt = () => {
       });
     }
   };
-  
+
   return (
     <>
       <ContentContainer>
         <div style={{ width: '100%', height: "50%"}}>
-          <ListSection>
-            <HeaderItem>Lô nhập kho trong ngày</HeaderItem>
+          <ListSection style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '1.5rem' }}>
+            <SelectContainer style={{ maxWidth: '260px' }}>
+              <Select
+                value={warehouseFilter}
+                onChange={(e) => setWarehouseFilter(e.target.value)}
+                placeholder="Tất cả kho hàng"
+              >
+                <option value="">Tất cả kho hàng</option>
+                {warehouses.map((warehouse, index) => (
+                  <option key={`filter-warehouse-${index}`} value={warehouse.warehouseName}>
+                    {warehouse.warehouseName}
+                  </option>
+                ))}
+              </Select>
+            </SelectContainer>
+            <SearchInput
+              placeholder="Tìm mã lô / tên sản phẩm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ marginBottom: 0, marginLeft: 0, flex: 1 }}
+            />
+          </ListSection>
+
+          <ListSection elevated>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <HeaderItem>Lô nhập kho trong ngày</HeaderItem>
+              <Tag variant="accent">{filteredTodayEntries.length} lô</Tag>
+            </div>
             <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
               {loading ? (
                 <LoadingSpinner />
-              ) : todayReceiptEntries.length > 0 ? (
+              ) : filteredTodayEntries.length > 0 ? (
                 <Table>
                   <thead>
                     <tr>
@@ -174,11 +237,11 @@ const ManageGoodReceipt = () => {
                       <TableHeader>Nhân viên</TableHeader>
                       <TableHeader>Ghi chú</TableHeader>
                       <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
-                      <TableHeader></TableHeader> 
+                      <TableHeader></TableHeader>
                     </tr>
                   </thead>
                   <tbody>
-                    {todayReceiptEntries.map((item, index) => (
+                    {filteredTodayEntries.map((item, index) => (
                       <tr key={index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
@@ -197,7 +260,7 @@ const ManageGoodReceipt = () => {
                             handleStatusChange={handleStatusChange}
                           />
                         </TableCell>
-          
+
                       </tr>
                     ))}
                   </tbody>
@@ -210,11 +273,14 @@ const ManageGoodReceipt = () => {
             </div>
           </ListSection>
           <ListSection style={{ marginTop: '2rem' }}>
-            <HeaderItem>Lô nhập kho gần đây</HeaderItem>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <HeaderItem>Lô nhập kho gần đây</HeaderItem>
+              <Tag variant="neutral">{filteredLastWeekEntries.length} lô</Tag>
+            </div>
             <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
               {loading ? (
                 <LoadingSpinner />
-              ) : lastWeekReceiptEntries.length > 0 ? (
+              ) : filteredLastWeekEntries.length > 0 ? (
                 <Table>
                   <thead>
                     <tr>
@@ -231,7 +297,7 @@ const ManageGoodReceipt = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {lastWeekReceiptEntries.map((item, index) => (
+                    {filteredLastWeekEntries.map((item, index) => (
                       <tr key={item.id || index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
@@ -257,7 +323,7 @@ const ManageGoodReceipt = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  Không có dữ liệu kho gần đây
+                  {warehouseFilter || searchTerm ? "Không có lô nhập kho gần đây phù hợp." : "Không có dữ liệu kho gần đây"}
                 </div>
               )}
             </div>
@@ -268,4 +334,4 @@ const ManageGoodReceipt = () => {
   );
 };
 
-export default ManageGoodReceipt; 
+export default ManageGoodReceipt;

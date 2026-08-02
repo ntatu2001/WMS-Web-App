@@ -1,12 +1,20 @@
+@use '../../styles/variables' as v;
+
 .select {
     width: 100%;
-    padding: 5%; 
-    border: 1px solid #767676; 
-    border-radius: 6px; 
+    padding: 5%;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
     background-color: white;
-    font-size: 14px; 
+    font-size: 14px;
     appearance: none;
     direction: ltr; /* Ensures text direction is left-to-right */
+
+    &:focus {
+        outline: none;
+        border-color: v.$color-teal;
+        box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.25);
+    }
 }
 
 .selectContainer {

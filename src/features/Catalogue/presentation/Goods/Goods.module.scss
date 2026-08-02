@@ -1,16 +1,98 @@
-.divOfList {
+@use '../../../../common/styles/variables' as v;
+
+.card {
+    background-color: v.$color-surface;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-sm;
+    padding: 20px;
+    margin: 20px;
+}
+
+.cardHeader {
     display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    border-bottom-width: 1px;
-    border-radius: 6px;
-    padding: 20px 0px;
-    border-color: rgba(209, 213, 219, 1); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-                0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    background-color: #FFF;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid v.$color-border;
+}
+
+.cardTitle {
+    margin-bottom: 0;
+    text-align: left;
+    font-size: 20px;
+}
+
+.toggleButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    color: v.$color-navy;
+    padding: 6px 12px;
+    border-radius: v.$radius-sm;
 
     &:hover {
-    background-color: #ccc;
+        background-color: rgba(45, 212, 191, 0.12);
     }
+}
+
+.fieldGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 24px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+    font-size: 14px;
+    background-color: v.$color-surface;
+
+    &:focus {
+        outline: none;
+        border-color: v.$color-teal;
+        box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.25);
+    }
+}
+
+.searchBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 460px;
+}
+
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+    color: v.$color-text-muted;
+    text-align: center;
+}
+
+.storagePill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
 }
