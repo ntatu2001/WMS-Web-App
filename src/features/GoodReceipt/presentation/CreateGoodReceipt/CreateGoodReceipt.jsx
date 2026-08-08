@@ -80,6 +80,19 @@ const CreateGoodReceipt = () => {
     GetApi();
   }, []);
 
+  // Khi đổi Kho hàng, tự động chọn Mã kho hàng đầu tiên thuộc kho đó và loại bỏ
+  // các mã thuộc kho khác khỏi combo box Mã kho hàng (xem renderOptions bên dưới).
+  useEffect(() => {
+    if (!selectedWarehouse) {
+      setSelectedZone(null);
+      return;
+    }
+    const codesForSelectedWarehouse = wareHouses
+      .filter(w => w.warehouseName === selectedWarehouse)
+      .map(w => w.warehouseId);
+    setSelectedZone(codesForSelectedWarehouse[0] || null);
+  }, [selectedWarehouse, wareHouses]);
+
   useEffect(() => {
     const fetchMaterials = async () => {
       if (!selectedZone) return;
@@ -242,11 +255,13 @@ const CreateGoodReceipt = () => {
                     onChange={(e) => setSelectedZone(e.target.value)}
                     placeholder="Chọn mã kho hàng"
                   >
-                    {wareHouses.map((warehouse, index) => (
-                      <option key={`wareHouseId-${index}`} value={warehouse.warehouseId}>
-                        {warehouse.warehouseId}
-                      </option>
-                    ))}
+                    {wareHouses
+                      .filter((warehouse) => warehouse.warehouseName === selectedWarehouse)
+                      .map((warehouse, index) => (
+                        <option key={`wareHouseId-${index}`} value={warehouse.warehouseId}>
+                          {warehouse.warehouseId}
+                        </option>
+                      ))}
                   </Select>
                 </SelectContainer>
               </FormGroup>

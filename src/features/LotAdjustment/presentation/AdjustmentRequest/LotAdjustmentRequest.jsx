@@ -87,6 +87,19 @@ const RequestLotAdjustment = () => {
         GetApi();
       }, []);
 
+    // Khi đổi Kho hàng, tự động chọn Mã kho hàng đầu tiên thuộc kho đó và loại bỏ
+    // các mã thuộc kho khác khỏi combo box Mã kho hàng (xem renderOptions bên dưới).
+    useEffect(() => {
+        if (!selectedWarehouse) {
+            setSelectedZone(null);
+            return;
+        }
+        const codesForSelectedWarehouse = wareHouses
+            .filter(w => w.warehouseName === selectedWarehouse)
+            .map(w => w.warehouseId);
+        setSelectedZone(codesForSelectedWarehouse[0] || null);
+    }, [selectedWarehouse, wareHouses]);
+
     useEffect(() => {
         const getMaterialLotList = async() => {
             if (!selectedZone) return;
@@ -361,11 +374,13 @@ const RequestLotAdjustment = () => {
                                 onChange={(e) => setSelectedZone(e.target.value)}
                                 placeholder="Chọn mã kho hàng"
                                 >
-                                {wareHouses.map((wareHouses, index) => (
-                                    <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
-                                    {wareHouses.warehouseId}
-                                    </option>
-                                ))}
+                                {wareHouses
+                                    .filter((warehouse) => warehouse.warehouseName === selectedWarehouse)
+                                    .map((warehouse, index) => (
+                                        <option key = {`wareHouses-${index}`} value= {warehouse.warehouseId}>
+                                        {warehouse.warehouseId}
+                                        </option>
+                                    ))}
                             </Select>
                             </SelectContainer>
                         </FormGroup>
