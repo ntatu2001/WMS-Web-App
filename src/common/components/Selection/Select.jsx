@@ -40,11 +40,12 @@ const Select = ({ children, className = "", style, value, onChange, placeholder,
       marginTop: '4px', // Ensures dropdown appears below
       zIndex: 9999
     }),
-    control: (provided) => ({
+    control: (provided, state) => ({
       ...provided,
-      minHeight: '36px',
+      minHeight: '40px',
       borderRadius: '6px',
-      border: '1px solid #767676',
+      border: state.isFocused ? '1px solid #2dd4bf' : '1px solid #e2e5ea',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(45, 212, 191, 0.25)' : 'none',
       ...(style || {}) // Apply any custom style passed as prop
     }),
     placeholder: (provided) => ({

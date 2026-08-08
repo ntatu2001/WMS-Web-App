@@ -1,11 +1,12 @@
 import clsx from 'clsx';
 import styles from './DeleteButton.module.scss';
 
-const DeleteButton = ({ children, onClick, className}) => {
+const DeleteButton = ({ children, onClick, className, disabled }) => {
     return (
       <button
-        onClick={onClick}
-        className={clsx(styles.deleteButton, className)}
+        onClick={disabled ? undefined : onClick}
+        disabled={disabled}
+        className={clsx(styles.deleteButton, disabled && styles.disabled, className)}
       >
         {children}
       </button>

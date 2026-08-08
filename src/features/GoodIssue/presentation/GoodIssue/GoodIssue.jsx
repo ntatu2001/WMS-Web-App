@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import 'react-datepicker/dist/react-datepicker.css';
+import { BiCube } from 'react-icons/bi';
+import { AiOutlineAppstore, AiFillCheckCircle } from 'react-icons/ai';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
@@ -12,6 +14,20 @@ import InCompleteIssue from '../InCompleteIssue/InCompleteIssue.jsx';
 import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistribution.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 
+const headerActionButtonStyle = {
+  borderRadius: "6px",
+  minWidth: "220px",
+  height: "44px",
+  marginTop: 0,
+  padding: "0 16px",
+  fontSize: "15px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  whiteSpace: "nowrap",
+};
+
 const GoodIssue = () => {
   const roles = useSelector((state) => state.auth.roles);
   const canManage = roles.includes('Manager') || roles.includes('Admin');
@@ -19,14 +35,17 @@ const GoodIssue = () => {
   const [incompleteIssueMounted, setIncompleteIssueMounted] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isComingFromViewResult, setIsComingFromViewResult] = useState(false);
-  
+
   const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
                      activeTab === 'manage' ? "Quản lý xuất kho" :
                      activeTab === 'viewResult' ? "Kết quả phân bố vị trí lấy hàng" : "Xuất kho chưa hoàn thành"
-  
+
   // Reference to store the fetchIssueDetailScheduling function
   const fetchIssueDetailSchedulingRef = useRef(null);
-  
+  // Reference to store the updateIssueSubLots (approve) function
+  const approveIssueRef = useRef(null);
+  const [isApproving, setIsApproving] = useState(false);
+
   // Function to handle the issue distribution button click
   const handleIssueDistributionClick = () => {
     setIsComingFromViewResult(false); // Reset the flag when clicking the button
@@ -35,12 +54,23 @@ const GoodIssue = () => {
       fetchIssueDetailSchedulingRef.current(false); // Pass false to force API call
     }
   };
-  
+
   // Function to receive the fetchIssueDetailScheduling from InCompleteIssue
   const setFetchFunction = (fetchFn) => {
     fetchIssueDetailSchedulingRef.current = fetchFn;
   };
-  
+
+  // Function to receive the updateIssueSubLots (approve) function from InCompleteIssue
+  const setApproveFunction = (approveFn) => {
+    approveIssueRef.current = approveFn;
+  };
+
+  const handleApproveClick = () => {
+    if (approveIssueRef.current) {
+      approveIssueRef.current();
+    }
+  };
+
   // Function to handle warehouse ID changes
   const handleWarehouseChange = (warehouseId) => {
     console.log("Selected warehouse ID in parent:", warehouseId);
@@ -80,30 +110,34 @@ const GoodIssue = () => {
                 <Separator />
                 <HeaderItem>{headerText}</HeaderItem>
             </HeaderContainer>
-           
+
           {(activeTab === 'incomplete' || activeTab === 'viewResult') && (
-            <>
+            <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto', marginRight: '20px' }}>
                 <ActionButton
                   active={activeTab === 'incomplete'}
+                  variant={activeTab === 'incomplete' ? undefined : 'secondary'}
                   onClick={handleIssueDistributionClick}
-                  style={activeTab === 'incomplete' ? 
-                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" } : 
-                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" }
-                  }
+                  style={headerActionButtonStyle}
                 >
-                  Phân bố vị trí lấy hàng
+                  <BiCube size={18} /> Phân bố vị trí lấy hàng
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
+                  variant={activeTab === 'viewResult' ? undefined : 'secondary'}
                   onClick={handleViewResultClick}
-                  style={activeTab === 'viewResult' ? 
-                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0} : 
-                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0}
-                  }
+                  style={headerActionButtonStyle}
                 >
-                  Xem kết quả phân bổ
+                  <AiOutlineAppstore size={18} /> Xem kết quả phân bổ
                 </ActionButton>
-            </>
+                <ActionButton
+                  variant="secondary"
+                  onClick={handleApproveClick}
+                  disabled={isApproving}
+                  style={headerActionButtonStyle}
+                >
+                  <AiFillCheckCircle size={18} /> Duyệt danh sách xuất kho
+                </ActionButton>
+            </div>
           )}
         </div>
 
@@ -116,7 +150,7 @@ const GoodIssue = () => {
                 >
                   Tạo phiếu xuất kho
                 </TabButton>
-                
+
                 {canManage && (
                   <>
                     <TabButton
@@ -143,15 +177,17 @@ const GoodIssue = () => {
 
       {activeTab === 'create' && <CreateGoodIssue />}
       {activeTab === 'manage' && <ManageGoodIssue />}
-      
+
       {/* Keep InCompleteIssue mounted but hide it when not active */}
       {incompleteIssueMounted && (
         <>
           <div style={{ display: activeTab === 'incomplete' ? 'block' : 'none' }}>
-            <InCompleteIssue 
-              onButtonClick={setFetchFunction} 
+            <InCompleteIssue
+              onButtonClick={setFetchFunction}
               onWarehouseChange={handleWarehouseChange}
               isComingFromViewResult={isComingFromViewResult}
+              onApproveButtonClick={setApproveFunction}
+              onUpdatingChange={setIsApproving}
             />
           </div>
           <div style={{ display: activeTab === 'viewResult' ? 'block' : 'none' }}>

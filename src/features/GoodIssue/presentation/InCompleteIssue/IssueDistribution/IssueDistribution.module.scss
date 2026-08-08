@@ -1,0 +1,101 @@
+@use '../../../../../common/styles/variables' as v;
+
+.wrapper {
+    background-color: v.$color-bg;
+    width: 100%;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.gridArea {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.sectionBlock {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.sectionTitle {
+    width: 100px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 20px;
+    margin-right: 16px;
+    color: v.$color-navy;
+    flex-shrink: 0;
+}
+
+.rackTable {
+    border-collapse: collapse;
+}
+
+.rackHeaderCell {
+    padding: 8px 16px;
+    background-color: rgba(10, 24, 48, 0.06);
+    border-bottom: 1px solid v.$color-border;
+    min-width: 100px;
+    text-align: center;
+    font-weight: 600;
+    color: v.$color-navy;
+}
+
+.rackFooterCell {
+    padding: 8px 16px;
+    background-color: rgba(10, 24, 48, 0.06);
+    border-top: 1px solid v.$color-border;
+    min-width: 100px;
+    text-align: center;
+    font-weight: 600;
+    color: v.$color-navy;
+}
+
+.rowIndexCell {
+    text-align: center;
+    height: 40px;
+    width: 30px;
+    color: v.$color-text-muted;
+    font-size: 13px;
+}
+
+.cell {
+    position: relative;
+    border: 1px solid v.$color-border;
+    min-width: 130px;
+    height: 50px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.legend {
+    flex-shrink: 0;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background-color: v.$color-surface;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-sm;
+    padding: 16px;
+    position: sticky;
+    top: 20px;
+}
+
+.legendRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legendSwatch {
+    height: 32px;
+    width: 32px;
+    border-radius: v.$radius-sm;
+    border: 1px solid v.$color-border;
+    flex-shrink: 0;
+}

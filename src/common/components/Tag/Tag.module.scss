@@ -1,0 +1,21 @@
+@use '../../styles/variables' as v;
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.accent {
+    background-color: rgba(45, 212, 191, 0.16);
+    color: v.$color-teal-dark;
+}
+
+.neutral {
+    background-color: rgba(10, 24, 48, 0.06);
+    color: v.$color-text-muted;
+}

@@ -1,25 +1,56 @@
+@use '../../styles/variables' as v;
+
 .table {
-    width: 100%; 
-    border-collapse: collapse; 
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 14px; 
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
 }
 
 
 .tableHeader {
-    border-bottom: 1px solid #ddd; 
-    padding: 12px 0px; 
-    text-align: center; 
-    font-weight: bold;
-    color: #333; 
-    font-size: 14px; 
+    position: relative;
+    border-bottom: 2px solid v.$color-border;
+    background-color: rgba(10, 24, 48, 0.04);
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 700;
+    color: v.$color-navy;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
 
 .tableCell {
-    border-bottom: 1px solid #ddd; 
-    padding: 8px;
-    font-weight: 500; 
+    border-bottom: 1px solid v.$color-border;
+    padding: 10px 8px;
+    font-weight: 500;
     text-align: center;
+    word-break: break-word;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(45, 212, 191, 0.06);
+}
+
+.resizeHandle {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
+    z-index: 2;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.resizeHandle:hover,
+.resizing {
+    background-color: v.$color-teal;
 }

@@ -1,24 +1,27 @@
+@use '../../styles/variables' as v;
+
 .formSection {
     flex: 1;
-    border-bottom-width: 1px;
-    border-color: rgba(209, 213, 219, 1); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-                0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-sm;
     height: 50%;
     padding: 1.25rem;
     position: relative;
     margin-right: 20px;
-    background-color: #FFF;
+    background-color: v.$color-surface;
 }
 
 .listSection {
     flex: 2;
-    border-bottom-width: 1px;
-    border-color: rgba(209, 213, 219, 1); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-                0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-sm;
     padding: 1.25rem;
     position: relative;
-    background-color: #FFF;
-    
+    background-color: v.$color-surface;
+}
+
+.elevated {
+    box-shadow: v.$shadow-md;
 }

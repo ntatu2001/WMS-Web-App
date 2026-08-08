@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { AiOutlineRight } from 'react-icons/ai';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
@@ -8,11 +9,26 @@ import BKlogo from '../../../assets/bk_logo.png';
 import { menuItems, isMenuItemVisible } from '../../config/menuConfig.js';
 
 const Sidebar = () => {
-  const location = useLocation();
-  const [showSubSidebar, setShowSubSidebar] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const roles = useSelector((state) => state.auth.roles);
+  const settingsRef = useRef(null);
 
   const isVisible = (item) => isMenuItemVisible(item, roles);
+
+  useEffect(() => {
+    if (!settingsOpen) return undefined;
+    const handleClickOutside = (event) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setSettingsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [settingsOpen]);
+
+  const visibleItems = menuItems.filter(isVisible);
+  const navItems = visibleItems.filter((item) => !item.isParent);
+  const settingsItem = visibleItems.find((item) => item.isParent);
 
   return (
     <div className={clsx(styles.sidebar)}>
@@ -26,32 +42,45 @@ const Sidebar = () => {
 
       {/* Menu Items */}
       <nav className={clsx(styles.sidebarNav)}>
-        {menuItems.filter(isVisible).map((item) => (
-          <div key={item.id} className={clsx(styles.menuItemWrapper)}>
-            <MenuItem
-              to={item.path}
-              active={location.pathname.startsWith(item.path) ? 1 : 0}
-              onClick={() => item.isParent && setShowSubSidebar(!showSubSidebar)}
-            >
+        <div className={clsx(styles.sidebarNavScroll)}>
+          {navItems.map((item) => (
+            <MenuItem key={item.id} to={item.path}>
               <span className={clsx(styles.sidebarIcon)}><item.icon /></span>
               <span>{item.title}</span>
             </MenuItem>
-            {item.isParent && showSubSidebar && (
-              <div className={clsx(styles.subSidebar)}>
-                {item.subItems.filter(isVisible).map((subItem) => (
-                  <MenuItem
+          ))}
+        </div>
+
+        {settingsItem && (
+          <div ref={settingsRef} className={clsx(styles.settingsWrapper)}>
+            <div
+              className={clsx(styles.settingsTrigger, settingsOpen && styles.settingsTriggerOpen)}
+              onClick={() => setSettingsOpen((open) => !open)}
+            >
+              <span className={clsx(styles.sidebarIcon)}><settingsItem.icon /></span>
+              <span className={clsx(styles.settingsLabel)}>{settingsItem.title}</span>
+              <AiOutlineRight className={clsx(styles.chevron, settingsOpen && styles.chevronOpen)} />
+            </div>
+
+            {settingsOpen && (
+              <div className={clsx(styles.flyout)}>
+                <div className={clsx(styles.flyoutTail)} />
+                <div className={clsx(styles.flyoutSectionLabel)}>Tài khoản</div>
+                {settingsItem.subItems.filter(isVisible).map((subItem) => (
+                  <Link
                     key={subItem.id}
                     to={subItem.path}
-                    active={location.pathname === subItem.path ? 1 : 0}
+                    className={clsx(styles.flyoutItem, subItem.danger && styles.flyoutItemDanger)}
+                    onClick={() => setSettingsOpen(false)}
                   >
-                    <span className={clsx(styles.sidebarIcon)}><subItem.icon /></span>
-                    <span>{subItem.title}</span>
-                  </MenuItem>
+                    <subItem.icon className={clsx(styles.flyoutItemIcon)} />
+                    {subItem.title}
+                  </Link>
                 ))}
               </div>
             )}
           </div>
-        ))}
+        )}
       </nav>
     </div>
   );

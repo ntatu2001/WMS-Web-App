@@ -1,80 +1,100 @@
 import React, { useEffect, useState } from 'react';
-import AccountApi from '../../../../api/AccountApi';
+import { useSelector } from 'react-redux';
+import AccountApi from '../../../../api/AccountApi.js';
+import styles from './Account.module.scss';
 
-const Account = ({ closeHandler }) => {
-  const [accountInfo, setAccountInfo] = useState(null);
+const findProperty = (properties, name) =>
+  properties?.find((prop) => prop.propertyName === name)?.propertyValue || '--';
+
+const Account = ({ onCancel }) => {
+  const userName = useSelector((state) => state.auth.userName);
+  const roles = useSelector((state) => state.auth.roles);
+  const employeeId = useSelector((state) => state.auth.employeeId);
+
+  const [employeeInfo, setEmployeeInfo] = useState(null);
+  const [isLoadingEmployee, setIsLoadingEmployee] = useState(false);
 
   useEffect(() => {
-    const fetchAccountInfo = async () => {
-      try {
-        const employeeId = localStorage.getItem('employeeId'); // Retrieve employeeId from localStorage
-        if (employeeId) {
-          const response = await AccountApi.GetAccountInfo(employeeId); // Call API with employeeId
-
-          const formattedResponse = {
-            ...response,
-            DateOfBirth: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'DateOfBirth')?.propertyValue || '--',
-            Email: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'Email')?.propertyValue || '--',
-            PhoneNumber: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'PhoneNumber')?.propertyValue || '--',
-            Gender: response.employeePropertyDTOs.find((prop) => prop.propertyName === 'Gender')?.propertyValue || '--',
-          };
-
-          // Save employeeName, Gender, and DateOfBirth to localStorage
-          localStorage.setItem('employeeName', response.employeeName || '');
-          localStorage.setItem('Gender', formattedResponse.Gender || '');
-          localStorage.setItem('DateOfBirth', formattedResponse.DateOfBirth || '');
-          localStorage.setItem('Email', formattedResponse.Email || '');
-
-          setAccountInfo(formattedResponse);
-        } else {
-          console.error('No employeeId found in localStorage');
-        }
-      } catch (error) {
-        console.error('Error fetching account info:', error);
-      }
-    };
-
-    fetchAccountInfo();
-  }, []);
-
-  if (!accountInfo) {
-    return <div>Loading...</div>;
-  }
+    if (!employeeId) {
+      setEmployeeInfo(null);
+      return;
+    }
+    setIsLoadingEmployee(true);
+    AccountApi.GetAccountInfo(employeeId)
+      .then((data) => setEmployeeInfo(data))
+      .catch((error) => {
+        console.error('Error fetching employee info:', error);
+        setEmployeeInfo(null);
+      })
+      .finally(() => setIsLoadingEmployee(false));
+  }, [employeeId]);
 
   return (
-    <div className='AccountHide' style={{ width: '400px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff', position: 'relative' }}>
-      <button
-        onClick={closeHandler}
-        style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '50%',
-          width: '32px',
-          height: '32px',
-          cursor: 'pointer',
-          fontSize: '30px',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        ×
-      </button>
-      <div style={{ backgroundColor: '#000', color: '#fff', padding: '16px', textAlign: 'center', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
-        <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>{accountInfo.employeeName}</h2>
-      </div>
-      <div style={{ padding: '20px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>Thông tin cá nhân:</h3>
-        <div style={{ backgroundColor: '#f9f9f9', padding: '16px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)' }}>
-          <p style={{ margin: '8px 0' }}><strong>Mã nhân viên:</strong> {accountInfo.employeeId}</p>
-          <p style={{ margin: '8px 0' }}><strong>Ngày sinh:</strong> {accountInfo.DateOfBirth}</p>
-          <p style={{ margin: '8px 0' }}><strong>Email:</strong> {accountInfo.Email}</p>
-          <p style={{ margin: '8px 0' }}><strong>Số điện thoại:</strong> {accountInfo.PhoneNumber}</p>
-          <p style={{ margin: '8px 0' }}><strong>Giới tính:</strong> {accountInfo.Gender}</p>
+    <div className={styles.backdrop} onClick={onCancel}>
+      <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <div className={styles.title}>Quản lý tài khoản</div>
+          {onCancel && (
+            <button className={styles.closeButton} onClick={onCancel} aria-label="Đóng">
+              ×
+            </button>
+          )}
+        </div>
+
+        <div className={styles.body}>
+          <div className={styles.section}>
+            <p className={styles.sectionTitle}>Thông tin tài khoản</p>
+
+            <label className={styles.label}>Tên đăng nhập</label>
+            <p className={styles.value}>{userName || '--'}</p>
+
+            <label className={styles.label}>Vai trò</label>
+            <div className={styles.roleChips}>
+              {roles && roles.length > 0 ? (
+                roles.map((role) => (
+                  <span key={role} className={styles.roleChip}>
+                    {role}
+                  </span>
+                ))
+              ) : (
+                <p className={styles.value}>--</p>
+              )}
+            </div>
+          </div>
+
+          {employeeId && (
+            <div className={styles.section}>
+              <p className={styles.sectionTitle}>Thông tin nhân viên</p>
+
+              {isLoadingEmployee && <p className={styles.value}>Đang tải...</p>}
+
+              {!isLoadingEmployee && employeeInfo && (
+                <>
+                  <label className={styles.label}>Họ tên</label>
+                  <p className={styles.value}>{employeeInfo.employeeName || '--'}</p>
+
+                  <label className={styles.label}>Mã nhân viên</label>
+                  <p className={styles.value}>{employeeInfo.employeeId || '--'}</p>
+
+                  <label className={styles.label}>Ngày sinh</label>
+                  <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'DateOfBirth')}</p>
+
+                  <label className={styles.label}>Email</label>
+                  <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'Email')}</p>
+
+                  <label className={styles.label}>Số điện thoại</label>
+                  <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'PhoneNumber')}</p>
+
+                  <label className={styles.label}>Giới tính</label>
+                  <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'Gender')}</p>
+                </>
+              )}
+
+              {!isLoadingEmployee && !employeeInfo && (
+                <p className={styles.value}>Không tải được thông tin nhân viên.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -82,4 +102,3 @@ const Account = ({ closeHandler }) => {
 };
 
 export default Account;
-

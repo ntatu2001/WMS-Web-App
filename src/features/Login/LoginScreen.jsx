@@ -4,11 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { loginSuccess } from '../../store/slices/authSlice';
 import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
-import authApi, { decodeRoles } from '../../api/authApi';
+import authApi, { decodeRoles, decodeEmployeeId } from '../../api/authApi';
 import { getApiErrorMessage } from '../../api/apiError';
 import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
 import bkLogo from '../../assets/bk_logo.png';
-import { FaUser, FaLock } from 'react-icons/fa';
+import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const BG = styled.div`
   min-height: 100vh;
@@ -89,6 +89,22 @@ const InputIcon = styled.div`
   font-size: 1.1rem;
 `;
 
+const PasswordToggleIcon = styled.div`
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: #374151;
+  }
+`;
+
 const CheckboxRow = styled.div`
   width: 100%;
   display: flex;
@@ -142,6 +158,7 @@ const Footer = styled.div`
 const LoginScreen = () => {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -155,11 +172,13 @@ const LoginScreen = () => {
     try {
       const data = await authApi.login(userName, password);
       const roles = decodeRoles(data.accessToken);
+      const employeeId = decodeEmployeeId(data.accessToken);
       dispatch(loginSuccess({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
         roles,
         userName,
+        employeeId,
       }));
       navigate(getDefaultRouteForRoles(roles));
     } catch (err) {
@@ -199,12 +218,20 @@ const LoginScreen = () => {
               <FaLock />
             </InputIcon>
             <StyledInput
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              style={{ paddingRight: 44 }}
             />
+            <PasswordToggleIcon
+              onClick={() => setShowPassword((prev) => !prev)}
+              role="button"
+              aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </PasswordToggleIcon>
           </InputGroup>
           <CheckboxRow>
             <StyledCheckbox

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const axiosAlgorithm = axios.create ({
-    baseURL: 'https://slapscheduling20250601103452.azurewebsites.net/api/',
+    baseURL: 'http://localhost:5149/api/',
+    // baseURL: 'https://slapscheduling20250601103452.azurewebsites.net/api/',
     // baseURL: 'https://67cebcbb125cd5af757bc819.mockapi.io/test/van/',
     headers : {
       'Content-Type' : 'application/json',

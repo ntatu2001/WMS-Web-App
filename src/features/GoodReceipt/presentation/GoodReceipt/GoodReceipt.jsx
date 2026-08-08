@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import 'react-datepicker/dist/react-datepicker.css';
+import { BiCube } from 'react-icons/bi';
+import { AiOutlineAppstore, AiFillCheckCircle } from 'react-icons/ai';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
@@ -11,6 +13,20 @@ import ManageGoodReceipt from '../ManageGoodReceipt/ManageGoodReceipt.jsx';
 import InCompleteReceipt from '../InCompleteReceipt/InCompleteReceipt.jsx';
 import ReceiptDistribution from '../InCompleteReceipt/ReceiptDistribution/ReceiptDistribution.jsx'
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+
+const headerActionButtonStyle = {
+  borderRadius: "6px",
+  minWidth: "220px",
+  height: "44px",
+  marginTop: 0,
+  padding: "0 16px",
+  fontSize: "15px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  whiteSpace: "nowrap",
+};
 
 const GoodReceipt = () => {
   const roles = useSelector((state) => state.auth.roles);
@@ -26,7 +42,10 @@ const GoodReceipt = () => {
   
   // Reference to store the fetchReceiptDetailScheduling function
   const fetchReceiptDetailSchedulingRef = useRef(null);
-  
+  // Reference to store the updateReceiptSublots (approve) function
+  const approveReceiptRef = useRef(null);
+  const [isApproving, setIsApproving] = useState(false);
+
   // Function to handle the receipt distribution button click
   const handleReceiptDistributionClick = () => {
     setIsComingFromViewResult(false); // Reset the flag when clicking the button
@@ -46,7 +65,18 @@ const GoodReceipt = () => {
   const setFetchFunction = (fetchFn) => {
     fetchReceiptDetailSchedulingRef.current = fetchFn;
   };
-  
+
+  // Function to receive the updateReceiptSublots (approve) function from InCompleteReceipt
+  const setApproveFunction = (approveFn) => {
+    approveReceiptRef.current = approveFn;
+  };
+
+  const handleApproveClick = () => {
+    if (approveReceiptRef.current) {
+      approveReceiptRef.current();
+    }
+  };
+
   // Function to handle warehouse ID changes
   const handleWarehouseChange = (warehouseId) => {
     console.log("Selected warehouse ID in parent:", warehouseId);
@@ -82,28 +112,32 @@ const GoodReceipt = () => {
             </HeaderContainer>
            
           {(activeTab === 'incomplete' || activeTab === 'viewResult') && (
-            <>
+            <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto', marginRight: '20px' }}>
                 <ActionButton
                   active={activeTab === 'incomplete'}
+                  variant={activeTab === 'incomplete' ? undefined : 'secondary'}
                   onClick={handleReceiptDistributionClick}
-                  style={activeTab === 'incomplete' ? 
-                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" } : 
-                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginRight: "2%" }
-                  }
+                  style={headerActionButtonStyle}
                 >
-                  Phân bố vị trí lưu kho
+                  <BiCube size={18} /> Phân bố vị trí lưu kho
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
+                  variant={activeTab === 'viewResult' ? undefined : 'secondary'}
                   onClick={handleViewResultClick}
-                  style={activeTab === 'viewResult' ? 
-                    { backgroundColor: '#003366', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0} : 
-                    { backgroundColor: '#0099cc', borderRadius: "4px", width: "20%", height: "40px", marginTop: 0, padding: 0, marginLeft: 0}
-                  }
+                  style={headerActionButtonStyle}
                 >
-                  Xem kết quả phân bổ
+                  <AiOutlineAppstore size={18} /> Xem kết quả phân bổ
                 </ActionButton>
-            </>
+                <ActionButton
+                  variant="secondary"
+                  onClick={handleApproveClick}
+                  disabled={isApproving}
+                  style={headerActionButtonStyle}
+                >
+                  <AiFillCheckCircle size={18} /> Duyệt danh sách nhập kho
+                </ActionButton>
+            </div>
           )}
         </div>
 
@@ -148,10 +182,12 @@ const GoodReceipt = () => {
       {incompleteReceiptMounted && (
         <>
           <div style={{ display: activeTab === 'incomplete' ? 'block' : 'none' }}>
-            <InCompleteReceipt 
-              onButtonClick={setFetchFunction} 
+            <InCompleteReceipt
+              onButtonClick={setFetchFunction}
               onWarehouseChange={handleWarehouseChange}
               isComingFromViewResult={isComingFromViewResult}
+              onApproveButtonClick={setApproveFunction}
+              onUpdatingChange={setIsApproving}
             />
           </div>
           <div style={{ display: activeTab === 'viewResult' ? 'block' : 'none' }}>

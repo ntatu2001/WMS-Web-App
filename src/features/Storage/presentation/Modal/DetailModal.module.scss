@@ -1,36 +1,84 @@
+@use '../../../../common/styles/variables' as v;
+
 .modal {
-    width: 10%;
-    // max-width: 70%;
-    min-width: 20%;
-    min-height: 63%;
-    height: 50%;
+    width: 320px;
+    max-height: 80vh;
     overflow-y: auto;
-    left: 0;
-    top: 0;
-    padding: 10px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    background-color: v.$color-surface;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-lg;
     position: fixed !important;
     transform: none !important; // Override Popper transform nếu cần
     z-index: 1000;
-    color: #000
-    // position: absolute;
+    color: v.$color-text;
+}
+
+.modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.modalTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
 }
 
 .modalClose {
-    background-color: #ff000f;
-    position: absolute;
-    right: 0px;
-    top: 0px;
-    color: #fff;
-    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    background-color: rgba(10, 24, 48, 0.06);
+    border: none;
+    border-radius: v.$radius-sm;
+    color: v.$color-text;
     cursor: pointer;
-    opacity: 0.9;
+
+    &:hover {
+        background-color: rgba(244, 63, 94, 0.14);
+        color: #f43f5e;
+    }
 }
 
-.modalClose:hover {
-    opacity: 1;
-    background-color: #ccc;
-    color: #000;
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 160px;
+    width: 100%;
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.infoGrid + .infoGrid {
+    padding-top: 14px;
+    border-top: 1px solid v.$color-border;
+}
+
+.infoLabel {
+    color: v.$color-text-muted;
+}
+
+.infoValue {
+    text-align: right;
+    font-weight: 600;
+}
+
+.statusValue {
+    text-align: right;
+    font-weight: 700;
 }

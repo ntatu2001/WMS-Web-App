@@ -1,47 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
-import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
+import Select from '../../../../common/components/Selection/Select.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
+import Table from '../../../../common/components/Table/Table.jsx';
+import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
+import TableCell from '../../../../common/components/Table/TableCell.jsx';
+import Tag from '../../../../common/components/Tag/Tag.jsx';
 import locationApi from '../../../../api/locationApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
-const InventoryHistory = () => {
+import styles from './StoreLocation.module.scss';
+
+const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+
+const warehouseOptions = [
+  "Kho thành phẩm",
+  "Kho bán thành phẩm",
+  "Kho bao bì",
+  "Kho nguyên vật liệu",
+  "Kho vật tư",
+];
+
+const emptyFormData = {
+  equipmentName: "",
+  locationId: "",
+  status: "",
+  warehouseName: "",
+  warehouseId: "",
+  dimensions: "",
+};
+
+const StoreLocation = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
-  const [savedData, setSavedData] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
-  const [formData, setFormData] = useState({
-    equipmentName: "",
-    locationId: "",
-    status: "",
-    warehouseName: "",
-    warehouseId: "",
-    dimensions: "",
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState(emptyFormData);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (hasSubmitted) {
+      setFieldErrors({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    const nextFieldErrors = {};
+    if (!formData.equipmentName.trim()) nextFieldErrors.equipmentName = 'Vui lòng nhập tên thiết bị';
+    if (!formData.locationId.trim()) nextFieldErrors.locationId = 'Vui lòng nhập mã vị trí';
+    if (!formData.warehouseName) nextFieldErrors.warehouseName = 'Vui lòng chọn kho hàng';
+    setFieldErrors(nextFieldErrors);
+    return Object.keys(nextFieldErrors).length === 0;
+  };
+
   const handleSave = async () => {
-    if (!formData.locationId) {
-      return; // Prevent saving if locationId is empty
+    setHasSubmitted(true);
+    if (!validateForm()) {
+      toast.error("Vui lòng kiểm tra các trường còn thiếu thông tin!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
     }
 
-    // Parse dimensions input
     const dimensionsArray = formData.dimensions.split("x").map((dim) => dim.trim());
 
-    // Prepare the newLocation object for the API
     const newLocation = {
       locationId: formData.locationId,
       warehouseId: formData.warehouseId,
@@ -50,34 +88,30 @@ const InventoryHistory = () => {
       properties: [
         {
           propertyName: "Height",
-          propertyValue: dimensionsArray[2] || "--", // Height from dimensions[2]
+          propertyValue: dimensionsArray[2] || "--",
           unitOfMeasure: "Meter",
         },
         {
           propertyName: "Width",
-          propertyValue: dimensionsArray[0] || "--", // Width from dimensions[0]
+          propertyValue: dimensionsArray[0] || "--",
           unitOfMeasure: "Meter",
         },
         {
           propertyName: "Length",
-          propertyValue: dimensionsArray[1] || "--", // Length from dimensions[1]
+          propertyValue: dimensionsArray[1] || "--",
           unitOfMeasure: "Meter",
         },
         {
           propertyName: "Status",
-          propertyValue: formData.Status || "--",
+          propertyValue: formData.status || "--",
           unitOfMeasure: "None",
         },
       ],
     };
 
     try {
-      console.log("New Location Data to POST:", newLocation); // Log the data being sent to the API
-
-      // POST the newLocation data to the API
-      const response = await locationApi.createLocation(newLocation); // Ensure the API method is correct
+      const response = await locationApi.createLocation(newLocation);
       if (response) {
-        // Show success notification
         toast.success("Vị trí lưu trữ đã được tạo thành công!", {
           position: "top-right",
           autoClose: 3000,
@@ -88,20 +122,21 @@ const InventoryHistory = () => {
           progress: undefined,
         });
 
-        // Reset form data
-        setFormData({
-          equipmentName: "",
-          locationId: "",
-          status: "",
-          warehouseName: "",
-          warehouseId: "",
-          dimensions: "",
-        });
+        const mappedNewLocation = {
+          ...newLocation,
+          status: formData.status || "--",
+          width: dimensionsArray[0] || "--",
+          length: dimensionsArray[1] || "--",
+          height: dimensionsArray[2] || "--",
+        };
+        setFilteredData((prev) => [...prev, mappedNewLocation]);
+
+        setFormData(emptyFormData);
+        setFieldErrors({});
+        setHasSubmitted(false);
       }
     } catch (error) {
       console.error("Error creating new location:", error);
-
-      // Show failure notification
       toast.error(getApiErrorMessage(error, "Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
@@ -116,16 +151,14 @@ const InventoryHistory = () => {
 
   const handleSearch = async () => {
     if (!searchCode.trim()) {
-      setFilteredData([]); // Clear the table if the input is empty
+      setFilteredData([]);
       return;
     }
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
-      // Fetch data through the shared axios client (consistent base URL + error handling)
       const location = await locationApi.getLocationById(searchCode);
 
       if (!location || !location.locationPropertyDTOs || location.locationPropertyDTOs.length === 0) {
-        // Show notification if no data is returned
         toast.info("Không tìm thấy dữ liệu vị trí lưu trữ!", {
           position: "top-right",
           autoClose: 3000,
@@ -134,16 +167,14 @@ const InventoryHistory = () => {
           pauseOnHover: true,
           draggable: true,
           progress: undefined,
-          style: { backgroundColor: "#007bff", color: "#fff" }, // Blue theme
         });
-        setFilteredData([]); // Clear the table
+        setFilteredData([]);
         return;
       }
 
-      // Map and extract properties from locationPropertyDTOs
       const status = location.locationPropertyDTOs.find(
         (prop) => prop.propertyName === "Status"
-      )?.propertyValue || "--"; // Correctly extract Status
+      )?.propertyValue || "--";
 
       const height = location.locationPropertyDTOs.find(
         (prop) => prop.propertyName === "Height"
@@ -157,19 +188,9 @@ const InventoryHistory = () => {
         (prop) => prop.propertyName === "Length"
       )?.propertyValue || "--";
 
-      const mappedLocation = {
-        ...location,
-        status, // Map the extracted Status
-        height,
-        width,
-        length,
-      };
-
-      setFilteredData([mappedLocation]); // Set the filtered data with the fetched location
+      setFilteredData([{ ...location, status, height, width, length }]);
     } catch (error) {
       console.error("Error fetching location:", error);
-
-      // Show failure notification
       toast.error(getApiErrorMessage(error, "Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
@@ -178,288 +199,190 @@ const InventoryHistory = () => {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-        
       });
-
-      setFilteredData([]); // Clear the table on error
+      setFilteredData([]);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
-  const handleDelete = (locationId) => {
-    setSavedData((prev) => prev.filter((item) => item.locationId !== locationId));
-    setFilteredData((prev) => prev.filter((item) => item.locationId !== locationId));
-  };
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px",}}>
-        {isAdmin && (
-        <div style={{backgroundColor:"white", padding:"20px", borderBottom:"2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
-        <SectionTitle 
-          style={{ 
-            fontSize: "30px", 
-            marginBottom: "20px",
-            width: "100%",
-            textAlign: "center", 
-            borderBottom: "2px solid #ccc", 
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", 
-            flex: "1",
-            position: "relative"
-          }}
-        >
-          Tạo mới vị trí lưu trữ
-          <button 
-            onClick={() => setCreateSectionHidden(!isCreateSectionHidden)} 
-            style={{ 
-              position: "absolute", 
-              right: "10px", 
-              top: "50%", 
-              transform: "translateY(-50%)", 
-              background: "none", 
-              border: "none", 
-              cursor: "pointer", 
-              fontSize: "16px", 
-              color: "#007bff", 
-              transition: "color 0.3s ease, transform 0.3s ease", 
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#0056b3"} 
-            onMouseLeave={(e) => e.target.style.color = "#007bff"} 
+    <div style={{ padding: '0 0 20px' }}>
+      {isAdmin && (
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <SectionTitle className={styles.cardTitle}>Tạo mới vị trí lưu trữ</SectionTitle>
+          <button
+            onClick={() => setCreateSectionHidden(!isCreateSectionHidden)}
+            className={styles.toggleButton}
           >
             {isCreateSectionHidden ? "Hiện" : "Ẩn"}
           </button>
-        </SectionTitle>
-        
         </div>
         {!isCreateSectionHidden && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginLeft: "25px" }}>
-              <FormGroup >
-                <Label>Tên thiết bị:</Label>
+            <div className={styles.fieldGrid}>
+              <div className={styles.field}>
+                <Label required>Tên thiết bị:</Label>
+                <input
+                  type="text"
+                  name="equipmentName"
+                  value={formData.equipmentName}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+                {fieldErrors.equipmentName && <div style={errorTextStyle}>{fieldErrors.equipmentName}</div>}
+              </div>
+
+              <div className={styles.field}>
+                <Label required>Mã vị trí:</Label>
+                <input
+                  type="text"
+                  name="locationId"
+                  value={formData.locationId}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+                {fieldErrors.locationId && <div style={errorTextStyle}>{fieldErrors.locationId}</div>}
+              </div>
+
+              <div className={styles.field}>
+                <Label>Mô tả:</Label>
+                <input
+                  type="text"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <Label required>Kho hàng:</Label>
                 <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="equipmentName"
-                    value={formData.equipmentName}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-50px" }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup>
-                <Label>Mã vị trí:</Label>
-                <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="locationId"
-                    value={formData.locationId}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-70px" }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup>
-                <Label style={{marginRight:"-20px"}}>Mô tả:</Label>
-                <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="Status"
-                    value={formData.Status}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup>
-                <Label>Kho hàng:</Label>
-                <SelectContainer>
-                  <select 
-                    name="warehouseName"
-                    value={formData.warehouseName} 
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-50px" }}
+                  <Select
+                    value={formData.warehouseName}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, warehouseName: e.target.value }))}
+                    placeholder="Chọn kho hàng"
                   >
-                    <option value="Kho thành phẩm">Kho thành phẩm</option>
-                    <option value="Kho bán thành phẩm">Kho bán thành phẩm</option>
-                    <option value="Kho bao bì">Kho bao bì</option>
-                    <option value="Kho nguyên vật liệu">Kho nguyên vật liệu</option>
-                    <option value="Kho vật tư">Kho vật tư</option>
-                  </select>
+                    {warehouseOptions.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </Select>
                 </SelectContainer>
-              </FormGroup>
-              <FormGroup>
+                {fieldErrors.warehouseName && <div style={errorTextStyle}>{fieldErrors.warehouseName}</div>}
+              </div>
+
+              <div className={styles.field}>
                 <Label>Khu vực:</Label>
-                <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="warehouseId"
-                    value={formData.warehouseId}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-70px" }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup>
-                <Label style={{marginRight:"-20px"}}>Kích thước:</Label>
-                <SelectContainer style={{ position: "relative" }}>
-                  <input
-                    type="text"
-                    name="dimensions"
-                    value={formData.dimensions || ""}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px 30px 5px 5px", border: "1px solid #ccc", marginLeft: "-30px" }}
-                  />
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: "40px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "#888",
-                     
-                    }}
-                  >
-                    m
-                  </span>
-                </SelectContainer>
-              </FormGroup>
-              
+                <input
+                  type="text"
+                  name="warehouseId"
+                  value={formData.warehouseId}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
+                <Label>Kích thước (m):</Label>
+                <input
+                  type="text"
+                  name="dimensions"
+                  placeholder="Dài x Rộng x Cao"
+                  value={formData.dimensions}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+              </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
               <ActionButton
-                onClick={handleSave} 
-                disabled={!formData.locationId} 
-                style={{ 
-                  marginTop: "-10px",
-                  padding: "10px 20px", 
-                  width: "240px", 
-                  backgroundColor: formData.locationId ? "#007bff" : "#ccc", 
-                  cursor: formData.locationId ? "pointer" : "not-allowed",
-                }}
+                onClick={handleSave}
+                style={{ width: "240px", padding: "14px", fontSize: "15px" }}
               >
                 Tạo mới vị trí
               </ActionButton>
             </div>
           </div>
         )}
-        </div>
-        )}
+      </div>
+      )}
 
-      {/* Below Section */}
-        <div style={{backgroundColor:"white", padding:"20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
-        <SectionTitle 
-          style={{ 
-            fontSize: "30px", 
-            marginBottom: "20px",
-            width: "100%",          
-            textAlign: "center", 
-            borderBottom: "2px solid #ccc",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", 
-            flex: "1",
-            position: "relative"
-          }}
-        >
-          Tìm kiếm vị trí lưu trữ
-          <button 
-            onClick={() => setSearchSectionHidden(!isSearchSectionHidden)} 
-            style={{ 
-              position: "absolute", 
-              right: "10px", 
-              top: "50%", 
-              transform: "translateY(-50%)", 
-              background: "none", 
-              border: "none", 
-              cursor: "pointer", 
-              fontSize: "16px", 
-              color: "#007bff", 
-              transition: "color 0.3s ease, transform 0.3s ease", 
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#0056b3"} 
-            onMouseLeave={(e) => e.target.style.color = "#007bff"} 
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <SectionTitle className={styles.cardTitle}>Tìm kiếm vị trí lưu trữ</SectionTitle>
+          <button
+            onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
+            className={styles.toggleButton}
           >
             {isSearchSectionHidden ? "Hiện" : "Ẩn"}
           </button>
-        </SectionTitle>
         </div>
         {!isSearchSectionHidden && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px", marginLeft: "20px", marginRight: "20px" }}>
-              <Label style={{ width: "110px", fontWeight: "bold" }}>Mã vị trí:</Label>
-              <input 
-                type="text" 
-                value={searchCode} 
-                onChange={(e) => setSearchCode(e.target.value)} 
-                placeholder="Tìm kiếm theo Mã vị trí" 
-                style={{ flex: 1, padding: "8px", border: "1px solid #ccc", borderRadius: "4px", width: "calc(100% - 200px)",borderBottom: "2px solid #ccc" }} 
+            <div className={styles.searchBar}>
+              <Label style={{ width: "120px", fontWeight: "bold" }}>Mã vị trí:</Label>
+              <input
+                type="text"
+                value={searchCode}
+                onChange={(e) => setSearchCode(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Tìm kiếm theo Mã vị trí"
+                className={styles.input}
+                style={{ flex: 1 }}
               />
-              <ActionButton 
-                onClick={handleSearch} 
-                style={{ padding: "8px 20px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", width: "130px", marginTop: "0px" }}
-                disabled={isLoading} // Disable button while loading
+              <ActionButton
+                onClick={handleSearch}
+                disabled={isLoading}
+                style={{ width: "130px", padding: "10px", fontSize: "14px" }}
               >
-                {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"} {/* Show loading text */}
+                {isLoading ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
+              <Tag variant="accent">{filteredData.length} vị trí</Tag>
             </div>
 
-            <div 
-              style={{ 
-                position: "relative", 
-                overflowY: "auto", 
-                maxHeight: "300px", 
-                border: "1px solid #ccc",
-                marginLeft: "20px",
-                marginRight: "20px", 
-              }}
-              onWheel={(e) => {
-                e.stopPropagation(); 
-                const container = e.currentTarget;
-                container.scrollTop += e.deltaY;
-              }}
-            >
-              {isLoading ? ( // Show loading spinner while loading
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                  <ClipLoader size={50} color="#007bff" />
+            <div className={styles.tableWrapper}>
+              {isLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
+                  <ClipLoader size={40} color="#0066CC" />
                 </div>
+              ) : filteredData.length === 0 ? (
+                <div className={styles.emptyState}>Không tìm thấy vị trí phù hợp.</div>
               ) : (
-                <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
+                <Table style={{ minWidth: '1000px' }}>
                   <thead>
                     <tr>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>STT</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tên thiết bị</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Mã vị trí</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Mô tả</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kho hàng</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Khu vực</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Kích thước</th>
+                      <TableHeader style={{ width: "48px" }}>STT</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>Tên thiết bị</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>Mã vị trí</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>Mô tả</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>Kho hàng</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>Khu vực</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>Kích thước</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
-                    {(searchCode ? filteredData : savedData).map((item, index) => (
-                      <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.equipmentName}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.locationId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.status}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouseName}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.warehouseId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>
-                          {`${item.width || "--"}x${item.length || "--"}x${item.height || "--"}(m)`}
-                        </td>
+                    {filteredData.map((item, index) => (
+                      <tr key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item.equipmentName}</TableCell>
+                        <TableCell>{item.locationId}</TableCell>
+                        <TableCell>{item.status}</TableCell>
+                        <TableCell>{item.warehouseName}</TableCell>
+                        <TableCell>{item.warehouseId}</TableCell>
+                        <TableCell>{`${item.width || "--"} x ${item.length || "--"} x ${item.height || "--"} (m)`}</TableCell>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </Table>
               )}
             </div>
           </div>
         )}
-        </div>
+      </div>
     </div>
   );
 };
-<style>
-</style>
-export default InventoryHistory;
 
+export default StoreLocation;

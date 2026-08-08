@@ -139,6 +139,24 @@ Endpoint này chỉ thu hồi **refresh token**. Access token đã phát hành t
 
 ---
 
+### 3.5. 🔧 Yêu cầu bổ sung cho Backend — thêm claim `employeeId` vào JWT (đang chờ triển khai)
+
+**Bối cảnh**: trang "Quản lý tài khoản" ở Frontend hiện chỉ hiển thị được `userName` + `roles` cho người dùng đang đăng nhập, vì JWT hiện tại chỉ có claim `role` (mục 5.2 bên dưới). Nhiều tài khoản đã được liên kết với 1 `employeeId` lúc tạo (mục 3.4), nên có thể hiển thị thêm thông tin nhân viên (họ tên, email, SĐT, ngày sinh...) bằng cách gọi `GET Employee/GetEmployeeById/{employeeId}` (API đã có sẵn) — nhưng Frontend cần biết `employeeId` của phiên đăng nhập hiện tại trước.
+
+**Thay đổi cần thực hiện ở Backend**: khi sinh JWT ở `Auth/Login` và `Auth/Refresh` (chỗ đang thêm claim `role`), thêm 1 claim mới:
+
+```
+new Claim("employeeId", <employeeId của user đó>)
+```
+
+- Chỉ thêm claim này nếu tài khoản có liên kết `employeeId` (tài khoản không liên kết thì bỏ qua, không thêm claim rỗng).
+- Dùng đúng key ngắn `"employeeId"` (không cần theo dạng URI schema như claim `role`) — vì đây là claim tuỳ biến, không phải claim chuẩn của `ClaimTypes`, nên `JwtSecurityTokenHandler` sẽ giữ nguyên key khi serialize, Frontend decode thẳng `payload.employeeId` không cần đổi cách decode.
+- Không cần thêm field mới vào response body của `Login`/`Refresh` — chỉ cần claim trong JWT là đủ, vì Frontend đã có sẵn cơ chế decode claim từ `accessToken` (xem `decodeRoles` mục 5.2, sẽ thêm hàm `decodeEmployeeId` tương tự).
+
+**Frontend sẽ tự cập nhật** (`authApi.js`, `authSlice.js`, `Account.jsx`) sau khi Backend xác nhận đã deploy claim này — không cần Frontend chờ thêm API nào khác.
+
+---
+
 ## 4. Cách gắn token vào các API nghiệp vụ khác
 
 Mọi endpoint còn lại (Employee, Warehouse, Material, InventoryReceipt, ...) đều yêu cầu header:

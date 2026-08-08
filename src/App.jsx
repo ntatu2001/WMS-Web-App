@@ -21,9 +21,22 @@ import Logout from "./features/Setting/presentation/Logout/Logout.jsx";
 import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
 import FeatureUnavailable from "./features/Setting/presentation/FeatureUnavailable/FeatureUnavailable.jsx";
 import UserManagement from "./features/Setting/presentation/UserManagement/UserManagement.jsx";
+import Account from "./features/Setting/presentation/Account/Account.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
-import { AiOutlineTeam, AiOutlineClose } from "react-icons/ai"; // Import appropriate icons
+
+// Backdrop mờ, căn giữa cho các trang con của "Cài đặt" chưa tự lo vị trí hiển thị (Logout, FeatureUnavailable)
+const centeredPanelBackdropStyle = {
+  position: "fixed",
+  inset: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "24px",
+  boxSizing: "border-box",
+  backgroundColor: "rgba(10, 24, 48, 0.45)",
+  zIndex: 5,
+};
 
 function App() {
   const isLoading = useSelector((state) => state.app.isLoading);
@@ -33,13 +46,11 @@ function App() {
     mainContent: getDefaultRouteForRoles(roles),
     sidebarContent: null,
   }));
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // State to control sidebar visibility
-  const [activeContent, setActiveContent] = useState(null); // State to track active content
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (location.pathname !== "/setting") {
+    if (!location.pathname.startsWith("/setting")) {
       setLastAccessedRoute((prevRoute) => ({
         ...prevRoute,
         mainContent: location.pathname,
@@ -47,20 +58,6 @@ function App() {
       }));
     }
   }, [location]);
-
-  const renderActiveContent = () => {
-    if (activeContent === "logout") {
-      return (
-        <Logout
-          onCancel={() => {
-            setActiveContent(null); // Reset active content
-            setIsSidebarVisible(true); // Ensure the sidebar remains visible
-          }}
-        />
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="appContainer">
@@ -98,207 +95,66 @@ function App() {
             <Route
               path="/setting/*"
               element={
-                <div style={{ display: "flex", position: "relative" }}>
-                  <div style={{ flex: 1, marginLeft: "0", height: "100%", overflow: "hidden", position: "relative" }}>
-                    {lastAccessedRoute.sidebarContent === "/dashboard" ? (
-                      <Dashboard />
-                    ) : lastAccessedRoute.sidebarContent === "/storage" ? (
-                      <Storage />
-                    ) : lastAccessedRoute.sidebarContent === "/goodreceipt" ? (
-                      <GoodReceipt />
-                    ) : lastAccessedRoute.sidebarContent === "/goodissue" ? (
-                      <GoodIssue />
-                    ) : lastAccessedRoute.sidebarContent === "/inventory" ? (
-                      <LotAdjustment />
-                    ) : lastAccessedRoute.sidebarContent === "/history" ? (
-                      <History />
-                    ) : lastAccessedRoute.sidebarContent === "/catalogue" ? (
-                      <Catalogue />
-                    ) : null}
-                    <div
-                      className="settingContainer"
-                      style={{
-                        position: "fixed",
-                        top: "0",
-                        right: "0",
-                        width: "calc(100vw * 0.8952)",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.2)",
-                        zIndex: 1,
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent event propagation
-                        setIsSidebarVisible(true); // Ensure the dropdownMenu is always visible
-                        navigate(lastAccessedRoute.mainContent); // Navigate back to the previously accessed path
-                      }}
-                    >
-                      {isSidebarVisible && (
+                <div style={{ position: "relative", height: "100%" }}>
+                  {lastAccessedRoute.sidebarContent === "/dashboard" ? (
+                    <Dashboard />
+                  ) : lastAccessedRoute.sidebarContent === "/storage" ? (
+                    <Storage />
+                  ) : lastAccessedRoute.sidebarContent === "/goodreceipt" ? (
+                    <GoodReceipt />
+                  ) : lastAccessedRoute.sidebarContent === "/goodissue" ? (
+                    <GoodIssue />
+                  ) : lastAccessedRoute.sidebarContent === "/inventory" ? (
+                    <LotAdjustment />
+                  ) : lastAccessedRoute.sidebarContent === "/history" ? (
+                    <History />
+                  ) : lastAccessedRoute.sidebarContent === "/catalogue" ? (
+                    <Catalogue />
+                  ) : null}
+
+                  <Routes>
+                    <Route path="/" element={<Setting />} />
+                    <Route
+                      path="account"
+                      element={
+                        <Account onCancel={() => navigate(lastAccessedRoute.mainContent)} />
+                      }
+                    />
+                    <Route
+                      path="logout"
+                      element={
                         <div
-                          className="dropdownMenu"
-                          style={{
-                            position: "fixed",
-                            top: "546.4px",
-                            left: "200px", // Adjusted to match the width of the sidebarSetting
-                            width: "200px",
-                            backgroundColor: "#002B49", // Match the background color as shown in the image
-                            boxShadow: "0 4px 8px rgb(0, 31, 47)",
-                            zIndex: 2,
-                          }}
+                          style={centeredPanelBackdropStyle}
+                          onClick={() => navigate(lastAccessedRoute.mainContent)}
                         >
-                          {/* Dropdown menu content */}
-                          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                            {/* Tài khoản/Cập nhật tạm ẩn — xem FeatureUnavailable.jsx để biết lý do */}
-                            {roles.includes("Admin") && (
-                              <li
-                                className="UserManagementSetting"
-                                style={{
-                                  height: "60px",
-                                  width: "200px",
-                                  padding: "16px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "flex-start",
-                                  cursor: "pointer",
-                                  boxSizing: "border-box",
-                                  fontSize: "20px",
-                                  fontWeight: "700",
-                                  color: "#FFFFFF",
-                                  backgroundColor: "#002B49",
-                                  transition: "all 0.3s ease",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#FFFFFF";
-                                  e.target.style.color = "#000000";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "#002B49";
-                                  e.target.style.color = "#FFFFFF";
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate("/setting/users");
-                                }}
-                              >
-                                <AiOutlineTeam style={{ marginRight: "8px", fontSize: "24px" }} /> Quản lý tài khoản
-                              </li>
-                            )}
-                            <li
-                              style={{
-                                height: "60px", // Total height including padding
-                                width: "200px", // Width to accommodate text and padding
-                                padding: "16px", // Padding around the text
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "flex-start", // Align text to the left
-                                cursor: "pointer",
-                                boxSizing: "border-box", // Ensure padding is included in the dimensions
-                                fontSize: "20px", // Font size for the text
-                                fontWeight: "700",
-                                color: activeContent === "logout" ? "#002B49" : "#FFFFFF", // Default white text color
-                                backgroundColor: activeContent === "logout" ? "#FFFFFF" : "#002B49", // Default background color
-                                transition: "all 0.3s ease", // Smooth transition for hover effects
-                              }}
-                              onMouseEnter={(e) => {
-                                if (activeContent !== "logout") {
-                                  e.target.style.backgroundColor = "#FFFFFF"; // Change background to white
-                                  e.target.style.color = "#FF4D4F"; // Change text and icon to red
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (activeContent !== "logout") {
-                                  e.target.style.backgroundColor = "#002B49"; // Revert background to default
-                                  e.target.style.color = "#FFFFFF"; // Revert text and icon to default
-                                }
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent event propagation
-                                setActiveContent("logout"); // Set active content to "logout"
-                              }}
-                            >
-                              <AiOutlineClose
-                                style={{
-                                  marginRight: "8px",
-                                  fontSize: "24px",
-                                  color: "inherit", // Inherit color from parent element
-                                }}
-                              /> Đăng xuất
-                            </li>
-                          </ul>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <Logout />
+                          </div>
                         </div>
-                      )}
-                      {activeContent && (
+                      }
+                    />
+                    <Route
+                      path="update"
+                      element={
                         <div
-                          className="modalContent"
-                          style={{
-                            position: "fixed",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            borderRadius: "8px",
-                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                            zIndex: 4, // Ensure it appears above settingContainer
-                            backgroundColor: "#fff",
-                            padding: "20px",
-                          }}
-                          onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from propagating
+                          style={centeredPanelBackdropStyle}
+                          onClick={() => navigate(lastAccessedRoute.mainContent)}
                         >
-                          {renderActiveContent()}
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <FeatureUnavailable />
+                          </div>
                         </div>
-                      )}
-                      <div
-                        onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
-                      >
-                        <Routes>
-                          <Route path="/" element={<Setting onCancel={() => setIsSidebarVisible(true)} />} />
-                          <Route path="account" element={<FeatureUnavailable />} />
-                          <Route path="logout" element={<Logout />} />
-                          <Route
-                            path="update"
-                            element={
-                              <div
-                                className="modalContent"
-                                style={{
-                                  position: "relative",
-                                  margin: "auto",
-                                  borderRadius: "8px",
-                                  width: "50%",
-                                  zIndex: 2,
-                                }}
-                                onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
-                              >
-                                <FeatureUnavailable />
-                              </div>
-                            }
-                          />
-                          <Route
-                            path="users"
-                            element={
-                              <RequireRole roles={["Admin"]}>
-                                <div
-                                  className="modalContent"
-                                  style={{
-                                    position: "relative",
-                                    margin: "auto",
-                                    borderRadius: "8px",
-                                    width: "50%",
-                                    zIndex: 2,
-                                  }}
-                                  onClick={(e) => e.stopPropagation()} // Prevent clicks inside modalContent from triggering settingContainer's onClick
-                                >
-                                  <UserManagement
-                                    onCancel={() => {
-                                      setIsSidebarVisible(true); // Ensure the sidebar remains visible
-                                      navigate("/setting"); // Navigate back to the setting page
-                                    }}
-                                  />
-                                </div>
-                              </RequireRole>
-                            }
-                          />
-                        </Routes>
-                      </div>
-                    </div>
-                  </div>
+                      }
+                    />
+                    <Route
+                      path="users"
+                      element={
+                        <RequireRole roles={["Admin"]}>
+                          <UserManagement onCancel={() => navigate(lastAccessedRoute.mainContent)} />
+                        </RequireRole>
+                      }
+                    />
+                  </Routes>
                 </div>
               }
             />

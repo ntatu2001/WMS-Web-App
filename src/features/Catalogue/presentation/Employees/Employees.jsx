@@ -1,52 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
-import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
+import Select from '../../../../common/components/Selection/Select.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
+import Table from '../../../../common/components/Table/Table.jsx';
+import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
+import TableCell from '../../../../common/components/Table/TableCell.jsx';
+import Tag from '../../../../common/components/Tag/Tag.jsx';
 import employeeApi from '../../../../api/employeeApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
-const InventoryHistory = () => {
+import styles from './Employees.module.scss';
+
+const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+
+const employeeClassOptions = [
+  { value: 'QLK', label: 'Quản lý kho' },
+  { value: 'TK', label: 'Thủ kho' },
+  { value: 'NVK', label: 'Nhân viên vận chuyển' },
+];
+const employeeClassLabels = employeeClassOptions.reduce((acc, opt) => ({ ...acc, [opt.value]: opt.label }), {});
+
+const emptyFormData = {
+  employeeName: "",
+  employeeId: "",
+  employeeClassId: "",
+  DateOfBirth: "",
+  Email: "",
+  startTime: "",
+  endTime: "",
+};
+
+const mapEmployee = (employee) => {
+  const dateOfBirth = employee.employeePropertyDTOs?.find(
+    (prop) => prop.propertyName === "DateOfBirth"
+  )?.propertyValue || "--";
+
+  const email = employee.employeePropertyDTOs?.find(
+    (prop) => prop.propertyName === "Email"
+  )?.propertyValue || "--";
+
+  const dailyWorkingTime = employee.employeePropertyDTOs?.find(
+    (prop) => prop.propertyName === "DailyWorkingTime"
+  )?.propertyValue || "--";
+
+  return {
+    ...employee,
+    employeeClassId: employee.employeeCLassId ?? employee.employeeClassId, // ⚠️ EmployeeDTO.employeeCLassId (chữ "L" hoa) theo API Guide
+    dateOfBirth,
+    email,
+    dailyWorkingTime,
+  };
+};
+
+const Employees = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
-  const [savedData, setSavedData] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
-  const [formData, setFormData] = useState({
-    employeeName: "",
-    employeeId: "",
-    employeeClassId: "--",
-    DateOfBirth: "",
-    Email: "",
-    startTime: "",
-    endTime: "",
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState(emptyFormData);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await employeeApi.getAllEmployees();
+        const mapped = (response || []).map(mapEmployee);
+        setEmployees(mapped);
+        setFilteredData(mapped);
+      } catch (error) {
+        console.error("Error fetching employees:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (hasSubmitted) {
+      setFieldErrors({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    const nextFieldErrors = {};
+    if (!formData.employeeName.trim()) nextFieldErrors.employeeName = 'Vui lòng nhập tên nhân viên';
+    if (!formData.employeeId.trim()) nextFieldErrors.employeeId = 'Vui lòng nhập mã nhân viên';
+    if (!formData.employeeClassId) nextFieldErrors.employeeClassId = 'Vui lòng chọn chức vụ';
+    setFieldErrors(nextFieldErrors);
+    return Object.keys(nextFieldErrors).length === 0;
+  };
+
+  const applyFilter = (list, term) => {
+    const normalized = term.trim().toLowerCase();
+    if (!normalized) return list;
+    return list.filter((item) => item.employeeId?.toLowerCase().includes(normalized));
+  };
+
   const handleSave = async () => {
-    if (!formData.employeeId) {
-      return; // Prevent saving if employeeId is empty
+    setHasSubmitted(true);
+    if (!validateForm()) {
+      toast.error("Vui lòng kiểm tra các trường còn thiếu thông tin!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
     }
 
-    // Set default value for employeeClassId if not selected
-    const employeeClassId = formData.employeeClassId === "--" ? "QLK" : formData.employeeClassId;
-
-    // Prepare the newEmployee object for the API
     const newEmployee = {
       employeeName: formData.employeeName,
       employeeId: formData.employeeId,
-      employeeClassId: employeeClassId, // Use the default or selected value
+      employeeClassId: formData.employeeClassId,
       properties: [
         {
           propertyName: "DateOfBirth",
@@ -67,12 +149,8 @@ const InventoryHistory = () => {
     };
 
     try {
-      console.log("New Employee Data to POST:", newEmployee); // Log the data being sent to the API
-
-      // POST the newEmployee data to the API
       const response = await employeeApi.createEmployee(newEmployee);
       if (response) {
-        // Show success notification
         toast.success("Nhân viên đã được tạo thành công!", {
           position: "top-right",
           autoClose: 3000,
@@ -83,21 +161,20 @@ const InventoryHistory = () => {
           progress: undefined,
         });
 
-        // Reset form data
-        setFormData({
-          employeeName: "",
-          employeeId: "",
-          employeeClassId: "--",
-          DateOfBirth: "",
-          Email: "",
-          startTime: "",
-          endTime: "",
+        const mappedNewEmployee = mapEmployee({
+          ...newEmployee,
+          employeePropertyDTOs: newEmployee.properties,
         });
+        const updatedEmployees = [...employees, mappedNewEmployee];
+        setEmployees(updatedEmployees);
+        setFilteredData(applyFilter(updatedEmployees, searchCode));
+
+        setFormData(emptyFormData);
+        setFieldErrors({});
+        setHasSubmitted(false);
       }
     } catch (error) {
       console.error("Error creating new employee:", error);
-
-      // Show failure notification
       toast.error(getApiErrorMessage(error, "Tạo nhân viên thất bại. Vui lòng thử lại!"), {
         position: "top-right",
         autoClose: 3000,
@@ -110,349 +187,195 @@ const InventoryHistory = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchCode.trim()) {
-      setFilteredData([]); // Clear the table if the input is empty
-      return;
-    }
-    setIsLoading(true); // Start loading
-    try {
-      // Fetch employee data from the API
-      const response = await employeeApi.getAllEmployees();
-      const employees = response || [];
-
-      if (employees.length === 0) {
-        // Show notification if no data is returned
-        toast.info("Không tìm thấy dữ liệu nhân viên!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        setFilteredData([]); // Clear the table
-        return;
-      }
-
-      // Map and extract properties from employeePropertyDTOs
-      const mappedEmployees = employees.map((employee) => {
-        const dateOfBirth = employee.employeePropertyDTOs.find(
-          (prop) => prop.propertyName === "DateOfBirth"
-        )?.propertyValue || "--";
-
-        const email = employee.employeePropertyDTOs.find(
-          (prop) => prop.propertyName === "Email"
-        )?.propertyValue || "--";
-
-        const dailyWorkingTime = employee.employeePropertyDTOs.find(
-          (prop) => prop.propertyName === "DailyWorkingTime"
-        )?.propertyValue || "--";
-
-        return {
-          ...employee,
-          employeeClassId: employee.employeeCLassId, // ⚠️ EmployeeDTO.employeeCLassId (chữ "L" hoa) theo API Guide
-          dateOfBirth,
-          email,
-          dailyWorkingTime,
-        };
-      });
-
-      // Filter employees based on the search code
-      const result = mappedEmployees.filter((item) =>
-        item.employeeId.includes(searchCode)
-      );
-
-      if (result.length === 0) {
-        // Show notification if no matching data is found
-        toast.error("Không tìm thấy nhân viên phù hợp với mã tìm kiếm!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-      }
-
-      setFilteredData(result);
-    } catch (error) {
-      console.error("Error fetching employees:", error);
-      setFilteredData([]); // Clear the table on error
-    } finally {
-      setIsLoading(false); // Stop loading
-    }
-  };
-
-  const handleDelete = (employeeId) => {
-    setSavedData((prev) => prev.filter((item) => item.employeeId !== employeeId));
-    setFilteredData((prev) => prev.filter((item) => item.employeeId !== employeeId));
+  const handleSearch = () => {
+    setFilteredData(applyFilter(employees, searchCode));
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px",}}>
-        {isAdmin && (
-        <div style={{backgroundColor:"white", padding:"20px", borderBottom:"2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
-        <SectionTitle
-          style={{ 
-            fontSize: "30px", 
-            marginBottom: "20px",
-            width: "100%",
-            textAlign: "center", 
-            borderBottom: "2px solid #ccc", 
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", 
-            flex: "1",
-            position: "relative"
-          }}
-        >
-          Tạo mới nhân viên
-          <button 
-            onClick={() => setCreateSectionHidden(!isCreateSectionHidden)} 
-            style={{ 
-              position: "absolute", 
-              right: "10px", 
-              top: "50%", 
-              transform: "translateY(-50%)", 
-              background: "none", 
-              border: "none", 
-              cursor: "pointer", 
-              fontSize: "16px", 
-              color: "#007bff", 
-              transition: "color 0.3s ease, transform 0.3s ease", 
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#0056b3"} 
-            onMouseLeave={(e) => e.target.style.color = "#007bff"} 
+    <div style={{ padding: '0 0 20px' }}>
+      {isAdmin && (
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <SectionTitle className={styles.cardTitle}>Tạo mới nhân viên</SectionTitle>
+          <button
+            onClick={() => setCreateSectionHidden(!isCreateSectionHidden)}
+            className={styles.toggleButton}
           >
             {isCreateSectionHidden ? "Hiện" : "Ẩn"}
           </button>
-        </SectionTitle>
-        
         </div>
         {!isCreateSectionHidden && (
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px",marginLeft: "25px" }}>
-              <FormGroup>
-                <Label>Tên nhân viên:</Label>
+            <div className={styles.fieldGrid}>
+              <div className={styles.field}>
+                <Label required>Tên nhân viên:</Label>
+                <input
+                  type="text"
+                  name="employeeName"
+                  value={formData.employeeName}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+                {fieldErrors.employeeName && <div style={errorTextStyle}>{fieldErrors.employeeName}</div>}
+              </div>
+
+              <div className={styles.field}>
+                <Label required>Mã nhân viên:</Label>
+                <input
+                  type="text"
+                  name="employeeId"
+                  value={formData.employeeId}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+                {fieldErrors.employeeId && <div style={errorTextStyle}>{fieldErrors.employeeId}</div>}
+              </div>
+
+              <div className={styles.field}>
+                <Label required>Chức vụ:</Label>
                 <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="employeeName"
-                    value={formData.employeeName}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-20px" }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup style={{ marginLeft: "-20px" }}>
-                <Label>Mã nhân viên:</Label>
-                <SelectContainer>
-                  <input 
-                    type="text" 
-                    name="employeeId"
-                    value={formData.employeeId}
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-45px"  }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup>
-                <Label>Chức vụ:</Label>
-                <SelectContainer>
-                  <select 
-                    name="employeeClassId"
-                    value={formData.employeeClassId} 
-                    onChange={handleInputChange}
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-30px" }}
+                  <Select
+                    value={formData.employeeClassId}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, employeeClassId: e.target.value }))}
+                    placeholder="Chọn chức vụ"
                   >
-                    <option value="QLK">Quản lý kho</option>
-                    <option value="TK">Thủ kho</option>
-                    <option value="NVK">Nhân viên vận chuyển</option>
-                  </select>
+                    {employeeClassOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </Select>
                 </SelectContainer>
-              </FormGroup>
-              <FormGroup>
+                {fieldErrors.employeeClassId && <div style={errorTextStyle}>{fieldErrors.employeeClassId}</div>}
+              </div>
+
+              <div className={styles.field}>
                 <Label>Ngày sinh:</Label>
-                <SelectContainer>
-                  <input 
-                    type="date" 
-                    name="DateOfBirth" 
-                    value={formData.DateOfBirth} 
-                    onChange={handleInputChange} 
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-20px"  }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup style={{ marginLeft: "-20px" }}>
+                <input
+                  type="date"
+                  name="DateOfBirth"
+                  value={formData.DateOfBirth}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
                 <Label>Email:</Label>
-                <SelectContainer>
-                  <input 
-                    type="Email" 
-                    name="Email" 
-                    value={formData.Email} 
-                    onChange={handleInputChange} 
-                    style={{ width: "100%", padding: "5px", border: "1px solid #ccc",marginLeft: "-45px"  }} 
-                  />
-                </SelectContainer>
-              </FormGroup>
-              <FormGroup style={{ marginLeft: "-50px" }}>
+                <input
+                  type="email"
+                  name="Email"
+                  value={formData.Email}
+                  onChange={handleInputChange}
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.field}>
                 <Label>Thời gian làm việc:</Label>
-                <SelectContainer>
-                  <div style={{ display: "flex", gap: "10px",marginRight: "30px" }}>
-                    <input 
-                      type="time" 
-                      name="startTime" 
-                      value={formData.startTime} 
-                      onChange={handleInputChange} 
-                      style={{ width: "100%", padding: "5px", border: "1px solid #ccc", marginLeft: "-20px" }} 
-                    />
-                    <span style={{ alignSelf: "center" }}>-</span>
-                    <input 
-                      type="time" 
-                      name="endTime" 
-                      value={formData.endTime} 
-                      onChange={handleInputChange} 
-                      style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }} 
-                    />
-                  </div>
-                </SelectContainer>
-              </FormGroup>
-              
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={formData.startTime}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                  />
+                  <span>-</span>
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={formData.endTime}
+                    onChange={handleInputChange}
+                    className={styles.input}
+                  />
+                </div>
+              </div>
             </div>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "24px" }}>
               <ActionButton
-                onClick={handleSave} 
-                disabled={!formData.employeeId} 
-                style={{ 
-                  marginTop: "-10px",
-                  padding: "10px 20px", 
-                  width: "240px", 
-                  backgroundColor: formData.employeeId ? "#007bff" : "#ccc", 
-                  cursor: formData.employeeId ? "pointer" : "not-allowed",
-                }}
+                onClick={handleSave}
+                style={{ width: "240px", padding: "14px", fontSize: "15px" }}
               >
                 Tạo mới nhân viên
               </ActionButton>
             </div>
           </div>
         )}
-        </div>
-        )}
+      </div>
+      )}
 
-      {/* Below Section */}
-        <div style={{backgroundColor:"white", padding:"20px", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"}}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px" }}>
-        <SectionTitle 
-          style={{ 
-            fontSize: "30px", 
-            marginBottom: "20px",
-            width: "100%",          
-            textAlign: "center", 
-            borderBottom: "2px solid #ccc",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", 
-            flex: "1",
-            position: "relative"
-          }}
-        >
-          Tìm kiếm nhân viên
-          <button 
-            onClick={() => setSearchSectionHidden(!isSearchSectionHidden)} 
-            style={{ 
-              position: "absolute", 
-              right: "10px", 
-              top: "50%", 
-              transform: "translateY(-50%)", 
-              background: "none", 
-              border: "none", 
-              cursor: "pointer", 
-              fontSize: "16px", 
-              color: "#007bff", 
-              transition: "color 0.3s ease, transform 0.3s ease", 
-            }}
-            onMouseEnter={(e) => e.target.style.color = "#0056b3"} 
-            onMouseLeave={(e) => e.target.style.color = "#007bff"} 
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <SectionTitle className={styles.cardTitle}>Tìm kiếm nhân viên</SectionTitle>
+          <button
+            onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
+            className={styles.toggleButton}
           >
             {isSearchSectionHidden ? "Hiện" : "Ẩn"}
           </button>
-        </SectionTitle>
         </div>
         {!isSearchSectionHidden && (
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between", marginBottom: "20px", marginLeft: "20px", marginRight: "20px" }}>
-              <Label style={{ width: "110px", fontWeight: "bold" }}>Mã nhân viên:</Label>
-              <input 
-                type="text" 
-                value={searchCode} 
-                onChange={(e) => setSearchCode(e.target.value)} 
-                placeholder="Tìm kiếm theo Mã nhân viên" 
-                style={{ flex: 1, padding: "8px", border: "1px solid #ccc", borderRadius: "4px", width: "calc(100% - 200px)",borderBottom: "2px solid #ccc" }} 
+            <div className={styles.searchBar}>
+              <Label style={{ width: "120px", fontWeight: "bold" }}>Mã nhân viên:</Label>
+              <input
+                type="text"
+                value={searchCode}
+                onChange={(e) => setSearchCode(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Tìm kiếm theo Mã nhân viên"
+                className={styles.input}
+                style={{ flex: 1 }}
               />
-              <ActionButton 
-                onClick={handleSearch} 
-                style={{ padding: "8px 20px", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", width: "130px", marginTop: "0px" }}
-                disabled={isLoading} // Disable button while loading
+              <ActionButton
+                onClick={handleSearch}
+                style={{ width: "130px", padding: "10px", fontSize: "14px" }}
               >
-                {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
+                Tìm kiếm
               </ActionButton>
+              <Tag variant="accent">{filteredData.length} nhân viên</Tag>
             </div>
 
-            <div 
-              style={{ 
-                position: "relative", 
-                overflowY: "auto", 
-                maxHeight: "300px", 
-                border: "1px solid #ccc",
-                marginLeft: "20px",
-                marginRight: "20px", 
-              }}
-              onWheel={(e) => {
-                e.stopPropagation(); 
-                const container = e.currentTarget;
-                container.scrollTop += e.deltaY;
-              }}
-            >
+            <div className={styles.tableWrapper}>
               {isLoading ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                  <ClipLoader size={50} color="#007bff" />
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
+                  <ClipLoader size={40} color="#0066CC" />
                 </div>
+              ) : filteredData.length === 0 ? (
+                <div className={styles.emptyState}>Không tìm thấy nhân viên phù hợp.</div>
               ) : (
-                <table style={{ width: "100%", borderCollapse: "collapse", borderRight: "1px solid #ccc", borderLeft: "1px solid #ccc" }}>
+                <Table style={{ minWidth: '1000px' }}>
                   <thead>
                     <tr>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>STT</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Tên nhân viên</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Mã nhân viên</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Chức vụ</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Ngày sinh</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Email</th>
-                      <th style={{ borderBottom: "1px solid #ccc", padding: "8px", textAlign: "center" }}>Thời gian làm việc</th>
+                      <TableHeader style={{ width: "48px" }}>STT</TableHeader>
+                      <TableHeader style={{ width: "200px" }}>Tên nhân viên</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>Mã nhân viên</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>Chức vụ</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>Ngày sinh</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>Email</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>Thời gian làm việc</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
-                    {(searchCode ? filteredData : savedData).map((item, index) => (
-                      <tr key={index} style={{ borderBottom: "1px solid #ccc" }}>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{index + 1}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeName}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.employeeClassId}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.dateOfBirth}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.email}</td>
-                        <td style={{ padding: "8px", textAlign: "center" }}>{item.dailyWorkingTime}</td>
+                    {filteredData.map((item, index) => (
+                      <tr key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item.employeeName}</TableCell>
+                        <TableCell>{item.employeeId}</TableCell>
+                        <TableCell>{employeeClassLabels[item.employeeClassId] || item.employeeClassId}</TableCell>
+                        <TableCell>{item.dateOfBirth}</TableCell>
+                        <TableCell>{item.email}</TableCell>
+                        <TableCell>{item.dailyWorkingTime}</TableCell>
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </Table>
               )}
             </div>
           </div>
         )}
-        </div>
+      </div>
     </div>
   );
 };
-<style>
-</style>
-export default InventoryHistory;
 
+export default Employees;

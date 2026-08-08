@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaTrash, FaChevronDown } from 'react-icons/fa';
+import clsx from 'clsx';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
@@ -9,28 +10,31 @@ import Select from '../../../../common/components/Selection/Select.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer.jsx';
-import DropdownIcon from '../../../../common/components/Icon/DropdownIcon.jsx';
 import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
 import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
-import QRicon from '../../../../assets/QRicon.png';
-import TextNote from '../../../../common/components/Text/TextNote';
+import Tag from '../../../../common/components/Tag/Tag.jsx';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materialLotApi from '../../../../api/materiaLotApi.js';
-import { reasonData } from '../../../../app/mockData/reasonData.js';
+import { reasonData, reasonMapData } from '../../../../app/mockData/reasonData.js';
 import lotAdjustmentApi from '../../../../api/lotAdjustmentApi.js';
-import { reasonMapData } from '../../../../app/mockData/reasonData.js';
 import { adjustmentTypeMap, AdjustmentType } from '../../../../app/mockData/AdjustmentType.js';
+import { stockTakeStatusColor } from '../../../../app/mockData/StockTakeStatusData.js';
 import materialSubLotApi from '../../../../api/materialSubLotApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader} from 'react-spinners';
+import styles from './LotAdjustmentRequest.module.scss';
 
+const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+
+const getVariance = (existingQuantity, realQuantity) => (Number(realQuantity) || 0) - (Number(existingQuantity) || 0);
+const getVarianceStatus = (variance) => (variance === 0 ? 'Khớp' : variance < 0 ? 'Thiếu' : 'Dư');
 
 const RequestLotAdjustment = () => {
     const [selectedDate, setSelectedDate] = useState(null);
@@ -43,9 +47,10 @@ const RequestLotAdjustment = () => {
     const [wareHouses, setWareHouses] = useState([]);
     const [people, setPeople] = useState([]);
     const [lotNumbers, setLotNumbers] = useState([]);
-    const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+    const [isDetailsVisible, setIsDetailsVisible] = useState(true);
     const [error, setError] = useState('');
-    const [materialLotById, setMaterialLotById] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [hasSubmitted, setHasSubmitted] = useState(false);
     const [material, setMaterial] = useState(null);
     const [unit, setUnit] = useState(null);
     const [note, setNote] = useState(null);
@@ -62,7 +67,6 @@ const RequestLotAdjustment = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState(null);
 
-    console.log(realQuantities)
     useEffect(() => {
         const GetApi = async() => {
             setIsInitialLoading(true);
@@ -79,19 +83,19 @@ const RequestLotAdjustment = () => {
                 setIsInitialLoading(false);
             }
         };
-    
+
         GetApi();
       }, []);
 
     useEffect(() => {
         const getMaterialLotList = async() => {
             if (!selectedZone) return;
-            
+
             setIsLotLoading(true);
             try {
                 const materialLotList = await materialLotApi.GetMaterialLotsByWarehouseId(selectedZone);
                 const lotNumberList = await materialLotList.map(lotNumberList => lotNumberList.lotNumber);
-                
+
                 setLotNumbers(lotNumberList);
             } catch (error) {
                 console.error("Error fetching material lots:", error);
@@ -127,11 +131,9 @@ const RequestLotAdjustment = () => {
                     setUnit(unitByMaterialId)
                     setSubLots(materialSubLotsByLotNumber);
                     setMaterial(materialById);
-                    setMaterialLotById(result);
                 }
             } catch (error) {
                 console.error("Error fetching material lot by ID:", error);
-                setMaterialLotById(null);
                 toast.error("Không thể tải thông tin chi tiết lô vật tư");
             } finally {
                 setIsLotDetailsLoading(false);
@@ -158,7 +160,7 @@ const RequestLotAdjustment = () => {
         setDeleteIndex(index);
         setShowDeleteModal(true);
     };
-    
+
     // Confirm deletion
     const confirmDelete = () => {
         if (deleteIndex !== null) {
@@ -171,7 +173,7 @@ const RequestLotAdjustment = () => {
             setDeleteIndex(null);
         }
     };
-    
+
     // Cancel deletion
     const cancelDelete = () => {
         setShowDeleteModal(false);
@@ -182,12 +184,28 @@ const RequestLotAdjustment = () => {
         if (error && (selectedWarehouse || selectedZone || selectedLotNumber || selectedPerson || selectedDate || selectedReason || selectedLotAdjustmentType)) {
           setError('');
         }
+        if (hasSubmitted) {
+          setFieldErrors({});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [selectedWarehouse, selectedZone, selectedLotNumber, selectedPerson, selectedDate, selectedReason, selectedLotAdjustmentType]);
 
-      const createLotAdjustment = async () => {
+      const validateRequestForm = () => {
+        const nextFieldErrors = {};
+        if (!selectedWarehouse) nextFieldErrors.warehouse = 'Vui lòng chọn kho hàng';
+        if (!selectedZone) nextFieldErrors.zone = 'Vui lòng chọn mã kho hàng';
+        if (!selectedLotNumber) nextFieldErrors.lot = 'Vui lòng chọn lô kiểm kê';
+        if (!selectedLotAdjustmentType) nextFieldErrors.type = 'Vui lòng chọn loại kiểm kê';
+        if (!selectedReason) nextFieldErrors.reason = 'Vui lòng chọn lý do';
+        if (!selectedPerson) nextFieldErrors.person = 'Vui lòng chọn nhân viên';
+        if (!selectedDate) nextFieldErrors.date = 'Vui lòng chọn ngày thực hiện';
+        setFieldErrors(nextFieldErrors);
+        return Object.keys(nextFieldErrors).length === 0;
+      };
 
-        if (!selectedWarehouse || !selectedZone || !selectedLotNumber || !selectedPerson || !selectedDate || !selectedReason || !selectedLotAdjustmentType) {
-          setError('Vui lòng chọn tất cả các trường bắt buộc.');
+      const createLotAdjustment = async () => {
+        setHasSubmitted(true);
+        if (!validateRequestForm()) {
           toast.error("Tạo yêu cầu kiểm kê thất bại!", {
             position: "top-right",
             autoClose: 3000,
@@ -199,9 +217,9 @@ const RequestLotAdjustment = () => {
           });
           return;
         }
-    
+
         setError('');
-    
+
         try {
           setIsCreateLoading(true);
           const employeeId = people.find(x => x.employeeName === selectedPerson).employeeId;
@@ -214,10 +232,8 @@ const RequestLotAdjustment = () => {
             adjustmentType : adjustmentTypeMap[selectedLotAdjustmentType],
             note: '--'
           }
-          console.log(newLotAdjustment);
           const lotAdjustmentId = await lotAdjustmentApi.createNewStockTake(newLotAdjustment);
           setLotAdjustmentId(lotAdjustmentId);
-          console.log(lotAdjustmentId);
           toast.success("Tạo yêu cầu kiểm kê thành công!", {
             position: "top-right",
             autoClose: 3000,
@@ -232,7 +248,7 @@ const RequestLotAdjustment = () => {
         } finally {
           setIsCreateLoading(false);
         }
-        
+
       };
 
       const updateMaterialLotAdjustment = async() => {
@@ -265,7 +281,6 @@ const RequestLotAdjustment = () => {
                     unitOfMeasure: subLots[index]?.unitOfMeasure,
                 })),
             }
-            console.log(updatedMaterialLotAdjustment)
             // Call API to update the material sub lots for the stock take
             await materialSubLotApi.updateMaterialSubLot(updatedMaterialLotAdjustment);
             toast.success("Duyệt kiểm kê thành công!", {
@@ -277,7 +292,7 @@ const RequestLotAdjustment = () => {
                 draggable: true,
                 progress: undefined,
             });
-            
+
             // Reset all form values and data
             setSelectedDate(null);
             setSelectedWarehouse(null);
@@ -286,15 +301,16 @@ const RequestLotAdjustment = () => {
             setSelectedLotNumber(null);
             setSelectedReason(null);
             setSelectedLotAdjustmentType(null);
-            setMaterialLotById(null);
             setMaterial(null);
             setUnit(null);
             setNote(null);
             setSubLots([]);
             setRealQuantities([]);
             setLotAdjustmentId(null);
-            setIsDetailsVisible(false);
+            setIsDetailsVisible(true);
             setError('');
+            setFieldErrors({});
+            setHasSubmitted(false);
         }
         catch (err) {
             setError(getApiErrorMessage(err, 'An error occurred while updating the material lot adjustment.'));
@@ -302,10 +318,13 @@ const RequestLotAdjustment = () => {
             setIsUpdateLoading(false);
         }
       }
+
+      const totalQuantity = subLots.reduce((sum, item) => sum + (Number(item.existingQuantity) || 0), 0);
+
     return (
         <ContentContainer>
-            {/* Left Section - Import Form */}
-            <FormSection>
+            {/* Left Section - Request Form */}
+            <FormSection style={{ flex: "0 0 380px", width: "380px" }}>
                 <SectionTitle>Yêu cầu kiểm kê</SectionTitle>
 
                 {isInitialLoading && (
@@ -317,27 +336,28 @@ const RequestLotAdjustment = () => {
                 {!isInitialLoading && (
                     <>
                         <FormGroup>
-                            <Label>Kho hàng:</Label>
+                            <Label required>Kho hàng:</Label>
                             <SelectContainer>
-                            <Select 
-                                value={selectedWarehouse} 
+                            <Select
+                                value={selectedWarehouse}
                                 onChange={(e) => setSelectedWarehouse(e.target.value)}
                                 placeholder="Chọn loại kho hàng"
                                 >
                                 {wareHouses.map((warehouse, index) => (
-                                    <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
+                                    <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}>
                                     {warehouse.warehouseName}
                                     </option>
                                 ))}
                             </Select>
                             </SelectContainer>
                         </FormGroup>
+                        {fieldErrors.warehouse && <div style={errorTextStyle}>{fieldErrors.warehouse}</div>}
 
                         <FormGroup>
-                            <Label>Mã kho hàng:</Label>
+                            <Label required>Mã kho hàng:</Label>
                             <SelectContainer>
-                            <Select 
-                                value={selectedZone} 
+                            <Select
+                                value={selectedZone}
                                 onChange={(e) => setSelectedZone(e.target.value)}
                                 placeholder="Chọn mã kho hàng"
                                 >
@@ -349,12 +369,13 @@ const RequestLotAdjustment = () => {
                             </Select>
                             </SelectContainer>
                         </FormGroup>
+                        {fieldErrors.zone && <div style={errorTextStyle}>{fieldErrors.zone}</div>}
 
                         <FormGroup>
-                            <Label>Lô kiểm kê:</Label>
+                            <Label required>Lô kiểm kê:</Label>
                             <SelectContainer>
-                                <Select 
-                                value={selectedLotNumber} 
+                                <Select
+                                value={selectedLotNumber}
                                 onChange={(e) => setSelectedLotNumber(e.target.value)}
                                 placeholder="Chọn lô hàng kiểm kê"
                                 disabled={isLotLoading}
@@ -376,9 +397,10 @@ const RequestLotAdjustment = () => {
                                 )}
                             </SelectContainer>
                         </FormGroup>
-                        
+                        {fieldErrors.lot && <div style={errorTextStyle}>{fieldErrors.lot}</div>}
+
                         <FormGroup>
-                            <Label>Loại kiểm kê:</Label>
+                            <Label required>Loại kiểm kê:</Label>
                             <SelectContainer>
                                 <Select placeholder="Chọn loại kiểm kê"
                                         value={selectedLotAdjustmentType}
@@ -389,16 +411,17 @@ const RequestLotAdjustment = () => {
                                         {adjustmentType}
                                         </option>
                                     ))}
-       
+
                                 </Select>
                             </SelectContainer>
                         </FormGroup>
-                                
+                        {fieldErrors.type && <div style={errorTextStyle}>{fieldErrors.type}</div>}
+
                         <FormGroup>
-                            <Label>Lý do:</Label>
+                            <Label required>Lý do:</Label>
                             <SelectContainer>
-                            <Select 
-                                value={selectedReason} 
+                            <Select
+                                value={selectedReason}
                                 onChange={(e) => setSelectedReason(e.target.value)}
                                 placeholder="Chọn lý do kiểm kê"
                                 >
@@ -410,13 +433,13 @@ const RequestLotAdjustment = () => {
                             </Select>
                             </SelectContainer>
                         </FormGroup>
-
+                        {fieldErrors.reason && <div style={errorTextStyle}>{fieldErrors.reason}</div>}
 
                         <FormGroup>
-                            <Label>Nhân viên:</Label>
+                            <Label required>Nhân viên:</Label>
                             <SelectContainer>
-                            <Select 
-                                value={selectedPerson} 
+                            <Select
+                                value={selectedPerson}
                                 onChange={(e) => setSelectedPerson(e.target.value)}
                                 placeholder="Chọn nhân viên"
                                 >
@@ -428,10 +451,10 @@ const RequestLotAdjustment = () => {
                             </Select>
                             </SelectContainer>
                         </FormGroup>
-
+                        {fieldErrors.person && <div style={errorTextStyle}>{fieldErrors.person}</div>}
 
                         <FormGroup>
-                            <Label>Ngày thực hiện:</Label>
+                            <Label required>Ngày thực hiện:</Label>
                             <SelectContainer>
                                 <DateInput
                                     selectedDate={selectedDate}
@@ -439,10 +462,15 @@ const RequestLotAdjustment = () => {
                                 />
                             </SelectContainer>
                         </FormGroup>
+                        {fieldErrors.date && <div style={errorTextStyle}>{fieldErrors.date}</div>}
 
-                        {error && <div style={{ color: 'red' }}>{error}</div>}
+                        {error && <div style={{ color: 'red', marginTop: '8px' }}>{error}</div>}
 
-                        <ActionButton onClick={createLotAdjustment} disabled={isCreateLoading}>
+                        <ActionButton
+                            onClick={createLotAdjustment}
+                            disabled={isCreateLoading}
+                            style={{ marginTop: '1.5rem', width: '37.5%', padding: '15px', fontSize: '15px' }}
+                        >
                             {isCreateLoading ? (
                                 <ClipLoader color="#ffffff" size={20} />
                             ) : (
@@ -453,20 +481,15 @@ const RequestLotAdjustment = () => {
                 )}
             </FormSection>
 
-            {/* Right Section - Import List */}
-            <ListSection>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #000", marginBottom: "2%"}}>
+            {/* Right Section - Check Detail */}
+            <ListSection elevated style={{ flex: "1 1 auto", minWidth: 0 }}>
+                <div className={styles.detailHeader}>
                     <SectionTitle style={{width: "100%", marginBottom: 0}}>Thông tin kiểm kê chi tiết</SectionTitle>
-                    <button 
+                    <button
                         onClick={() => setIsDetailsVisible(!isDetailsVisible)}
-                        style={{
-                            padding: "1%",
-                            border: "none",
-                            borderRadius: "4px",
-                            cursor: "pointer",
-                        }}
+                        className={styles.chevronButton}
                     >
-                        <FaChevronDown size={20} />
+                        <FaChevronDown size={18} className={clsx(styles.chevronIcon, isDetailsVisible && styles.chevronOpen)} />
                     </button>
                 </div>
 
@@ -484,178 +507,86 @@ const RequestLotAdjustment = () => {
 
                                 <FormGroup style={{ position: "relative"}}>
                                     <Label style={{ width: "35%", marginLeft: "30px" }}>Mã lô kiểm kê:</Label>
-                                    <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "35px",
-                                        width: "50.3%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        fontSize: "13px"
-                                    }}
-                                    >{selectedLotNumber || ""}</span>
-                                    {/* <button style={{
-                                        width: "20px",
-                                        position: "absolute",
-                                        right: "0",
-                                        marginRight: "10%"
-                                    }}>
-                                        <img src={QRicon} alt="QR Icon" />
-                                    </button> */}
-
+                                    <span className={styles.readOnlyField}>{selectedLotNumber || ""}</span>
                                 </FormGroup>
-
-                                {/* <TextNote>*Nhập hoặc quét mã lô hàng</TextNote> */}
 
                                 <FormGroup>
                                     <Label style={{ width: "35%", marginLeft: "30px" }}>Loại kiểm kê:</Label>
-                                    <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "35px",
-                                        width: "50.3%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        fontSize: "13px"
-                                    }}
-                                    >{selectedLotAdjustmentType || ""}</span>
+                                    <span className={styles.readOnlyField}>{selectedLotAdjustmentType || ""}</span>
                                 </FormGroup>
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                 <FormGroup style={{ position: "relative" }}>
                                     <Label style={{ width: "36.3%", marginLeft: "10px" }}>Tổng số lượng:</Label>
-                                    <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "35px",
-                                        width: "50.3%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        fontSize: "13px"
-                                    }}
-                                    >{materialLotById?.exisitingQuantity || " "}</span>
+                                    <span className={styles.readOnlyField}>{subLots.length > 0 ? totalQuantity : ""}</span>
                                 </FormGroup>
-                                
+
                                 <FormGroup>
                                     <Label style={{ width: "36.3%", marginLeft: "10px" }}>Ngày thực hiện:</Label>
-                                    <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "35px",
-                                        width: "50.3%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        fontSize: "13px"
-                                    }}
-                                    >{selectedDate ? new Date(selectedDate).toLocaleString() : ""}</span>
+                                    <span className={styles.readOnlyField}>{selectedDate ? new Date(selectedDate).toLocaleString() : ""}</span>
                                 </FormGroup>
                             </div>
                         </div>
 
                         <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Thông tin sản phẩm</SectionTitle>
 
-                        <FormSection style={{ margin: "0px 10px 10px", backgroundColor: "#F5F5F5", height: "120px", padding: "10px" }}>
+                        <FormSection className={styles.accentPanel} style={{ margin: "0px 10px 10px", height: "120px", padding: "10px", boxShadow: "none" }}>
                             <div style={{ marginBottom: 0, display: "flex" }}>
                                 <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                     <FormGroup style={{ marginLeft: "10px" }}>
                                         <Label style={{ width: "38%" }}>Sản phẩm:</Label>
-                                        <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "40px",
-                                        width: "55%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        textAlign: "left",
-                                        backgroundColor: "#FFF",
-                                        fontSize: "13px"
-                                        }}
-                                        >{material?.materialName || ""}</span>
+                                        <span className={styles.readOnlyField} style={{ width: "55%", height: "40px", textAlign: "left" }}>{material?.materialName || ""}</span>
                                     </FormGroup>
 
                                     <FormGroup style={{ marginLeft: "10px" }}>
                                         <Label style={{ width: "38%" }}>Đơn vị tính:</Label>
-                                            <span type="text" style={{
-                                            border: "1px solid #767676",
-                                            borderRadius: "6px",
-                                            padding: "0px 5%",
-                                            height: "35px",
-                                            width: "55%",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            backgroundColor: "#FFF",
-                                            fontSize: "11px"
-                                            }}
-                                            >{unit || ""}</span>
+                                        <span className={styles.readOnlyField} style={{ width: "55%", fontSize: "11px" }}>{unit || ""}</span>
                                     </FormGroup>
-
-              
-
                                 </div>
 
                                 <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                     <FormGroup style={{ marginLeft: "10px" }}>
                                         <Label style={{ width: "39%" }}>Mã sản phẩm:</Label>
-                                        <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "38px",
-                                        width: "55%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        backgroundColor: "#FFF",
-                                        fontSize: "11px"
-                                        
-                                        }}
-                                        >{material?.materialId || ""}</span>
+                                        <span className={styles.readOnlyField} style={{ width: "55%", height: "38px", fontSize: "11px" }}>{material?.materialId || ""}</span>
                                     </FormGroup>
 
                                     <FormGroup style={{ position: "relative" }}>
                                         <Label style={{ width: "37.6%", marginLeft: "10px" }}>Ghi chú:</Label>
-                                        <span type="text" style={{
-                                        border: "1px solid #767676",
-                                        borderRadius: "6px",
-                                        padding: "0px 5%",
-                                        height: "38px",
-                                        width: "55%",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        backgroundColor: "#FFF",
-                                        fontSize: "11px"
-                                        }}
-                                        >{note === "None" ? "--" : note}</span>
+                                        <span className={styles.readOnlyField} style={{ width: "55%", height: "38px", fontSize: "11px" }}>{note === "None" ? "--" : note}</span>
                                     </FormGroup>
-
-                  
                                 </div>
                             </div>
                         </FormSection>
 
-                        <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Kiểm kê tại vị trí lưu trữ</SectionTitle>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0px 30px" }}>
+                            <SectionTitle style={{ textAlign: 'left', marginBottom: 0 }}>Kiểm kê tại vị trí lưu trữ</SectionTitle>
+                            <Tag variant="neutral">{subLots.length} vị trí</Tag>
+                        </div>
 
-                        <ListSection style={{ padding: 0, margin: "1.5%" }}>
+                        <ListSection style={{ padding: 0, margin: "1.5%", boxShadow: "none", border: "none" }}>
                             <div style={{ overflowY: 'auto', height: "300px" }}>
+                                {subLots.length === 0 ? (
+                                    <div className={styles.emptyState}>Không còn vị trí nào để kiểm kê.</div>
+                                ) : (
                                 <Table>
                                     <thead>
                                         <tr>
-                                            <TableHeader>STT</TableHeader>
+                                            <TableHeader style={{ width: "48px" }}>STT</TableHeader>
                                             <TableHeader style={{width: "20%"}}>Vị trí lưu trữ</TableHeader>
                                             <TableHeader>Tồn kho</TableHeader>
                                             <TableHeader style={{width: "20%"}}>Thực tế</TableHeader>
                                             <TableHeader>Chênh lệch</TableHeader>
                                             <TableHeader>Ghi chú</TableHeader>
-                                            <TableHeader></TableHeader>
+                                            <TableHeader style={{ width: "50px" }}></TableHeader>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {subLots.map((item, index) => (
+                                        {subLots.map((item, index) => {
+                                            const realQuantity = realQuantities[index]?.realQuantity || 0;
+                                            const variance = getVariance(item.existingQuantity, realQuantity);
+                                            const status = getVarianceStatus(variance);
+                                            return (
                                             <tr key={index}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>{item.locationId}</TableCell>
@@ -665,33 +596,36 @@ const RequestLotAdjustment = () => {
                                                     type="number"
                                                     min="0"
                                                     step="1"
-                                                    value={realQuantities[index]?.realQuantity || 0}
+                                                    value={realQuantity}
                                                     onChange={(e) => handleRealQuantityChange(index, e.target.value)}
                                                 />
                                                 </TableCell>
-                                                <TableCell>{item.existingQuantity - (realQuantities[index]?.realQuantity || 0)}</TableCell>
                                                 <TableCell>
-                                                    {(() => {
-                                                        const diff = item.existingQuantity - (realQuantities[index]?.realQuantity || 0);
-                                                        if (diff > 0) return "Thiếu";
-                                                        if (diff < 0) return "Dư";
-                                                        return "Đủ";
-                                                    })()}
+                                                    <span style={{ color: stockTakeStatusColor[status], fontWeight: 700 }}>
+                                                        {variance > 0 ? `+${variance}` : variance}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className={styles.statusPill} style={{ backgroundColor: stockTakeStatusColor[status] }}>
+                                                        {status}
+                                                    </span>
                                                 </TableCell>
                                                 <TableCell>
                                                     <DeleteButton onClick={() => deleteItem(index)}>
-                                                        <FaTrash size={25} color="#000" />
+                                                        <FaTrash size={16} color="#FF2115" />
                                                     </DeleteButton>
                                                 </TableCell>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                     </tbody>
                                 </Table>
+                                )}
                             </div>
                         </ListSection>
-                        
-                        <ActionButton 
-                            style={{ width: "35%", height: "10%" }} 
+
+                        <ActionButton
+                            style={{ width: "35%", padding: "14px", fontSize: "14px" }}
                             onClick={updateMaterialLotAdjustment}
                             disabled={isUpdateLoading}
                         >
@@ -706,7 +640,7 @@ const RequestLotAdjustment = () => {
                     </>
                 )}
             </ListSection>
-            
+
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div style={{
@@ -731,7 +665,7 @@ const RequestLotAdjustment = () => {
                         <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
                         <p>Bạn có chắc chắn muốn xóa mục này không?</p>
                         <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
-                            <button 
+                            <button
                                 onClick={cancelDelete}
                                 style={{
                                     padding: '8px 16px',
@@ -743,7 +677,7 @@ const RequestLotAdjustment = () => {
                             >
                                 Hủy
                             </button>
-                            <button 
+                            <button
                                 onClick={confirmDelete}
                                 style={{
                                     padding: '8px 16px',
@@ -764,4 +698,4 @@ const RequestLotAdjustment = () => {
     );
 };
 
-export default RequestLotAdjustment; 
+export default RequestLotAdjustment;

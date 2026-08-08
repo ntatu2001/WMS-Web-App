@@ -16,6 +16,18 @@ export function decodeRoles(accessToken) {
     }
 }
 
+// Claim "employeeId" là claim tuỳ biến (không phải ClaimTypes chuẩn) nên giữ nguyên key ngắn, không cần URI schema
+export function decodeEmployeeId(accessToken) {
+    if (!accessToken) return null;
+    try {
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        return payload.employeeId || null;
+    } catch (error) {
+        console.error('Error decoding JWT employeeId:', error);
+        return null;
+    }
+}
+
 const authApi = {
     login(userName, password) {
         const url = 'Auth/Login';

@@ -1,13 +1,38 @@
+@use '../../../../common/styles/variables' as v;
+
 .divOfList {
     display: flex;
     flex-direction: column;
+    gap: 6px;
     margin-bottom: 10px;
-    border-bottom-width: 1px;
-    border-radius: 6px;
-    padding: 20px 0px;
-    border-color: rgba(209, 213, 219, 1); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-                0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border-radius: v.$radius-sm;
+    border-top: 3px solid v.$color-teal;
+    padding: 14px 16px;
+    box-shadow: v.$shadow-sm;
     background-color: #FFF;
+}
 
+.lotCode {
+    font-weight: 700;
+    color: v.$color-navy;
+}
+
+.resultTableWrapper {
+    overflow-x: auto;
+}
+
+.resultTableWrapper thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.emptyState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    color: v.$color-text-muted;
+    text-align: center;
+    padding: 0 16px;
 }

@@ -1,6 +1,14 @@
+@use '../../styles/variables' as v;
+
 .label {
     width: 40%;
-    font-weight: 500;
+    font-weight: 600;
+    color: v.$color-text;
+}
+
+.required::after {
+    content: ' *';
+    color: #f43f5e;
 }
 
 .labelSmallSize {
@@ -9,4 +17,5 @@
     padding: 2px;
     margin-left: 2%;
     font-weight: 500;
+    color: v.$color-text-muted;
 }

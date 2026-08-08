@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaTrash, FaChevronDown } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
+import { AiOutlinePlus } from 'react-icons/ai';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
@@ -7,61 +8,58 @@ import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import Select from '../../../../common/components/Selection/Select.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
-import CreateButton from '../../../../common/components/Button/CreateButton/CreateButton.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import ContentContainer from '../../../../common/components/ContentContainer/ContentContainer.jsx';
-import DropdownIcon from '../../../../common/components/Icon/DropdownIcon.jsx';
 import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
 import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
-// import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
+import Tag from '../../../../common/components/Tag/Tag.jsx';
 import inventoryIssueApi from '../../../../api/inventoryIssueApi.js';
-import {AiOutlinePlus} from 'react-icons/ai'
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import customerApi from '../../../../api/customerApi.js';
 import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
-import { toast } from "react-toastify"; // Import toast for notifications
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+
+let rowIdCounter = 0;
+const createEmptyRow = () => ({
+  id: `row-${++rowIdCounter}`,
+  materialName: '',
+  materialId: '',
+  unit: '',
+  lotNumberList: [],
+  purchaseOrderNumber: '',
+  existingQuantity: null,
+  requestedQuantity: '',
+});
+
+const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
 const CreateGoodIssue = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [materials, setMaterials] = useState([]);
-  const [materialName, setMaterialName] = useState('');
-  const [materialId, setMaterialId] = useState('');
-  const [unit, setUnit] = useState('');
-  const [purchaseOrderNumber, setPurchaseOrderNumber] = useState('');
-  const [requestedQuantity, setRequestedQuantity] = useState(0);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedPerson, setSelectedPerson] = useState(null);
-  const [count, setCount] = useState(1);
-  const [error, setError] = useState('');
   const [wareHouses, setWareHouses] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [people, setPeople] = useState([]);
+  const [materialsList, setMaterialsList] = useState([]);
   const [materialOptionNames, setMaterialOptionNames] = useState([]);
-  const [materialOptionIds, setMaterialOptionIds] = useState(null);
-  const [materialOptionUnits, setMaterialOptionUnits] = useState(null);
-  const [MaterialsList, setMaterialsList] = useState([]);
-  const [lotNumberList, setLotNumberList] = useState([]);
-  const [existingQuantity, setExistingQuantity] = useState(null);
-  const [quantityError, setQuantityError] = useState('');
-  // const createReceipt = async() => {
-  //    const receipt = {}
-  //    await inventoryReceiptApi.createReceipt()
-  // }
-  // console.log(purchaseOrderNumber);
-  // console.log(existingQuantity);
+  const [rows, setRows] = useState([createEmptyRow()]);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [rowErrors, setRowErrors] = useState({});
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   useEffect(() => {
-    const GetApi = async() => {
+    const GetApi = async () => {
       try {
         setIsLoading(true);
         const wareHouseList = await wareHouseApi.getAllWareHouses();
@@ -80,121 +78,121 @@ const CreateGoodIssue = () => {
 
     GetApi();
   }, []);
+
   useEffect(() => {
     const fetchMaterials = async () => {
-      if (selectedZone) {
-        try {
-          const materialList = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(selectedZone);
-
-          const optionNameList = materialList.map(material => material.materialName);
-          // const optionIdList = materialList.map(material => material.materialId);
-          // const optionPropertyList = materialList.map(material => material.properties);
-          
-          // Extract unit values from properties where propertyName is "Unit"
-          // const optionUnitList = optionPropertyList.map(properties => {
-          //   const unitProperty = properties.find(prop => prop.propertyName === "Unit");
-          //   return unitProperty ? unitProperty.propertyValue : "";
-          // });
-
-          // Filter unique propertyValues for units
-          // const uniqueUnits = [...new Set(optionUnitList)];
-
-          // console.log(optionPropertyList)
-          setMaterialsList(materialList);
-          setMaterialOptionNames(optionNameList);
-          // setMaterialOptionIds(optionIdList);
-          // setMaterialOptionUnits(uniqueUnits);
-        } catch (error) {
-          console.error('Error fetching materials:', error);
-        }
+      if (!selectedZone) return;
+      try {
+        const materialList = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(selectedZone);
+        setMaterialsList(materialList);
+        setMaterialOptionNames(materialList.map(material => material.materialName));
+      } catch (error) {
+        console.error('Error fetching materials:', error);
       }
     };
-    const getMaterialIdAndUnit = async() => {
-      if(materialName) {
-        try {
-          const material = MaterialsList.find(material => material.materialName === materialName );
-          const optionMaterialId = material.materialId;
-          const optionMaterialUnit = await materialApi.getUnitByMaterialId(optionMaterialId);
-          setMaterialOptionIds(optionMaterialId);
-          setMaterialOptionUnits(optionMaterialUnit);
-        }
-        catch (error){
-          console.error('Error fetching:', error);
-        }
-       
-      }
-    }
 
     fetchMaterials();
-    getMaterialIdAndUnit();
-
-  }, [selectedZone, materialName]);
-
-  // Update materialId when materialOptionIds changes
-  useEffect(() => {
-      setMaterialId(materialOptionIds);
-      setUnit(materialOptionUnits);
-  }, [materialOptionIds, materialOptionUnits]);
-
+  }, [selectedZone]);
 
   useEffect(() => {
-      const fetchLotNumberList = async() => {
-        if(materialId){
-          try{
-            const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(materialId);
-            const lotNumberList = materialLotList.map(materialLot => materialLot.lotNumber);
-
-            setLotNumberList(lotNumberList);
-          }
-          catch {
-            const lotNumberList = [];
-            setLotNumberList(lotNumberList);
-
-          }
-        }
-        
-      }
-
-      fetchLotNumberList();
-  }, [materialId])
-
-  // Add useEffect to clear error when any required field changes
-  useEffect(() => {
-    if (error && (selectedWarehouse || selectedZone || selectedCustomer || selectedPerson || selectedDate)) {
-      setError('');
+    if (hasSubmitted) {
+      setFieldErrors({});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWarehouse, selectedZone, selectedCustomer, selectedPerson, selectedDate]);
 
+  const updateRow = (index, field, value) => {
+    setRows(prev => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
 
-  useEffect(() => {
-    const getMaterialLotById = async() => {
-      if(purchaseOrderNumber){
-        const materialLot = await materiaLotApi.GetQuantityByMaterialLotId(purchaseOrderNumber);
-        console.log(materialLot);
-        setExistingQuantity(materialLot.availableQuantity);
-        setQuantityError('');
-        setRequestedQuantity(0);
-      }
+  const handleMaterialNameChange = async (index, materialName) => {
+    updateRow(index, 'materialName', materialName);
+    updateRow(index, 'purchaseOrderNumber', '');
+    updateRow(index, 'existingQuantity', null);
+    updateRow(index, 'requestedQuantity', '');
+    updateRow(index, 'lotNumberList', []);
+
+    const material = materialsList.find(m => m.materialName === materialName);
+    if (!material) {
+      updateRow(index, 'materialId', '');
+      updateRow(index, 'unit', '');
+      return;
     }
-    getMaterialLotById();
-  }, [purchaseOrderNumber]);
+    updateRow(index, 'materialId', material.materialId);
+    try {
+      const unit = await materialApi.getUnitByMaterialId(material.materialId);
+      updateRow(index, 'unit', unit);
+    } catch (error) {
+      console.error('Error fetching unit:', error);
+    }
+    try {
+      const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(material.materialId);
+      updateRow(index, 'lotNumberList', materialLotList.map(lot => lot.lotNumber));
+    } catch (error) {
+      updateRow(index, 'lotNumberList', []);
+    }
+  };
+
+  const handleLotNumberChange = async (index, lotNumber) => {
+    updateRow(index, 'purchaseOrderNumber', lotNumber);
+    updateRow(index, 'requestedQuantity', '');
+    if (!lotNumber) {
+      updateRow(index, 'existingQuantity', null);
+      return;
+    }
+    try {
+      const materialLot = await materiaLotApi.GetQuantityByMaterialLotId(lotNumber);
+      updateRow(index, 'existingQuantity', materialLot.availableQuantity);
+    } catch (error) {
+      console.error('Error fetching lot quantity:', error);
+    }
+  };
+
+  const addRow = () => {
+    setRows(prev => [...prev, createEmptyRow()]);
+  };
+
+  const removeRow = (index) => {
+    setRows(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const totalQuantity = rows.reduce((sum, row) => sum + (Number(row.requestedQuantity) || 0), 0);
+
+  const validate = () => {
+    const nextFieldErrors = {};
+    if (!selectedWarehouse) nextFieldErrors.warehouse = 'Vui lòng chọn kho hàng';
+    if (!selectedZone) nextFieldErrors.zone = 'Vui lòng chọn mã kho hàng';
+    if (!selectedCustomer) nextFieldErrors.customer = 'Vui lòng chọn khách hàng';
+    if (!selectedPerson) nextFieldErrors.person = 'Vui lòng chọn nhân viên';
+    if (!selectedDate) nextFieldErrors.date = 'Vui lòng chọn ngày xuất kho';
+
+    const nextRowErrors = {};
+    rows.forEach((row, index) => {
+      const errors = {};
+      if (!row.materialName) errors.materialName = 'Chọn sản phẩm';
+      if (!row.purchaseOrderNumber) errors.purchaseOrderNumber = 'Chọn mã lô/số PO';
+      if (!(Number(row.requestedQuantity) > 0)) {
+        errors.requestedQuantity = 'SL > 0';
+      } else if (row.existingQuantity !== null && Number(row.requestedQuantity) > row.existingQuantity) {
+        errors.requestedQuantity = `Vượt quá tồn kho (${row.existingQuantity})`;
+      }
+      if (Object.keys(errors).length > 0) nextRowErrors[index] = errors;
+    });
+
+    setFieldErrors(nextFieldErrors);
+    setRowErrors(nextRowErrors);
+    return Object.keys(nextFieldErrors).length === 0 && Object.keys(nextRowErrors).length === 0;
+  };
 
   const createIssue = async () => {
-    if (!selectedWarehouse || !selectedZone || !selectedCustomer || !selectedPerson || !selectedDate) {
-      setError('Vui lòng chọn tất cả các trường bắt buộc.');
-      toast.error("Tạo phiếu xuất kho thất bại!", {
+    setHasSubmitted(true);
+    if (!validate()) {
+      toast.error("Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin!", {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
       return;
     }
-
-    setError('');
 
     try {
       const customerId = customers.find(x => x.customerName === selectedCustomer).customerId;
@@ -204,328 +202,245 @@ const CreateGoodIssue = () => {
         customerId: customerId,
         employeeId: employeeId,
         issueDate: selectedDate,
-        entries: materials
-      }
-      console.log(newIssue);
+        entries: rows.map(({ materialName, materialId, unit, purchaseOrderNumber, requestedQuantity }) => ({
+          materialName, materialId, unit, purchaseOrderNumber, requestedQuantity,
+        })),
+      };
       await inventoryIssueApi.createIssue(newIssue);
       toast.success("Tạo phiếu xuất kho thành công!", {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
-      
-      // Clear all form data after successful creation
+
       setSelectedWarehouse(null);
       setSelectedZone(null);
       setSelectedCustomer(null);
       setSelectedPerson(null);
       setSelectedDate(null);
-      setMaterials([]);
-      setCount(1);
-      setMaterialName('');
-      setMaterialId('');
-      setUnit('');
-      setPurchaseOrderNumber('');
-      setRequestedQuantity(0);
-      setMaterialOptionIds(null);
-      setMaterialOptionUnits(null);
-      setQuantityError('');
-      setExistingQuantity(null);
+      setRows([createEmptyRow()]);
+      setFieldErrors({});
+      setRowErrors({});
+      setHasSubmitted(false);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'An error occurred while creating the issue.'));
-    }
-
-  };
-  
-  const handleQuantityChange = (e) => {
-    const value = parseInt(e.target.value);
-    setRequestedQuantity(value);
-    
-    if (existingQuantity !== null && value > existingQuantity) {
-      setQuantityError(`Số lượng vượt quá tồn kho (${existingQuantity})`);
-    } else {
-      setQuantityError('');
-    }
-  };
-  
-  const addMaterial = () => {
-    if (!materialName || !purchaseOrderNumber) {
-      toast.error("Vui lòng chọn đủ tên sản phẩm và Mã lô/số PO!", {
+      toast.error(getApiErrorMessage(err, 'Tạo phiếu xuất kho thất bại!'), {
         position: "top-right",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
       });
-      return false;
     }
+  };
 
-    if (quantityError) {
-      toast.error("Số lượng vượt quá tồn kho!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return false;
-    }
-    
-    const newMaterial = { materialName, materialId, unit, purchaseOrderNumber, requestedQuantity };
-    setMaterials([...materials, newMaterial]);
-    // Reset input fields
-    setMaterialName('');
-    setMaterialId('');
-    setMaterialOptionIds('');
-    setMaterialOptionUnits('');
-    setUnit('');
-    setPurchaseOrderNumber('');
-    setRequestedQuantity(0);
-    setQuantityError('');
-    return true;
-  };
-  const removeMaterial = (index) => {
-    const updatedMaterials = materials.filter((_, i) => i !== index);
-    setMaterials(updatedMaterials);
-    setCount(count - 1);
-  };
-  
-  const handleAddMaterial = () => {
-     const success = addMaterial();
-     if (success) {
-       setCount(count + 1);
-     }
-  }
-  
   return (
-    <ContentContainer style = {{display: "block"}}>
+    <ContentContainer style={{ display: "block" }}>
       {isLoading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <ClipLoader color="#36D7B7" loading={isLoading} size={50} />
         </div>
       ) : (
         <>
-          <div style={{display: "flex"}}>
-          <FormSection>
-          <SectionTitle>Phiếu xuất kho</SectionTitle>
+          <div style={{ display: "flex" }}>
+            <FormSection>
+              <SectionTitle>Phiếu xuất kho</SectionTitle>
 
-          <FormGroup>
-            <Label>Kho hàng:</Label>
-            <SelectContainer>
-              <Select value={selectedWarehouse} onChange={(e) => setSelectedWarehouse(e.target.value)} required>
-                <option value="" disabled selected>Chọn loại kho hàng</option>
-                {wareHouses.map((warehouse, index) => (
-                  <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}> 
-                    {warehouse.warehouseName}
-                  </option>
-                ))}
-              </Select>
-            </SelectContainer>
-          </FormGroup>
+              <FormGroup>
+                <Label required>Kho hàng:</Label>
+                <SelectContainer>
+                  <Select
+                    value={selectedWarehouse}
+                    onChange={(e) => setSelectedWarehouse(e.target.value)}
+                    placeholder="Chọn loại kho hàng"
+                  >
+                    {wareHouses.map((warehouse, index) => (
+                      <option key={`warehouse-${index}`} value={warehouse.warehouseName}>
+                        {warehouse.warehouseName}
+                      </option>
+                    ))}
+                  </Select>
+                </SelectContainer>
+              </FormGroup>
+              {fieldErrors.warehouse && <div style={errorTextStyle}>{fieldErrors.warehouse}</div>}
 
-          <FormGroup>
-            <Label>Mã kho hàng:</Label>
-            <SelectContainer>
-              <Select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)}>
-                <option value="" disabled selected>Chọn mã kho hàng</option>
-                {wareHouses.map((wareHouses, index) => (
-                  <option key = {`wareHouses-${index}`} value= {wareHouses.warehouseId}>
-                    {wareHouses.warehouseId}
-                  </option>
-                ))}
-              </Select>
-            </SelectContainer>
-          </FormGroup>
+              <FormGroup>
+                <Label required>Mã kho hàng:</Label>
+                <SelectContainer>
+                  <Select
+                    value={selectedZone}
+                    onChange={(e) => setSelectedZone(e.target.value)}
+                    placeholder="Chọn mã kho hàng"
+                  >
+                    {wareHouses.map((warehouse, index) => (
+                      <option key={`wareHouseId-${index}`} value={warehouse.warehouseId}>
+                        {warehouse.warehouseId}
+                      </option>
+                    ))}
+                  </Select>
+                </SelectContainer>
+              </FormGroup>
+              {fieldErrors.zone && <div style={errorTextStyle}>{fieldErrors.zone}</div>}
 
-          <FormGroup>
-            <Label>Khách hàng:</Label>
-            <SelectContainer>
-              <Select value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}>
-                <option value="" disabled selected>Chọn khách hàng</option>
-                {customers.map((customer, index) => (
-                  <option key = {`customer-${index}`} value= {customer.customerName}>
-                    {customer.customerName}
-                  </option>
-                ))}
-              </Select>
-            </SelectContainer>
-          </FormGroup>
+              <FormGroup>
+                <Label required>Khách hàng:</Label>
+                <SelectContainer>
+                  <Select
+                    value={selectedCustomer}
+                    onChange={(e) => setSelectedCustomer(e.target.value)}
+                    placeholder="Chọn khách hàng"
+                  >
+                    {customers.map((customer, index) => (
+                      <option key={`customer-${index}`} value={customer.customerName}>
+                        {customer.customerName}
+                      </option>
+                    ))}
+                  </Select>
+                </SelectContainer>
+              </FormGroup>
+              {fieldErrors.customer && <div style={errorTextStyle}>{fieldErrors.customer}</div>}
 
-          <FormGroup>
-            <Label>Nhân viên:</Label>
-            <SelectContainer>
-              <Select value={selectedPerson} onChange={(e) => setSelectedPerson(e.target.value)}>
-                <option value="" disabled selected>Chọn nhân viên</option>
-                {people.map((person, index) => (
-                  <option key = {`person-${index}`} value={person.employeeName}>
-                    {person.employeeName}
-                  </option>
-                ))}
-              </Select>
-            </SelectContainer>
-          </FormGroup>
+              <FormGroup>
+                <Label required>Nhân viên:</Label>
+                <SelectContainer>
+                  <Select
+                    value={selectedPerson}
+                    onChange={(e) => setSelectedPerson(e.target.value)}
+                    placeholder="Chọn nhân viên"
+                  >
+                    {people.map((person, index) => (
+                      <option key={`person-${index}`} value={person.employeeName}>
+                        {person.employeeName}
+                      </option>
+                    ))}
+                  </Select>
+                </SelectContainer>
+              </FormGroup>
+              {fieldErrors.person && <div style={errorTextStyle}>{fieldErrors.person}</div>}
 
-          <FormGroup>
-            <Label>Ngày xuất kho:</Label>
-            <SelectContainer>
-              <DateInput
-                selectedDate={selectedDate}
-                onChange={setSelectedDate}
-              />
-            </SelectContainer>
-          </FormGroup>
+              <FormGroup>
+                <Label required>Ngày xuất kho:</Label>
+                <SelectContainer>
+                  <DateInput
+                    selectedDate={selectedDate}
+                    onChange={setSelectedDate}
+                  />
+                </SelectContainer>
+              </FormGroup>
+              {fieldErrors.date && <div style={errorTextStyle}>{fieldErrors.date}</div>}
+            </FormSection>
 
-          {error && <div style={{ color: 'red' }}>{error}</div>}
+            <ListSection style={{ width: "50%" }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <SectionTitle style={{ marginBottom: 0 }}>Danh sách xuất kho</SectionTitle>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Tag variant="neutral">Số dòng: {rows.length}</Tag>
+                  <Tag variant="accent">Tổng SL: {totalQuantity}</Tag>
+                </div>
+              </div>
 
-        </FormSection>
+              {Object.keys(rowErrors).length > 0 && (
+                <div style={{ ...errorTextStyle, marginBottom: '8px' }}>
+                  Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin
+                </div>
+              )}
 
-        {/* Right Section - Import List */}
-        <ListSection style={{width: "50%"}}>
-          <SectionTitle>Danh sách xuất kho</SectionTitle>
+              <div style={{ maxHeight: "400px", overflowY: "scroll" }}>
+                <Table style={{ tableLayout: "fixed", width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <TableHeader style={{ width: "7%" }}>STT</TableHeader>
+                      <TableHeader style={{ width: "27%" }}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{ width: "17%" }}>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
+                      <TableHeader style={{ width: "20%" }}>Mã lô/Số PO</TableHeader>
+                      <TableHeader style={{ width: "17%" }}>SL xuất</TableHeader>
+                      <TableHeader style={{ width: "8%" }}></TableHeader>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, index) => (
+                      <tr key={row.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>
+                          <SelectContainer>
+                            <Select
+                              value={row.materialName}
+                              onChange={(e) => handleMaterialNameChange(index, e.target.value)}
+                              placeholder="Tên sản phẩm"
+                              style={{ fontSize: "90%" }}
+                            >
+                              {materialOptionNames.map((name, i) => (
+                                <option key={`material-${index}-${i}`} value={name}>
+                                  {name}
+                                </option>
+                              ))}
+                            </Select>
+                          </SelectContainer>
+                          {rowErrors[index]?.materialName && (
+                            <div style={errorTextStyle}>{rowErrors[index].materialName}</div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span style={{ color: row.materialId ? "#000" : "#767676", fontSize: "90%" }}>
+                            {row.materialId || "Mã sản phẩm"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span style={{ color: row.unit ? "#000" : "#767676", fontSize: "90%" }}>
+                            {row.unit || "ĐVT"}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <SelectContainer>
+                            <Select
+                              value={row.purchaseOrderNumber}
+                              onChange={(e) => handleLotNumberChange(index, e.target.value)}
+                              placeholder="Mã lô/Số PO"
+                              style={{ fontSize: "90%" }}
+                            >
+                              {row.lotNumberList.map((lotNumber, i) => (
+                                <option key={`lotNumber-${index}-${i}`} value={lotNumber}>
+                                  {lotNumber}
+                                </option>
+                              ))}
+                            </Select>
+                          </SelectContainer>
+                          {rowErrors[index]?.purchaseOrderNumber && (
+                            <div style={errorTextStyle}>{rowErrors[index].purchaseOrderNumber}</div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <input
+                            style={{ textAlign: "center", width: "100%", fontSize: "90%" }}
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="SL xuất"
+                            value={row.requestedQuantity}
+                            onChange={(e) => updateRow(index, 'requestedQuantity', e.target.value)}
+                          />
+                          {rowErrors[index]?.requestedQuantity && (
+                            <div style={errorTextStyle}>{rowErrors[index].requestedQuantity}</div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <DeleteButton onClick={() => removeRow(index)} disabled={rows.length === 1}>
+                            <FaTrash size={16} color="#FF2115" />
+                          </DeleteButton>
+                        </TableCell>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
 
-          <div style={{maxHeight: "400px", overflowY: "scroll"}}>
-            <Table style={{ tableLayout: "fixed", width: "100%"}}> 
-              <thead>
-                <tr>
-                  <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                  <TableHeader style={{ width: "31%" }}>Tên sản phẩm</TableHeader>
-                  <TableHeader style={{ width: "30%" }}>Mã sản phẩm</TableHeader>
-                  <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
-                  <TableHeader style={{ width: "30%" }}>Mã lô/Số PO</TableHeader>
-                  <TableHeader style={{ width: "25%" }}>Số lượng xuất</TableHeader>
-                  <TableHeader style={{ width: "10%" }}></TableHeader>
-                </tr>
-              </thead>
-              <tbody>
-                {materials.map((material, index) => (
-                  <tr key={index}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{material.materialName}</TableCell>
-                    <TableCell>{material.materialId}</TableCell>
-                    <TableCell>{material.unit}</TableCell>
-                    <TableCell>{material.purchaseOrderNumber}</TableCell>
-                    <TableCell>{material.requestedQuantity}</TableCell>
-                    <TableCell>
-                      <DeleteButton onClick={() => removeMaterial(index)}>
-                        <FaTrash size={18} color="#FF2115"/>
-                      </DeleteButton>
-                    </TableCell>
-                  </tr>
-                ))}
-                <tr>
-                  <TableCell>{count}</TableCell>
-                  <TableCell>
-                    <SelectContainer >
-                        <Select 
-                        value={materialName} 
-                        onChange={(e) => setMaterialName(e.target.value)}
-                        placeholder="Tên sản phẩm"
-                        style = {{fontSize: "90%"}}
-                        >
-                         
-                          {materialOptionNames.map((materialOptionName, index) => (
-                            <option key = {`materialOptionName-${index}`} value= {materialOptionName}> 
-                              {materialOptionName}
-                            </option>
-                          ))}
-                        </Select>
-                    </SelectContainer>
-                  </TableCell>
-                  <TableCell>
-                    <SelectContainer >
-                        <span style={{color: materialOptionIds? "#000" : "#767676", fontSize: "90%"}}>
-                            {materialOptionIds || "Mã sản phẩm"}
-                        </span>
-                      </SelectContainer>
-                  </TableCell>
-                  <TableCell>
-                    <SelectContainer >
-                        <span style={{color: materialOptionUnits? "#000" : "#767676", fontSize: "90%"}}>
-                            {materialOptionUnits || "ĐVT"}
-                        </span>
-                    </SelectContainer>
-                  </TableCell>
-                  <TableCell>
-                    {/* <input style={{textAlign: "center", width: "100%"}}
-                      type="text" 
-                      placeholder="Mã lô/Số PO" 
-                      value={purchaseOrderNumber}
-                      onChange={(e) => setPurchaseOrderNumber(e.target.value)}
-                    /> */}
-                    <SelectContainer >
-                        <Select 
-                        value={purchaseOrderNumber}
-                        onChange={(e) => setPurchaseOrderNumber(e.target.value)}
-                        placeholder="Mã lô/Số PO" 
-                        style = {{fontSize: "90%"}}
-                        >
-                         
-                          {lotNumberList.map((lotNumber, index) => (
-                            <option key = {`lotNumber-${index}`} value= {lotNumber}> 
-                              {lotNumber}
-                            </option>
-                          ))}
-                        </Select>
-                    </SelectContainer>
-                  </TableCell>
-                  <TableCell>
-                    <div style={{ position: 'relative', width: '100%' }}>
-                      <input style={{textAlign: "center", width: "100%", paddingLeft: "12%"}}
-                        type="number"
-                        min="0"
-                        step="1"
-                        placeholder="Số lượng xuất" 
-                        value={requestedQuantity}
-                        onChange={handleQuantityChange}
-                      />
-                      {quantityError && (
-                        <div style={{ 
-                          color: 'red', 
-                          fontSize: '11px', 
-                          position: 'absolute', 
-                          bottom: '-18px', 
-                          left: '0',
-                          width: '100%',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {quantityError}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <button 
-                      onClick={handleAddMaterial} 
-                      style={{
-                        paddingRight: "70%", 
-                        opacity: (!materialName || !purchaseOrderNumber) ? 0.5 : 1,
-                        cursor: (!materialName || !purchaseOrderNumber) ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      <AiOutlinePlus size={18}/>
-                    </button>
-                  </TableCell>
-                </tr>
-              </tbody>
-            </Table>
+              <ActionButton variant="secondary" onClick={addRow} style={{ width: 'auto', margin: '16px 0 0', padding: '10px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <AiOutlinePlus size={16} /> Thêm dòng sản phẩm
+              </ActionButton>
+            </ListSection>
           </div>
-
-          {/* Modal for additional information */}
-
-        
-        </ListSection>
-          </div>
-         <ActionButton style={{ marginTop: '2rem' }} onClick={createIssue}>
-          Tạo phiếu xuất kho
-        </ActionButton>
+          <ActionButton
+            style={{ marginTop: '2rem', width: '35%', padding: '14px', fontSize: '14px' }}
+            onClick={createIssue}
+          >
+            Tạo phiếu xuất kho
+          </ActionButton>
         </>
       )}
     </ContentContainer>
