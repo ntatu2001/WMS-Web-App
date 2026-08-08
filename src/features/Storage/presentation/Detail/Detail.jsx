@@ -1,147 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import {AiFillCaretLeft} from 'react-icons/ai'
+import { AiFillCaretLeft } from 'react-icons/ai';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import Separator from '../../../../common/components/Header/Separator.jsx';
-import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
-import FormSection from '../../../../common/components/Section/FormSection.jsx';
-import ListSection from '../../../../common/components/Section/ListSection.jsx';
-import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
-import Label from '../../../../common/components/Label/Label.jsx';
 import Image from '../../../../assets/image.png';
 import locationApi from '../../../../api/locationApi';
+import styles from './Detail.module.scss';
 
-const Detail = ({data, activeTab}) => {
-        const [selectedDate, setSelectedDate] = useState(null);
-        const [selectedDate1, setSelectedDate1] = useState(null);
-        const [stockLocationHistories, setStockLocationHistories] = useState([]);
-        // console.log(stockLocationHistories)
+const STATUS_COLORS = {
+    'Đang chứa hàng': '#0089D7',
+    'Đã đầy': '#00294D',
+};
 
-        useEffect(() => {
-                const fetchStockLocationHistories = async () => {
-                        const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, '', '');
-                        setStockLocationHistories(response);
-                };
-                fetchStockLocationHistories();
-        }, []);
+const getStatusColor = (status) => STATUS_COLORS[status] || '#98989b';
 
-        useEffect(() => {
-                const fetchStockLocationHistories = async () => {
-                        if (selectedDate && selectedDate1) {
-                                const response = await locationApi.getStockLocationHistoriesByLocationId(
-                                        data.position,
-                                        new Date(selectedDate).toISOString(),
-                                        new Date(selectedDate1).toISOString()
-                                );
-                                setStockLocationHistories(response);
-                        }
-                };
-                if (selectedDate && selectedDate1) {
-                        fetchStockLocationHistories();
-                }
-        }, [selectedDate, selectedDate1]);
-        return (
-                <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
-                        <div style={{display: "flex"}}>
-                                <button onClick={() => activeTab('storage')}>
-                                        <AiFillCaretLeft style={{fontSize: "24px"}}/>
-                                </button>
-                                <HeaderContainer>
-                                        <HeaderItem>Lưu trữ</HeaderItem>
-                                        <Separator />
-                                        <HeaderItem>Chi tiết vị trí lưu trữ</HeaderItem>
-                                </HeaderContainer>
+const Detail = ({ data, activeTab }) => {
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate1, setSelectedDate1] = useState(null);
+    const [stockLocationHistories, setStockLocationHistories] = useState([]);
 
-                                <div style={{position: "relative", right: "-10%", width: "20%"}}>
-                                        <DateInput 
-                                        selectedDate={selectedDate}
-                                        onChange={setSelectedDate}
-                                        />
-                                </div>
-                                <div style={{position: "relative", right: "-20%", width: "20%"}}>
-                                        <DateInput
-                                        selectedDate={selectedDate1}
-                                        onChange={setSelectedDate1}
-                                        />
-                                </div>
-                            
+    useEffect(() => {
+        const fetchStockLocationHistories = async () => {
+            const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, '', '');
+            setStockLocationHistories(response);
+        };
+        fetchStockLocationHistories();
+    }, []);
+
+    useEffect(() => {
+        const fetchStockLocationHistories = async () => {
+            if (selectedDate && selectedDate1) {
+                const response = await locationApi.getStockLocationHistoriesByLocationId(
+                    data.position,
+                    new Date(selectedDate).toISOString(),
+                    new Date(selectedDate1).toISOString()
+                );
+                setStockLocationHistories(response);
+            }
+        };
+        if (selectedDate && selectedDate1) {
+            fetchStockLocationHistories();
+        }
+    }, [selectedDate, selectedDate1]);
+
+    const details = data.selectedDetails;
+    const lotInfors = details?.lotInfors || [];
+    const hasStock = lotInfors.length > 0;
+    const selectedLot = data.selectedLotNumber
+        ? lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)
+        : lotInfors[0];
+    const maxVolume = details?.maxVolume;
+    const usableVolume = details?.usableVolume;
+    const storageRate = maxVolume ? (usableVolume >= maxVolume ? 100 : (usableVolume / maxVolume) * 100) : 0;
+
+    return (
+        <div className={styles.page}>
+            <div className={styles.headerRow}>
+                <div className={styles.headerLeft}>
+                    <button className={styles.backButton} onClick={() => activeTab('storage')} aria-label="Quay lại">
+                        <AiFillCaretLeft />
+                    </button>
+                    <HeaderContainer style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                        <HeaderItem>Lưu trữ</HeaderItem>
+                        <Separator />
+                        <HeaderItem>Chi tiết vị trí lưu trữ</HeaderItem>
+                    </HeaderContainer>
+                </div>
+
+                <div className={styles.dateFilters}>
+                    <div className={styles.filterField}>
+                        <span className={styles.filterLabel}>Từ ngày</span>
+                        <DateInput selectedDate={selectedDate} onChange={setSelectedDate} />
+                    </div>
+                    <div className={styles.filterField}>
+                        <span className={styles.filterLabel}>Đến ngày</span>
+                        <DateInput selectedDate={selectedDate1} onChange={setSelectedDate1} />
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.content}>
+                <div className={styles.infoCard}>
+                    <h2 className={styles.infoTitle}>Vị trí {data.position}</h2>
+
+                    <img src={Image} alt="Thiết bị lưu trữ" className={styles.photo} />
+
+                    <div className={styles.infoGrid}>
+                        <span className={styles.infoLabel}>Thiết bị:</span>
+                        <span className={styles.infoValue}>{details?.equipmentName}</span>
+
+                        <span className={styles.infoLabel}>Khu vực:</span>
+                        <span className={styles.infoValue}>{details?.warehouseId}</span>
+
+                        <span className={styles.infoLabel}>Kho hàng:</span>
+                        <span className={styles.infoValue}>{details?.warehouseName}</span>
+
+                        <span className={styles.infoLabel}>Kích thước:</span>
+                        <span className={styles.infoValue}>{details?.length}m x {details?.width}m x {details?.height}m</span>
+
+                        <span className={styles.infoLabel}>Tình trạng:</span>
+                        <span className={styles.statusTag} style={{ backgroundColor: getStatusColor(details?.status) }}>
+                            {details?.status}
+                        </span>
+
+                        <span className={styles.infoLabel}>Tỷ lệ lưu trữ:</span>
+                        <span className={styles.infoValue}>{storageRate.toFixed(2)}%</span>
+                    </div>
+
+                    {hasStock && (
+                        <div className={styles.infoGrid}>
+                            <span className={styles.infoLabel}>Lô hàng lưu trữ:</span>
+                            <span className={styles.infoValue}>{selectedLot?.lotnumber}</span>
+
+                            <span className={styles.infoLabel}>Số lượng lưu trữ:</span>
+                            <span className={styles.infoValue}>{selectedLot?.quantity}</span>
+
+                            <span className={styles.infoLabel}>Thể tích sử dụng:</span>
+                            <span className={styles.infoValue}>{usableVolume >= maxVolume ? maxVolume?.toFixed(2) : usableVolume?.toFixed(2)}</span>
+
+                            <span className={styles.infoLabel}>Thể tích tối đa:</span>
+                            <span className={styles.infoValue}>{maxVolume?.toFixed(2)}</span>
                         </div>
-                        <div style={{display: "flex", height: "85vh"}}>
-                                <FormSection style={{width: "25%", margin:"0px 20px", height:"100%", padding: "0.5rem"}}>
-                    
-                                                <SectionTitle style={{fontSize: "24px", padding: "0 10px", marginBottom : 0}} >Vị trí {data.position}</SectionTitle>
-                
-                       
-                                                <div>
-                                                        <img src={Image} alt="Image" style={{height: "30%", width: "50%", marginLeft: "25%"}}/>
-                                                        
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Thiết bị:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.equipmentName}</span>
-                                                        </div> 
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Khu vực:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.warehouseId}</span>
-                                                        </div> 
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Kho hàng:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.warehouseName}</span>
-                                                        </div>  
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Kích thước:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.length}m x {data.selectedDetails?.width}m x {data.selectedDetails?.height}m</span>
-                                                        </div>  
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Tình trạng:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500, color: "#0089D7"}}>{data.selectedDetails?.status}</span>
-                                                        </div> 
-                                                        <div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px"}}>Tỷ lệ lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.usableVolume >= data.selectedDetails?.maxVolume ? "100%" : ((data.selectedDetails?.usableVolume / data.selectedDetails?.maxVolume) * 100).toFixed(2) + "%"}</span>
-                                                        </div>  
+                    )}
+                </div>
 
-                                                </div>
-                                        
-                                                <div style={{marginTop: "10%"}}>
-                                                        <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px", width: "45%"}}>Lô hàng lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>
-                                                                    {data.selectedLotNumber ? 
-                                                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.lotnumber :
-                                                                        data.selectedDetails?.lotInfors[0]?.lotnumber}
-                                                                </span>
-                                                        </div>
-                                                        <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px", width: "45%"}}>Số lượng lưu trữ:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>
-                                                                    {data.selectedLotNumber ? 
-                                                                        data.selectedDetails?.lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)?.quantity :
-                                                                        data.selectedDetails?.lotInfors[0]?.quantity}
-                                                                </span>
-                                                        </div>
-                                                        <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px", width: "45%"}}>Thể tích sử dụng:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.usableVolume >= data.selectedDetails?.maxVolume ? data.selectedDetails?.maxVolume.toFixed(2) : data.selectedDetails?.usableVolume.toFixed(2)}</span>
-                                                        </div> 
-                                                        <div div style={{display: "flex", margin: "2% 0px 0px 12.5%", justifyContent: "space-between", width: "75%"}}>
-                                                                <Label style={{fontSize: "16px", width: "45%"}}>Thể tích tối đa:</Label>
-                                                                <span style={{fontSize: "16px", fontWeight: 500}}>{data.selectedDetails?.maxVolume.toFixed(2)}</span>
-                                                        </div>      
-                                                </div>
-                        
-                                </FormSection>
-                                
-                                <ListSection>
-                                        <SectionTitle style={{fontSize: "24px"}}>Lịch sử lưu trữ</SectionTitle>
+                <div className={styles.historyCard}>
+                    <h2 className={styles.historyTitle}>Lịch sử lưu trữ</h2>
 
-                                        <Table>
-                                        <thead>
-                                        <tr>
+                    {stockLocationHistories.length === 0 ? (
+                        <div className={styles.emptyState}>Không có lịch sử lưu trữ trong khoảng thời gian đã chọn.</div>
+                    ) : (
+                        <div className={styles.tableWrapper}>
+                            <Table className={styles.tableInner}>
+                                <thead>
+                                    <tr>
                                         <TableHeader style={{ width: '5%' }}>STT</TableHeader>
                                         <TableHeader style={{ width: '30%' }}>Sản phẩm</TableHeader>
                                         <TableHeader style={{ width: '10%' }}>Lô hàng</TableHeader>
@@ -150,36 +147,29 @@ const Detail = ({data, activeTab}) => {
                                         <TableHeader style={{ width: '10%' }}>Số lượng tồn</TableHeader>
                                         <TableHeader style={{ width: '10%' }}>Ngày nhập</TableHeader>
                                         <TableHeader style={{ width: '10%' }}>Ngày xuất</TableHeader>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {stockLocationHistories.map((item, index) => (
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {stockLocationHistories.map((item, index) => (
                                         <tr key={index}>
-                                                <TableCell>{index + 1}</TableCell>
-                                                <TableCell>{item.materialName}</TableCell>
-                                                <TableCell>{item.lotNumber}</TableCell>
-                                                <TableCell>{item.inboundQuantity}</TableCell>
-                                                <TableCell>{item.outboundQuantity}</TableCell>
-                                                <TableCell>{item.availableQuantity}</TableCell>
-                                                <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
-                                                <TableCell>{item.issueDate ? new Date(item.issueDate).toLocaleDateString() : '--'}</TableCell>
-
+                                            <TableCell>{index + 1}</TableCell>
+                                            <TableCell>{item.materialName}</TableCell>
+                                            <TableCell>{item.lotNumber}</TableCell>
+                                            <TableCell>{item.inboundQuantity}</TableCell>
+                                            <TableCell>{item.outboundQuantity}</TableCell>
+                                            <TableCell>{item.availableQuantity}</TableCell>
+                                            <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
+                                            <TableCell>{item.issueDate ? new Date(item.issueDate).toLocaleDateString() : '--'}</TableCell>
                                         </tr>
-                                        ))}
-                                        </tbody>
-                                        </Table>
-                                </ListSection>
-
+                                    ))}
+                                </tbody>
+                            </Table>
                         </div>
-
-
-
-
-
-                
+                    )}
                 </div>
-                
-        );
+            </div>
+        </div>
+    );
 };
 
 export default Detail;

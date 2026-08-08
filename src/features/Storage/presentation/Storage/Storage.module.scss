@@ -1,0 +1,223 @@
+@use '../../../../common/styles/variables' as v;
+
+.page {
+    background-color: v.$color-bg;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px 24px 48px;
+    box-sizing: border-box;
+}
+
+.loadingOverlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-md;
+}
+
+.headerRow {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.filters {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filterField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 220px;
+}
+
+.filterLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: v.$color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 10px 16px;
+    background-color: rgba(45, 212, 191, 0.08);
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+}
+
+.legendKicker {
+    font-size: 12px;
+    font-weight: 700;
+    color: v.$color-navy;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: v.$color-text;
+}
+
+.legendSwatch {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    border: 1px solid v.$color-border;
+}
+
+.zoneList {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.zoneCard {
+    background-color: v.$color-surface;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-sm;
+    padding: 18px 20px;
+}
+
+.zoneCardHeader {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.zoneKicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: v.$color-teal-dark;
+}
+
+.zoneTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: v.$color-navy;
+    margin: 0;
+}
+
+.rackScroll {
+    overflow-x: auto;
+}
+
+.rackList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    min-width: 640px;
+}
+
+.rack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.rackLabel {
+    align-self: flex-start;
+}
+
+.rackGrid {
+    display: grid;
+    gap: 0;
+    width: 100%;
+}
+
+.colHeaderRow {
+    display: grid;
+}
+
+.colHeaderCell {
+    text-align: center;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 0;
+    color: v.$color-navy;
+}
+
+.colHeaderSpacer {
+    // keeps the outer 2-column grid aligned with the floor-number column
+}
+
+.cellsColumn {
+    display: grid;
+    border: 1px solid v.$color-border;
+}
+
+.cellRow {
+    display: grid;
+}
+
+.cell {
+    height: 64px;
+    box-sizing: border-box;
+    border: 1px solid v.$color-navy;
+    position: relative;
+    overflow: hidden;
+}
+
+.cellClickable {
+    cursor: pointer;
+}
+
+.cellLot {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.cellLotLabel {
+    color: #fff;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.floorColumn {
+    display: grid;
+    border: 1px solid v.$color-border;
+    border-left: none;
+}
+
+.floorCell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: v.$color-teal-dark;
+}
