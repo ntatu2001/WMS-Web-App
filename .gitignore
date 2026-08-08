@@ -12,7 +12,7 @@
 /build
 
 # User Guide
-/UserGuide
+UserGuide
 
 # misc
 .DS_Store
