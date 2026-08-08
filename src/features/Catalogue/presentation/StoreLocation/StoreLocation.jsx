@@ -35,9 +35,30 @@ const emptyFormData = {
   dimensions: "",
 };
 
+const mapLocation = (location) => {
+  const status = location.locationPropertyDTOs?.find(
+    (prop) => prop.propertyName === "Status"
+  )?.propertyValue || "--";
+
+  const height = location.locationPropertyDTOs?.find(
+    (prop) => prop.propertyName === "Height"
+  )?.propertyValue || "--";
+
+  const width = location.locationPropertyDTOs?.find(
+    (prop) => prop.propertyName === "Width"
+  )?.propertyValue || "--";
+
+  const length = location.locationPropertyDTOs?.find(
+    (prop) => prop.propertyName === "Length"
+  )?.propertyValue || "--";
+
+  return { ...location, status, height, width, length };
+};
+
 const StoreLocation = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
+  const [locations, setLocations] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
@@ -46,6 +67,25 @@ const StoreLocation = () => {
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // GetAllLocations trả về QueryResult<LocationDTO> (results + totalItems)
+        const response = await locationApi.getAllLocations({ pageNumber: 1, itemsPerPage: 1000 });
+        const mapped = (response?.results || []).map(mapLocation);
+        setLocations(mapped);
+        setFilteredData(mapped);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (hasSubmitted) {
@@ -129,6 +169,7 @@ const StoreLocation = () => {
           length: dimensionsArray[1] || "--",
           height: dimensionsArray[2] || "--",
         };
+        setLocations((prev) => [...prev, mappedNewLocation]);
         setFilteredData((prev) => [...prev, mappedNewLocation]);
 
         setFormData(emptyFormData);
@@ -149,61 +190,13 @@ const StoreLocation = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchCode.trim()) {
-      setFilteredData([]);
+  const handleSearch = () => {
+    const normalized = searchCode.trim().toLowerCase();
+    if (!normalized) {
+      setFilteredData(locations);
       return;
     }
-    setIsLoading(true);
-    try {
-      const location = await locationApi.getLocationById(searchCode);
-
-      if (!location || !location.locationPropertyDTOs || location.locationPropertyDTOs.length === 0) {
-        toast.info("Không tìm thấy dữ liệu vị trí lưu trữ!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-        setFilteredData([]);
-        return;
-      }
-
-      const status = location.locationPropertyDTOs.find(
-        (prop) => prop.propertyName === "Status"
-      )?.propertyValue || "--";
-
-      const height = location.locationPropertyDTOs.find(
-        (prop) => prop.propertyName === "Height"
-      )?.propertyValue || "--";
-
-      const width = location.locationPropertyDTOs.find(
-        (prop) => prop.propertyName === "Width"
-      )?.propertyValue || "--";
-
-      const length = location.locationPropertyDTOs.find(
-        (prop) => prop.propertyName === "Length"
-      )?.propertyValue || "--";
-
-      setFilteredData([{ ...location, status, height, width, length }]);
-    } catch (error) {
-      console.error("Error fetching location:", error);
-      toast.error(getApiErrorMessage(error, "Không thể tìm kiếm vị trí lưu trữ. Vui lòng thử lại!"), {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      setFilteredData([]);
-    } finally {
-      setIsLoading(false);
-    }
+    setFilteredData(locations.filter((item) => item.locationId?.toLowerCase().includes(normalized)));
   };
 
   return (
@@ -335,7 +328,7 @@ const StoreLocation = () => {
               <ActionButton
                 onClick={handleSearch}
                 disabled={isLoading}
-                style={{ width: "130px", padding: "10px", fontSize: "14px" }}
+                style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
                 {isLoading ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
@@ -356,7 +349,6 @@ const StoreLocation = () => {
                       <TableHeader style={{ width: "48px" }}>STT</TableHeader>
                       <TableHeader style={{ width: "160px" }}>Tên thiết bị</TableHeader>
                       <TableHeader style={{ width: "140px" }}>Mã vị trí</TableHeader>
-                      <TableHeader style={{ width: "160px" }}>Mô tả</TableHeader>
                       <TableHeader style={{ width: "180px" }}>Kho hàng</TableHeader>
                       <TableHeader style={{ width: "140px" }}>Khu vực</TableHeader>
                       <TableHeader style={{ width: "160px" }}>Kích thước</TableHeader>
@@ -368,7 +360,6 @@ const StoreLocation = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.equipmentName}</TableCell>
                         <TableCell>{item.locationId}</TableCell>
-                        <TableCell>{item.status}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
                         <TableCell>{item.warehouseId}</TableCell>
                         <TableCell>{`${item.width || "--"} x ${item.length || "--"} x ${item.height || "--"} (m)`}</TableCell>

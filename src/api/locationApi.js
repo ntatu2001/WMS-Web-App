@@ -4,6 +4,11 @@ import axiosClient from "./axiosClient";
 
 const locationApi = {
 
+    getAllLocations(params) {
+        const url = 'Location/GetAllLocations';
+        return axiosClient.get(url, {params});
+    },
+
     createLocation(data) {
         const url = 'Location/CreateNewLocation';
         return axiosClient.post(url, data);

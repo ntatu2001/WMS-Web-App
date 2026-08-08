@@ -430,7 +430,7 @@ const Goods = () => {
               />
               <ActionButton
                 onClick={handleSearch}
-                style={{ width: "130px", padding: "10px", fontSize: "14px" }}
+                style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
                 Tìm kiếm
               </ActionButton>

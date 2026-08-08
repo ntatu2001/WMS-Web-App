@@ -10,6 +10,7 @@ import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import Tag from '../../../../common/components/Tag/Tag.jsx';
 import employeeApi from '../../../../api/employeeApi.js';
+import employeeClassApi from '../../../../api/employeeClassApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
@@ -17,13 +18,6 @@ import { ClipLoader } from 'react-spinners';
 import styles from './Employees.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
-
-const employeeClassOptions = [
-  { value: 'QLK', label: 'Quản lý kho' },
-  { value: 'TK', label: 'Thủ kho' },
-  { value: 'NVK', label: 'Nhân viên vận chuyển' },
-];
-const employeeClassLabels = employeeClassOptions.reduce((acc, opt) => ({ ...acc, [opt.value]: opt.label }), {});
 
 const emptyFormData = {
   employeeName: "",
@@ -61,6 +55,7 @@ const Employees = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
   const [employees, setEmployees] = useState([]);
+  const [employeeClasses, setEmployeeClasses] = useState([]);
   const [searchCode, setSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
@@ -85,7 +80,17 @@ const Employees = () => {
       }
     };
 
+    const fetchEmployeeClasses = async () => {
+      try {
+        const response = await employeeClassApi.getAllEmployeeClasses();
+        setEmployeeClasses(response || []);
+      } catch (error) {
+        console.error("Error fetching employee classes:", error);
+      }
+    };
+
     fetchData();
+    fetchEmployeeClasses();
   }, []);
 
   useEffect(() => {
@@ -191,6 +196,11 @@ const Employees = () => {
     setFilteredData(applyFilter(employees, searchCode));
   };
 
+  const employeeClassLabels = employeeClasses.reduce(
+    (acc, item) => ({ ...acc, [item.employeeClassId]: item.employeeClassName }),
+    {}
+  );
+
   return (
     <div style={{ padding: '0 0 20px' }}>
       {isAdmin && (
@@ -239,8 +249,8 @@ const Employees = () => {
                     onChange={(e) => setFormData((prev) => ({ ...prev, employeeClassId: e.target.value }))}
                     placeholder="Chọn chức vụ"
                   >
-                    {employeeClassOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    {employeeClasses.map((opt) => (
+                      <option key={opt.employeeClassId} value={opt.employeeClassId}>{opt.employeeClassName}</option>
                     ))}
                   </Select>
                 </SelectContainer>
@@ -328,7 +338,7 @@ const Employees = () => {
               />
               <ActionButton
                 onClick={handleSearch}
-                style={{ width: "130px", padding: "10px", fontSize: "14px" }}
+                style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
                 Tìm kiếm
               </ActionButton>
