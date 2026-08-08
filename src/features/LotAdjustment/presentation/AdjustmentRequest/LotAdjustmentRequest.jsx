@@ -129,7 +129,7 @@ const RequestLotAdjustment = () => {
                     const materialSubLotsByLotNumber = await materialSubLotApi.getMaterialSubLotsByLotNumber(selectedLotNumber);
                     const materialById = await materialApi.getMaterialById(result.materialId);
                     const unitByMaterialId = await materialApi.getUnitByMaterialId(result.materialId);
-                    const note = materialById?.properties?.find(prop => prop.propertyName === "Note")?.propertyValue || "";
+                    const note = materialById?.properties?.find(prop => prop.propertyName?.trim() === "Note")?.propertyValue || "";
 
                     // Initialize real quantities array with objects containing realQuantity and locationId
                     const initialRealQuantities = materialSubLotsByLotNumber.map(subLot => ({

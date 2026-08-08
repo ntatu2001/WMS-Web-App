@@ -1,13 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const storedRefreshToken = localStorage.getItem('refreshToken');
+const storedUserName = localStorage.getItem('userName');
 
 const initialState = {
   isLogin: false,
   accessToken: null,
   refreshToken: storedRefreshToken,
   roles: [],
-  userName: null,
+  userName: storedUserName || null,
   employeeId: null,
   // Nếu có refreshToken cũ trong localStorage, LoginGuard sẽ thử refresh ngầm trước khi quyết định điều hướng /login
   isBootstrapping: !!storedRefreshToken,
@@ -27,6 +28,9 @@ const authSlice = createSlice({
       state.employeeId = employeeId || null;
       state.isBootstrapping = false;
       localStorage.setItem('refreshToken', refreshToken);
+      if (userName) {
+        localStorage.setItem('userName', userName);
+      }
     },
     tokensRefreshed: (state, action) => {
       const { accessToken, refreshToken, roles, employeeId } = action.payload;
@@ -54,6 +58,7 @@ const authSlice = createSlice({
       state.employeeId = null;
       state.isBootstrapping = false;
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userName');
     },
   },
 });

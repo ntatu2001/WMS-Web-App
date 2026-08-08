@@ -462,14 +462,14 @@ const Goods = () => {
                   </thead>
                   <tbody>
                     {filteredData.map((item, index) => {
-                      const unitProperty = item.properties?.find((prop) => prop.propertyName === "Unit");
-                      const priceProperty = item.properties?.find((prop) => prop.propertyName === "Price");
-                      const minimumStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "MinimumStockLevel");
-                      const defaultStockLevelProperty = item.properties?.find((prop) => prop.propertyName === "DefaultStockLevel");
-                      const widthProperty = item.properties?.find((prop) => prop.propertyName === "Width");
-                      const lengthProperty = item.properties?.find((prop) => prop.propertyName === "Length");
-                      const heightProperty = item.properties?.find((prop) => prop.propertyName === "Height");
-                      const storageLevelProperty = item.properties?.find((prop) => prop.propertyName === "StorageLevel");
+                      const unitProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "Unit");
+                      const priceProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "Price");
+                      const minimumStockLevelProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "MinimumStockLevel");
+                      const defaultStockLevelProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "DefaultStockLevel");
+                      const widthProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "Width");
+                      const lengthProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "Length");
+                      const heightProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "Height");
+                      const storageLevelProperty = item.properties?.find((prop) => prop.propertyName?.trim() === "StorageLevel");
 
                       const dimensions = [
                         widthProperty?.propertyValue || "--",

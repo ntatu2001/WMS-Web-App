@@ -31,15 +31,15 @@ const emptyFormData = {
 
 const mapEmployee = (employee) => {
   const dateOfBirth = employee.employeePropertyDTOs?.find(
-    (prop) => prop.propertyName === "DateOfBirth"
+    (prop) => prop.propertyName?.trim() === "DateOfBirth"
   )?.propertyValue || "--";
 
   const email = employee.employeePropertyDTOs?.find(
-    (prop) => prop.propertyName === "Email"
+    (prop) => prop.propertyName?.trim() === "Email"
   )?.propertyValue || "--";
 
   const dailyWorkingTime = employee.employeePropertyDTOs?.find(
-    (prop) => prop.propertyName === "DailyWorkingTime"
+    (prop) => prop.propertyName?.trim() === "DailyWorkingTime"
   )?.propertyValue || "--";
 
   return {

@@ -37,19 +37,19 @@ const emptyFormData = {
 
 const mapLocation = (location) => {
   const status = location.locationPropertyDTOs?.find(
-    (prop) => prop.propertyName === "Status"
+    (prop) => prop.propertyName?.trim() === "Status"
   )?.propertyValue || "--";
 
   const height = location.locationPropertyDTOs?.find(
-    (prop) => prop.propertyName === "Height"
+    (prop) => prop.propertyName?.trim() === "Height"
   )?.propertyValue || "--";
 
   const width = location.locationPropertyDTOs?.find(
-    (prop) => prop.propertyName === "Width"
+    (prop) => prop.propertyName?.trim() === "Width"
   )?.propertyValue || "--";
 
   const length = location.locationPropertyDTOs?.find(
-    (prop) => prop.propertyName === "Length"
+    (prop) => prop.propertyName?.trim() === "Length"
   )?.propertyValue || "--";
 
   return { ...location, status, height, width, length };

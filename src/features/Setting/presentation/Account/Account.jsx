@@ -3,8 +3,10 @@ import { useSelector } from 'react-redux';
 import AccountApi from '../../../../api/AccountApi.js';
 import styles from './Account.module.scss';
 
+// ⚠️ Backend đôi khi trả propertyName kèm khoảng trắng thừa (vd: "Gender "),
+// nên so sánh sau khi trim thay vì so khớp tuyệt đối.
 const findProperty = (properties, name) =>
-  properties?.find((prop) => prop.propertyName === name)?.propertyValue || '--';
+  properties?.find((prop) => prop.propertyName?.trim() === name)?.propertyValue || '--';
 
 const Account = ({ onCancel }) => {
   const userName = useSelector((state) => state.auth.userName);
@@ -78,6 +80,9 @@ const Account = ({ onCancel }) => {
 
                   <label className={styles.label}>Ngày sinh</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'DateOfBirth')}</p>
+
+                  <label className={styles.label}>Thời gian làm việc</label>
+                  <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'DailyWorkingTime')}</p>
 
                   <label className={styles.label}>Email</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'Email')}</p>
