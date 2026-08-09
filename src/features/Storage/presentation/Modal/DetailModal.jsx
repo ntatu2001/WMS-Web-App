@@ -87,7 +87,9 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
         : lotInfors[0];
     const maxVolume = details?.maxVolume;
     const usableVolume = details?.usableVolume;
-    const fillRate = maxVolume ? (usableVolume >= maxVolume ? 100 : (usableVolume / maxVolume) * 100) : 0;
+    // Dùng storageRate do backend tính sẵn (LocationStorageInfoDTO.storageRate) thay vì tự suy ra từ
+    // usableVolume/maxVolume — 2 field đó có thể không phản ánh đúng thể tích đã dùng thực tế.
+    const fillRate = details?.storageRate ?? 0;
 
     return (
         <div

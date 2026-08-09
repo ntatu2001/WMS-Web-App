@@ -10,6 +10,8 @@ import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import Image from '../../../../assets/image.png';
 import locationApi from '../../../../api/locationApi';
+import materiaLotApi from '../../../../api/materiaLotApi.js';
+import materialApi from '../../../../api/materialApi.js';
 import styles from './Detail.module.scss';
 
 const STATUS_COLORS = {
@@ -23,30 +25,81 @@ const Detail = ({ data, activeTab }) => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedDate1, setSelectedDate1] = useState(null);
     const [stockLocationHistories, setStockLocationHistories] = useState([]);
+    const [currentLotRows, setCurrentLotRows] = useState([]);
 
     useEffect(() => {
         const fetchStockLocationHistories = async () => {
-            const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, '', '');
-            setStockLocationHistories(response);
+            try {
+                const response = await locationApi.getStockLocationHistoriesByLocationId(data.position, '', '');
+                setStockLocationHistories(response || []);
+            } catch (error) {
+                console.error('Error fetching stock location histories:', error);
+                setStockLocationHistories([]);
+            }
         };
         fetchStockLocationHistories();
     }, []);
 
     useEffect(() => {
+        if (!selectedDate || !selectedDate1) return;
+
         const fetchStockLocationHistories = async () => {
-            if (selectedDate && selectedDate1) {
+            try {
                 const response = await locationApi.getStockLocationHistoriesByLocationId(
                     data.position,
                     new Date(selectedDate).toISOString(),
                     new Date(selectedDate1).toISOString()
                 );
-                setStockLocationHistories(response);
+                setStockLocationHistories(response || []);
+            } catch (error) {
+                console.error('Error fetching stock location histories:', error);
+                setStockLocationHistories([]);
             }
         };
-        if (selectedDate && selectedDate1) {
-            fetchStockLocationHistories();
-        }
+        fetchStockLocationHistories();
     }, [selectedDate, selectedDate1]);
+
+    // Lô đang lưu trữ tại vị trí này (nếu có) chưa chắc đã xuất hiện trong lịch sử nhập/xuất
+    // (còn đang mở, chưa có giao dịch xuất) — hiển thị mặc định khi chưa lọc theo ngày, để người
+    // dùng luôn thấy thông tin lô hiện tại mà không cần chọn Từ ngày/Đến ngày.
+    useEffect(() => {
+        const lotInfors = data.selectedDetails?.lotInfors || [];
+        if (lotInfors.length === 0) {
+            setCurrentLotRows([]);
+            return;
+        }
+
+        let cancelled = false;
+
+        const fetchCurrentLotRows = async () => {
+            const rows = await Promise.all(lotInfors.map(async (lot) => {
+                const lotNumber = lot.lotnumber;
+                let materialName = '--';
+                try {
+                    const lotDetail = await materiaLotApi.getMaterialLotById(lotNumber);
+                    if (lotDetail?.materialId) {
+                        const material = await materialApi.getMaterialById(lotDetail.materialId);
+                        materialName = material?.materialName || '--';
+                    }
+                } catch (error) {
+                    console.error('Error fetching current lot material info:', error);
+                }
+                return {
+                    materialName,
+                    lotNumber,
+                    inboundQuantity: '--',
+                    outboundQuantity: '--',
+                    availableQuantity: lot.quantity,
+                    receiptDate: null,
+                    issueDate: null,
+                };
+            }));
+            if (!cancelled) setCurrentLotRows(rows);
+        };
+
+        fetchCurrentLotRows();
+        return () => { cancelled = true; };
+    }, [data.selectedDetails]);
 
     const details = data.selectedDetails;
     const lotInfors = details?.lotInfors || [];
@@ -56,7 +109,20 @@ const Detail = ({ data, activeTab }) => {
         : lotInfors[0];
     const maxVolume = details?.maxVolume;
     const usableVolume = details?.usableVolume;
-    const storageRate = maxVolume ? (usableVolume >= maxVolume ? 100 : (usableVolume / maxVolume) * 100) : 0;
+    // Dùng storageRate do backend tính sẵn (LocationStorageInfoDTO.storageRate) thay vì tự suy ra từ
+    // usableVolume/maxVolume — 2 field đó có thể không phản ánh đúng thể tích đã dùng thực tế.
+    const storageRate = details?.storageRate ?? 0;
+
+    // Chưa chọn Từ ngày/Đến ngày => ghép thêm thông tin lô đang lưu trữ (nếu có) lên đầu bảng,
+    // bỏ qua lô nào đã có sẵn trong lịch sử để tránh hiển thị trùng.
+    const isFilteringByDate = Boolean(selectedDate && selectedDate1);
+    const historyLotNumbers = new Set(stockLocationHistories.map((item) => item.lotNumber));
+    const displayedRows = isFilteringByDate
+        ? stockLocationHistories
+        : [
+            ...currentLotRows.filter((row) => !historyLotNumbers.has(row.lotNumber)),
+            ...stockLocationHistories,
+        ];
 
     return (
         <div className={styles.page}>
@@ -132,7 +198,7 @@ const Detail = ({ data, activeTab }) => {
                 <div className={styles.historyCard}>
                     <h2 className={styles.historyTitle}>Lịch sử lưu trữ</h2>
 
-                    {stockLocationHistories.length === 0 ? (
+                    {displayedRows.length === 0 ? (
                         <div className={styles.emptyState}>Không có lịch sử lưu trữ trong khoảng thời gian đã chọn.</div>
                     ) : (
                         <div className={styles.tableWrapper}>
@@ -150,7 +216,7 @@ const Detail = ({ data, activeTab }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {stockLocationHistories.map((item, index) => (
+                                    {displayedRows.map((item, index) => (
                                         <tr key={index}>
                                             <TableCell>{index + 1}</TableCell>
                                             <TableCell>{item.materialName}</TableCell>
@@ -158,7 +224,7 @@ const Detail = ({ data, activeTab }) => {
                                             <TableCell>{item.inboundQuantity}</TableCell>
                                             <TableCell>{item.outboundQuantity}</TableCell>
                                             <TableCell>{item.availableQuantity}</TableCell>
-                                            <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
+                                            <TableCell>{item.receiptDate ? new Date(item.receiptDate).toLocaleDateString() : '--'}</TableCell>
                                             <TableCell>{item.issueDate ? new Date(item.issueDate).toLocaleDateString() : '--'}</TableCell>
                                         </tr>
                                     ))}
