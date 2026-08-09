@@ -35,6 +35,10 @@ const Select = ({ children, className = "", style, value, onChange, placeholder,
   };
   
   const customStyles = {
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 9999
+    }),
     menu: (provided) => ({
       ...provided,
       marginTop: '4px', // Ensures dropdown appears below
@@ -74,6 +78,7 @@ const Select = ({ children, className = "", style, value, onChange, placeholder,
       onChange={handleChange}
       menuPlacement="bottom" // Force menu to appear below
       menuPosition="fixed" // Ensure proper positioning
+      menuPortalTarget={typeof document !== 'undefined' ? document.body : null} // Render menu outside any ancestor stacking context (e.g. sticky table headers)
       isSearchable={false}
       placeholder={selectPlaceholder}
       isClearable={false}

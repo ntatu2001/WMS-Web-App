@@ -50,7 +50,7 @@ const ManageGoodReceipt = () => {
       try {
         setLoading(true);
         const receiptEntryList = await inventoryReceiptEntryApi.getAllReceiptEntries();
-        const receiptEntryNotPending = receiptEntryList.filter(entry => entry.receiptLot.receiptLotStatus !== "Pending");
+        const receiptEntryNotPending = receiptEntryList.filter(entry => entry.receiptLot && entry.receiptLot.receiptLotStatus !== "Pending");
         setReceiptEntries(receiptEntryNotPending);
       } catch (error) {
         console.error("Error fetching receipt entries:", error);
@@ -195,7 +195,7 @@ const ManageGoodReceipt = () => {
 
           <ListSection elevated>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <HeaderItem>Lô nhập kho</HeaderItem>
+              <HeaderItem>Thông tin lô hàng nhập kho</HeaderItem>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {PERIOD_OPTIONS.map((opt) => (
@@ -213,23 +213,20 @@ const ManageGoodReceipt = () => {
                 <Tag variant="accent">{displayedEntries.length} lô</Tag>
               </div>
             </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "420px"}}>
+            <div style={{ marginTop: '1rem', overflowY: 'scroll', overflowX: 'auto', height: "420px"}}>
               {loading ? (
                 <LoadingSpinner />
               ) : displayedEntries.length > 0 ? (
-                <Table>
+                <Table style={{ minWidth: '760px' }}>
                   <thead>
                     <tr>
-                      <TableHeader>STT</TableHeader>
+                      <TableHeader style={{width: "6%"}}>STT</TableHeader>
                       <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
                       <TableHeader style={{width: "8%"}}>Mã sản phẩm</TableHeader>
-                      <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
                       <TableHeader style={{width: "8%"}}>Số lượng nhập</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
                       <TableHeader style={{width: "12%"}}>Ngày nhập kho</TableHeader>
                       <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
-                      <TableHeader style={{width: "12%"}}>Ghi chú</TableHeader>
                       <TableHeader style={{width: "12%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
@@ -239,13 +236,10 @@ const ManageGoodReceipt = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
                         <TableCell>{item.materialId}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.receiptLot.importedQuantity}</TableCell>
-                        <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
-                        <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <ReceiptProgress
                             item={{

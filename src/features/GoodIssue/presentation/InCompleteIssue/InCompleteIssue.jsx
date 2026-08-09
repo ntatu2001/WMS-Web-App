@@ -140,7 +140,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     // Make the approve action available to parent component via prop
     useEffect(() => {
         if (onApproveButtonClick) {
-            onApproveButtonClick(() => updateIssueSubLots);
+            onApproveButtonClick(updateIssueSubLots);
         }
     }, [onApproveButtonClick, updatedItems]);
 
@@ -244,6 +244,18 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
 
             // Call API to update the issue sublots
             await issueSubLotApi.updateIssueSubLot(updatedIssueSubLot);
+
+            // Sau khi phân bổ vị trí xong, chuyển các lô đang "Pending" sang "InProgress"
+            // để chúng hiển thị trong "Quản lý xuất kho" (trang đó lọc bỏ các lô "Pending").
+            await Promise.all(
+                issueLots.map(lot =>
+                    issueLotApi.updateIssueLotStatus({
+                        issueLotId: lot.issueLotId,
+                        issueLotStatus: "InProgress"
+                    })
+                )
+            );
+
             toast.success("Duyệt danh sách xuất kho thành công!", {
                 position: "top-right",
                 autoClose: 3000,

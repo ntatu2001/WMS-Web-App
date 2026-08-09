@@ -4,6 +4,7 @@ import ContentContainer from '../../../../../common/components/ContentContainer/
 import { ClipLoader } from 'react-spinners';
 import schedulingApi from '../../../../../api/schedulingApi.js';
 import InforIssueModal from './../../InforModal/InforIssueModal.jsx';
+import Tag from '../../../../../common/components/Tag/Tag.jsx';
 import styles from './IssueDistribution.module.scss';
 
 const IssueDistribution = ({warehouseId, isActive}) => {
@@ -424,7 +425,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                            (isHovered && hoveredCellInfo.isOverColoredPart) ? 'pointer' : 'default';
         
         return (
-            <td
+            <div
                 key={cellId}
                 data-cell-id={cellId}
                 className={styles.cell}
@@ -551,7 +552,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                         })}
                     </>
                 )}
-            </td>
+            </div>
         );
     };
 
@@ -563,93 +564,9 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                 </div>
             ) : (
                 <div className={styles.wrapper}>
-                    <div className={styles.gridArea}>
-                        {Object.entries(dataTable || {})
-                            .sort(([sectionA], [sectionB]) => {
-                                const numA = parseInt(sectionA.split('_')[1] || '0', 10);
-                                const numB = parseInt(sectionB.split('_')[1] || '0', 10);
-                                return numB - numA;
-                            })
-                            .map(([sectionId, sectionData]) => {
-                                const { racks, parentSection } = sectionData;
-                                const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
-                                    const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
-                                    const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
-                                    return rackNumB - rackNumA;
-                                });
-
-                                return (
-                                    <div key={sectionId} className={styles.sectionBlock}>
-                                        <h2 className={styles.sectionTitle}>{parentSection}</h2>
-                                        <div>
-                                            {/* First rack table */}
-                                            {rackEntries.length > 0 && (
-                                                <div key={rackEntries[0][0]} style={{ marginBottom: "10px" }}>
-                                                    <table className={styles.rackTable}>
-                                                        <thead>
-                                                            <tr>
-                                                                {rackEntries[0][1].columns.map((col, index) => (
-                                                                    <th key={index} className={styles.rackHeaderCell}>
-                                                                        {col}
-                                                                    </th>
-                                                                ))}
-                                                                <th className={styles.rackHeaderCell} style={{ width: "30px" }}></th>
-                                                            </tr>
-                                                        </thead>
-
-                                                        <tbody>
-                                                            {rackEntries[0][1].rows.slice().reverse().map((row, rowIndex) => (
-                                                                <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) =>
-                                                                        renderCell(cell, cellIndex, rowIndex)
-                                                                    )}
-                                                                    <td className={styles.rowIndexCell}>
-                                                                        {DEFAULT_ROWS - rowIndex}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            )}
-
-                                            {/* Second rack table - Header moved to bottom */}
-                                            {rackEntries.length > 1 && (
-                                                <div key={rackEntries[1][0]}>
-                                                    <table className={styles.rackTable}>
-                                                        <tbody>
-                                                            {rackEntries[1][1].rows.slice().reverse().map((row, rowIndex) => (
-                                                                <tr key={rowIndex}>
-                                                                    {row.map((cell, cellIndex) =>
-                                                                        renderCell(cell, cellIndex, rowIndex)
-                                                                    )}
-                                                                    <td className={styles.rowIndexCell}>
-                                                                        {DEFAULT_ROWS - rowIndex}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                        <tfoot>
-                                                            <tr>
-                                                                {rackEntries[1][1].columns.map((col, index) => (
-                                                                    <th key={index} className={styles.rackFooterCell}>
-                                                                        {col}
-                                                                    </th>
-                                                                ))}
-                                                                <th className={styles.rackFooterCell} style={{ width: "30px" }}></th>
-                                                            </tr>
-                                                        </tfoot>
-                                                    </table>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                    </div>
-
                     {/* Legend */}
                     <div className={styles.legend}>
+                        <span className={styles.legendKicker}>Chú giải:</span>
                         <div className={styles.legendRow}>
                             <div className={styles.legendSwatch} style={{ backgroundColor: '#0089D7' }}></div>
                             <span>Đang chứa hàng</span>
@@ -669,6 +586,89 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                             <div className={styles.legendSwatch} style={{ backgroundColor: '#FFFFFF' }}></div>
                             <span>Đang trống</span>
                         </div>
+                    </div>
+
+                    <div className={styles.gridArea}>
+                        {Object.entries(dataTable || {})
+                            .sort(([sectionA], [sectionB]) => {
+                                const numA = parseInt(sectionA.split('_')[1] || '0', 10);
+                                const numB = parseInt(sectionB.split('_')[1] || '0', 10);
+                                return numB - numA;
+                            })
+                            .map(([sectionId, sectionData]) => {
+                                const { racks, parentSection } = sectionData;
+                                const rackEntries = Object.entries(racks).sort(([rackIdA], [rackIdB]) => {
+                                    const rackNumA = parseInt(rackIdA.split('_').pop(), 10);
+                                    const rackNumB = parseInt(rackIdB.split('_').pop(), 10);
+                                    return rackNumB - rackNumA;
+                                });
+
+                                return (
+                                    <div key={sectionId} className={styles.zoneCard}>
+                                        <div className={styles.zoneCardHeader}>
+                                            <span className={styles.zoneKicker}>Khu vực</span>
+                                            <h2 className={styles.zoneTitle}>{parentSection}</h2>
+                                        </div>
+
+                                        <div className={styles.rackScroll}>
+                                            <div className={styles.rackList}>
+                                                {rackEntries.map(([rackKey, rack], rackIndex) => {
+                                                    const colsCount = rack.columns.length;
+                                                    const rowsCount = rack.rows.length;
+                                                    const isFirstRack = rackIndex === 0;
+                                                    const isLastRack = rackIndex === rackEntries.length - 1;
+                                                    const reversedRows = rack.rows.slice().reverse();
+                                                    const rackNumber = rack.rackId.split('.').pop();
+
+                                                    return (
+                                                        <div key={rackKey} className={styles.rack}>
+                                                            <Tag variant="neutral" className={styles.rackLabel}>Dãy kệ {rackNumber}</Tag>
+
+                                                            <div className={styles.rackGrid} style={{ gridTemplateColumns: '1fr 34px' }}>
+                                                                {isFirstRack && (
+                                                                    <>
+                                                                        <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                            {rack.columns.map((col) => (
+                                                                                <div key={col} className={styles.colHeaderCell}>{col}</div>
+                                                                            ))}
+                                                                        </div>
+                                                                        <div className={styles.colHeaderSpacer}></div>
+                                                                    </>
+                                                                )}
+
+                                                                <div className={styles.cellsColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
+                                                                    {reversedRows.map((row, rowIndex) => (
+                                                                        <div key={rowIndex} className={styles.cellRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                            {row.map((cell, cellIndex) => renderCell(cell, cellIndex, rowIndex))}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className={styles.floorColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
+                                                                    {reversedRows.map((_, rowIndex) => (
+                                                                        <div key={rowIndex} className={styles.floorCell}>{DEFAULT_ROWS - rowIndex}</div>
+                                                                    ))}
+                                                                </div>
+
+                                                                {isLastRack && (
+                                                                    <>
+                                                                        <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                            {rack.columns.map((col) => (
+                                                                                <div key={col} className={styles.colHeaderCell}>{col}</div>
+                                                                            ))}
+                                                                        </div>
+                                                                        <div className={styles.colHeaderSpacer}></div>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                     </div>
 
                     {/* Modal */}

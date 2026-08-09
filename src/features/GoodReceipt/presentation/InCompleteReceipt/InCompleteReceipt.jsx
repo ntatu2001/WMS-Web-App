@@ -149,7 +149,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
     // Make the approve action available to parent component via prop
     useEffect(() => {
         if (onApproveButtonClick) {
-            onApproveButtonClick(() => updateReceiptSublots);
+            onApproveButtonClick(updateReceiptSublots);
         }
     }, [onApproveButtonClick, updatedItems]);
 
@@ -247,6 +247,18 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
             console.log("updatedReceiptSubLot", updatedReceiptSubLot);
             // Call API to update the material lot adjustment
             await receiptSubLotApi.updateReceiptSubLot(updatedReceiptSubLot);
+
+            // Sau khi phân bổ vị trí xong, chuyển các lô đang "Pending" sang "InProgress"
+            // để chúng hiển thị trong "Quản lý nhập kho" (trang đó lọc bỏ các lô "Pending").
+            await Promise.all(
+                receiptLots.map(lot =>
+                    receiptLotApi.updateReceiptLotStatus({
+                        receiptLotId: lot.receiptLotId,
+                        receiptLotStatus: "InProgress"
+                    })
+                )
+            );
+
             toast.success("Duyệt danh sách nhập kho thành công!", {
                 position: "top-right",
                 autoClose: 3000,

@@ -49,7 +49,7 @@ const ManageGoodIssue = () => {
       try {
         setLoading(true);
         const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
-        const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot.issueLotStatus !== "Pending");
+        const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot && entry.issueLot.issueLotStatus !== "Pending");
         setIssueEntries(issueEntryNotPending);
       } catch (error) {
         console.error("Error fetching issue entries:", error);
