@@ -19,6 +19,9 @@ import styles from './Employees.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
+// Chỉ hiển thị mặc định 100 dòng đầu (Employee/GetAllEmployees không hỗ trợ phân trang phía server).
+const DEFAULT_PAGE_SIZE = 100;
+
 const emptyFormData = {
   employeeName: "",
   employeeId: "",
@@ -72,7 +75,9 @@ const Employees = () => {
         const response = await employeeApi.getAllEmployees();
         const mapped = (response || []).map(mapEmployee);
         setEmployees(mapped);
-        setFilteredData(mapped);
+        // Employee/GetAllEmployees không hỗ trợ phân trang (luôn trả về toàn bộ), nên chỉ giới hạn
+        // số dòng hiển thị mặc định ở client; Tìm kiếm vẫn lọc trên toàn bộ `employees` đã tải.
+        setFilteredData(mapped.slice(0, DEFAULT_PAGE_SIZE));
       } catch (error) {
         console.error("Error fetching employees:", error);
       } finally {

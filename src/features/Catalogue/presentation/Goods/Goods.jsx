@@ -22,11 +22,16 @@ import styles from './Goods.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
-const fetchMaterials = async () => {
+// Chỉ tải 100 dòng đầu mặc định để trang load nhanh; khi người dùng thực sự bấm Tìm kiếm
+// mới tải toàn bộ (GetAllMaterials không hỗ trợ tìm kiếm phía server, chỉ có phân trang).
+const DEFAULT_PAGE_SIZE = 100;
+const FULL_LOAD_SIZE = 100000;
+
+const fetchMaterials = async (itemsPerPage = DEFAULT_PAGE_SIZE) => {
   try {
     // Material/GetAllMaterials is paginated and requires pageNumber/itemsPerPage (API Guide mục 3)
-    const response = await materialApi.getAllMaterials({ pageNumber: 1, itemsPerPage: 1000 });
-    return response.results;
+    const response = await materialApi.getAllMaterials({ pageNumber: 1, itemsPerPage });
+    return response.results || [];
   } catch (error) {
     console.error('Error fetching materials:', error);
     return [];
@@ -69,6 +74,8 @@ const Goods = () => {
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -248,8 +255,21 @@ const Goods = () => {
     }
   };
 
-  const handleSearch = () => {
-    setFilteredData(applyFilter(products, searchCode));
+  const handleSearch = async () => {
+    if (isFullyLoaded || !searchCode.trim()) {
+      setFilteredData(applyFilter(products, searchCode));
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const fullList = await fetchMaterials(FULL_LOAD_SIZE);
+      setProducts(fullList);
+      setIsFullyLoaded(true);
+      setFilteredData(applyFilter(fullList, searchCode));
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -430,15 +450,16 @@ const Goods = () => {
               />
               <ActionButton
                 onClick={handleSearch}
+                disabled={isSearching}
                 style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
-                Tìm kiếm
+                {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
               <Tag variant="accent">{filteredData.length} sản phẩm</Tag>
             </div>
 
             <div className={styles.tableWrapper}>
-              {isLoading ? (
+              {isLoading || isSearching ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
                   <ClipLoader size={40} color="#0066CC" />
                 </div>

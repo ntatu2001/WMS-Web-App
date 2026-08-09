@@ -18,6 +18,11 @@ import styles from './StoreLocation.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
+// Chỉ tải 100 dòng đầu mặc định để trang load nhanh; khi người dùng thực sự bấm Tìm kiếm
+// mới tải toàn bộ (GetAllLocations không hỗ trợ tìm kiếm phía server, chỉ có phân trang).
+const DEFAULT_PAGE_SIZE = 100;
+const FULL_LOAD_SIZE = 100000;
+
 const warehouseOptions = [
   "Kho thành phẩm",
   "Kho bán thành phẩm",
@@ -55,6 +60,12 @@ const mapLocation = (location) => {
   return { ...location, status, height, width, length };
 };
 
+const fetchLocations = async (itemsPerPage = DEFAULT_PAGE_SIZE) => {
+  // GetAllLocations trả về QueryResult<LocationDTO> (results + totalItems)
+  const response = await locationApi.getAllLocations({ pageNumber: 1, itemsPerPage });
+  return (response?.results || []).map(mapLocation);
+};
+
 const StoreLocation = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
@@ -64,6 +75,8 @@ const StoreLocation = () => {
   const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -72,9 +85,7 @@ const StoreLocation = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // GetAllLocations trả về QueryResult<LocationDTO> (results + totalItems)
-        const response = await locationApi.getAllLocations({ pageNumber: 1, itemsPerPage: 1000 });
-        const mapped = (response?.results || []).map(mapLocation);
+        const mapped = await fetchLocations();
         setLocations(mapped);
         setFilteredData(mapped);
       } catch (error) {
@@ -190,13 +201,27 @@ const StoreLocation = () => {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     const normalized = searchCode.trim().toLowerCase();
-    if (!normalized) {
-      setFilteredData(locations);
+
+    if (!normalized || isFullyLoaded) {
+      setFilteredData(
+        normalized ? locations.filter((item) => item.locationId?.toLowerCase().includes(normalized)) : locations
+      );
       return;
     }
-    setFilteredData(locations.filter((item) => item.locationId?.toLowerCase().includes(normalized)));
+
+    setIsSearching(true);
+    try {
+      const fullList = await fetchLocations(FULL_LOAD_SIZE);
+      setLocations(fullList);
+      setIsFullyLoaded(true);
+      setFilteredData(fullList.filter((item) => item.locationId?.toLowerCase().includes(normalized)));
+    } catch (error) {
+      console.error("Error fetching all locations for search:", error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -327,16 +352,16 @@ const StoreLocation = () => {
               />
               <ActionButton
                 onClick={handleSearch}
-                disabled={isLoading}
+                disabled={isSearching}
                 style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
-                {isLoading ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
+                {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
               <Tag variant="accent">{filteredData.length} vị trí</Tag>
             </div>
 
             <div className={styles.tableWrapper}>
-              {isLoading ? (
+              {isLoading || isSearching ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
                   <ClipLoader size={40} color="#0066CC" />
                 </div>

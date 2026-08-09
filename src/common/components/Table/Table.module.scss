@@ -9,9 +9,11 @@
 
 
 .tableHeader {
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 1;
     border-bottom: 2px solid v.$color-border;
-    background-color: rgba(10, 24, 48, 0.04);
+    background-color: v.$color-surface;
     padding: 12px 8px;
     text-align: center;
     font-weight: 700;
