@@ -9,6 +9,7 @@ import SelectContainer from '../../../../common/components/Selection/SelectConta
 import Select from '../../../../common/components/Selection/Select';
 import SearchInput from '../../../../common/components/Input/SearchInput';
 import Tag from '../../../../common/components/Tag/Tag';
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
 import { lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
 import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
@@ -18,15 +19,30 @@ import issueLotApi from '../../../../api/issueLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
+const PERIOD_OPTIONS = [
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'week', label: 'Tuần' },
+  { value: 'month', label: 'Tháng' },
+];
+
+// Mốc bắt đầu của khoảng thời gian được chọn, tính đến hết ngày hôm nay
+const getPeriodStart = (period) => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  if (period === 'week') start.setDate(start.getDate() - 6);
+  if (period === 'month') start.setDate(start.getDate() - 29);
+  return start;
+};
+
+const periodButtonStyle = { margin: 0, width: 'auto', padding: '8px 24px', fontSize: '14px' };
 
 const ManageGoodIssue = () => {
   const [issueEntries, setIssueEntries] = useState([]);
-  const [todayIssueEntries, setTodayIssueEntries] = useState([]);
-  const [lastWeekIssueEntries, setLastWeekIssueEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseFilter, setWarehouseFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [period, setPeriod] = useState('today');
 
   useEffect(() => {
     const GetApi = async() => {
@@ -35,38 +51,6 @@ const ManageGoodIssue = () => {
         const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
         const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot.issueLotStatus !== "Pending");
         setIssueEntries(issueEntryNotPending);
-
-        // Filter entries for today
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to beginning of day
-
-        const todayEntries = issueEntryNotPending.filter(entry => {
-          const entryDate = new Date(entry.issueDate);
-          entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
-          return entryDate.getTime() === today.getTime();
-        });
-
-        // Sort last week entries by date in descending order
-        const sortedTodayEntries = [...todayEntries].sort((a, b) =>
-          new Date(b.issueDate) - new Date(a.issueDate)
-        );
-
-        setTodayIssueEntries(sortedTodayEntries);
-
-        // Filter entries for last week (keeping existing code structure)
-        const lastWeekEntries = issueEntryNotPending.filter(entry => {
-          const entryDate = new Date(entry.issueDate);
-          const lastWeek = new Date();
-          lastWeek.setDate(lastWeek.getDate() - 7);
-          return entryDate >= lastWeek && entryDate < today;
-        });
-
-        // Sort last week entries by date in descending order
-        const sortedLastWeekEntries = [...lastWeekEntries].sort((a, b) =>
-          new Date(b.issueDate) - new Date(a.issueDate)
-        );
-
-        setLastWeekIssueEntries(sortedLastWeekEntries);
       } catch (error) {
         console.error("Error fetching issue entries:", error);
       } finally {
@@ -99,14 +83,13 @@ const ManageGoodIssue = () => {
     return matchesWarehouse && matchesSearch;
   };
 
-  const filteredTodayEntries = useMemo(
-    () => todayIssueEntries.filter(matchesFilter),
-    [todayIssueEntries, warehouseFilter, searchTerm]
-  );
-  const filteredLastWeekEntries = useMemo(
-    () => lastWeekIssueEntries.filter(matchesFilter),
-    [lastWeekIssueEntries, warehouseFilter, searchTerm]
-  );
+  const displayedEntries = useMemo(() => {
+    const periodStart = getPeriodStart(period);
+    return issueEntries
+      .filter(entry => new Date(entry.issueDate) >= periodStart)
+      .filter(matchesFilter)
+      .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
+  }, [issueEntries, period, warehouseFilter, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -130,8 +113,7 @@ const ManageGoodIssue = () => {
       return;
       }
       // Find the issue entry to check its current status
-      const entryToUpdate = [...issueEntries, ...todayIssueEntries, ...lastWeekIssueEntries]
-        .find(entry => entry.issueLot.issueLotId === itemId);
+      const entryToUpdate = issueEntries.find(entry => entry.issueLot.issueLotId === itemId);
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
         console.log("Cannot modify completed issue lots");
@@ -146,24 +128,18 @@ const ManageGoodIssue = () => {
       await issueLotApi.updateIssueLotStatus(updateIssueLotStatus);
 
       // Update local state
-      const updateEntries = entries => {
-        return entries.map(entry => {
-          if (entry.issueLot.issueLotId === itemId) {
-            return {
-              ...entry,
-              issueLot: {
-                ...entry.issueLot,
-                issueLotStatus: reversedStatus
-              }
-            };
-          }
-          return entry;
-        });
-      };
-
-      setIssueEntries(updateEntries(issueEntries));
-      setTodayIssueEntries(updateEntries(todayIssueEntries));
-      setLastWeekIssueEntries(updateEntries(lastWeekIssueEntries));
+      setIssueEntries(entries => entries.map(entry => {
+        if (entry.issueLot.issueLotId === itemId) {
+          return {
+            ...entry,
+            issueLot: {
+              ...entry.issueLot,
+              issueLotStatus: reversedStatus
+            }
+          };
+        }
+        return entry;
+      }));
       toast.success("Cập nhật trạng thái lô thành công!", {
         position: "top-right",
         autoClose: 3000,
@@ -215,31 +191,47 @@ const ManageGoodIssue = () => {
           </ListSection>
 
           <ListSection elevated>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <HeaderItem>Lô xuất kho trong ngày</HeaderItem>
-              <Tag variant="accent">{filteredTodayEntries.length} lô</Tag>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <HeaderItem>Lô xuất kho</HeaderItem>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {PERIOD_OPTIONS.map((opt) => (
+                    <ActionButton
+                      key={opt.value}
+                      active={period === opt.value}
+                      variant={period === opt.value ? undefined : 'secondary'}
+                      onClick={() => setPeriod(opt.value)}
+                      style={periodButtonStyle}
+                    >
+                      {opt.label}
+                    </ActionButton>
+                  ))}
+                </div>
+                <Tag variant="accent">{displayedEntries.length} lô</Tag>
+              </div>
             </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
+            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "420px"}}>
               {loading ? (
                 <LoadingSpinner />
-              ) : filteredTodayEntries.length > 0 ? (
+              ) : displayedEntries.length > 0 ? (
                 <Table>
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader>Tên sản phẩm</TableHeader>
-                      <TableHeader>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "8%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
-                      <TableHeader>Mã lô/Số PO</TableHeader>
-                      <TableHeader>Số lượng xuất</TableHeader>
-                      <TableHeader>Nhân viên</TableHeader>
-                      <TableHeader>Ghi chú</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
-                      <TableHeader></TableHeader>
+                      <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
+                      <TableHeader style={{width: "8%"}}>Số lượng xuất</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Ngày xuất kho</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Ghi chú</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTodayEntries.map((item, index) => (
+                    {displayedEntries.map((item, index) => (
                       <tr key={index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
@@ -248,6 +240,8 @@ const ManageGoodIssue = () => {
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.issueLot.requestedQuantity}</TableCell>
                         <TableCell>{item.personName}</TableCell>
+                        <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{item.warehouseName}</TableCell>
                         <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <IssueProgress
@@ -264,63 +258,7 @@ const ManageGoodIssue = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  Không có dữ liệu trong ngày
-                </div>
-              )}
-            </div>
-          </ListSection>
-          <ListSection style={{ marginTop: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <HeaderItem>Lô xuất kho gần đây</HeaderItem>
-              <Tag variant="neutral">{filteredLastWeekEntries.length} lô</Tag>
-            </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
-              {loading ? (
-                <LoadingSpinner />
-              ) : filteredLastWeekEntries.length > 0 ? (
-                <Table>
-                  <thead>
-                    <tr>
-                      <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
-                      <TableHeader>ĐVT</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Số lượng xuất</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Ngày xuất kho</TableHeader>
-                      <TableHeader>Kho hàng</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLastWeekEntries.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{item.materialName}</TableCell>
-                        <TableCell>{item.materialId}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
-                        <TableCell>{item.lotNumber}</TableCell>
-                        <TableCell>{item.issueLot.requestedQuantity}</TableCell>
-                        <TableCell>{item.personName}</TableCell>
-                        <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{item.warehouseName}</TableCell>
-                        <TableCell style={{ textAlign: 'center' }}>
-                          <IssueProgress
-                            item={{
-                              id: item.issueLot.issueLotId,
-                              status: lotStatusChangeData[item.issueLot.issueLotStatus]
-                            }}
-                            handleStatusChange={handleStatusChange}
-                          />
-                        </TableCell>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  {warehouseFilter || searchTerm ? "Không có lô xuất kho gần đây phù hợp." : "Không có dữ liệu kho gần đây"}
+                  {warehouseFilter || searchTerm ? "Không có lô xuất kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
                 </div>
               )}
             </div>

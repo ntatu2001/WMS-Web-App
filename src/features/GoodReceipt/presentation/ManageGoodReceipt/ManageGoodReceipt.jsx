@@ -9,6 +9,7 @@ import SelectContainer from '../../../../common/components/Selection/SelectConta
 import Select from '../../../../common/components/Selection/Select';
 import SearchInput from '../../../../common/components/Input/SearchInput';
 import Tag from '../../../../common/components/Tag/Tag';
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
 import { lotStatusChangeData } from '../../../../app/mockData/LotStatusData.js';
 import inventoryReceiptEntryApi from '../../../../api/inventoryReceiptEntryApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
@@ -18,15 +19,31 @@ import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
+const PERIOD_OPTIONS = [
+  { value: 'today', label: 'Hôm nay' },
+  { value: 'week', label: 'Tuần' },
+  { value: 'month', label: 'Tháng' },
+];
+
+// Mốc bắt đầu của khoảng thời gian được chọn, tính đến hết ngày hôm nay
+const getPeriodStart = (period) => {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  if (period === 'week') start.setDate(start.getDate() - 6);
+  if (period === 'month') start.setDate(start.getDate() - 29);
+  return start;
+};
+
+const periodButtonStyle = { margin: 0, width: 'auto', padding: '8px 24px', fontSize: '14px' };
+
 const ManageGoodReceipt = () => {
 
   const [receiptEntries, setReceiptEntries] = useState([]);
-  const [todayReceiptEntries, setTodayReceiptEntries] = useState([]);
-  const [lastWeekReceiptEntries, setLastWeekReceiptEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseFilter, setWarehouseFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [period, setPeriod] = useState('today');
 
   useEffect(() => {
     const GetApi = async() => {
@@ -35,38 +52,6 @@ const ManageGoodReceipt = () => {
         const receiptEntryList = await inventoryReceiptEntryApi.getAllReceiptEntries();
         const receiptEntryNotPending = receiptEntryList.filter(entry => entry.receiptLot.receiptLotStatus !== "Pending");
         setReceiptEntries(receiptEntryNotPending);
-
-        // Filter entries for today
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to beginning of day
-
-        const todayEntries = receiptEntryNotPending.filter(entry => {
-          const entryDate = new Date(entry.receiptDate);
-          entryDate.setHours(0, 0, 0, 0); // Set to beginning of day
-          return entryDate.getTime() === today.getTime();
-        });
-
-        // Sort last week entries by date in descending order
-        const sortedTodayEntries = [...todayEntries].sort((a, b) =>
-          new Date(b.receiptDate) - new Date(a.receiptDate)
-          );
-
-        setTodayReceiptEntries(sortedTodayEntries);
-
-        // Filter entries for last week (keeping existing code structure)
-        const lastWeekEntries = receiptEntryNotPending.filter(entry => {
-          const entryDate = new Date(entry.receiptDate);
-          const lastWeek = new Date();
-          lastWeek.setDate(lastWeek.getDate() - 7);
-          return entryDate >= lastWeek && entryDate < today;
-        });
-
-        // Sort last week entries by date in descending order
-        const sortedLastWeekEntries = [...lastWeekEntries].sort((a, b) =>
-          new Date(b.receiptDate) - new Date(a.receiptDate)
-        );
-
-        setLastWeekReceiptEntries(sortedLastWeekEntries);
       } catch (error) {
         console.error("Error fetching receipt entries:", error);
       } finally {
@@ -99,14 +84,13 @@ const ManageGoodReceipt = () => {
     return matchesWarehouse && matchesSearch;
   };
 
-  const filteredTodayEntries = useMemo(
-    () => todayReceiptEntries.filter(matchesFilter),
-    [todayReceiptEntries, warehouseFilter, searchTerm]
-  );
-  const filteredLastWeekEntries = useMemo(
-    () => lastWeekReceiptEntries.filter(matchesFilter),
-    [lastWeekReceiptEntries, warehouseFilter, searchTerm]
-  );
+  const displayedEntries = useMemo(() => {
+    const periodStart = getPeriodStart(period);
+    return receiptEntries
+      .filter(entry => new Date(entry.receiptDate) >= periodStart)
+      .filter(matchesFilter)
+      .sort((a, b) => new Date(b.receiptDate) - new Date(a.receiptDate));
+  }, [receiptEntries, period, warehouseFilter, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -120,8 +104,7 @@ const ManageGoodReceipt = () => {
   const handleStatusChange = async (itemId, newStatus) => {
     try {
       // Find the receipt entry to check its current status
-      const entryToUpdate = [...receiptEntries, ...todayReceiptEntries, ...lastWeekReceiptEntries]
-        .find(entry => entry.receiptLot.receiptLotId === itemId);
+      const entryToUpdate = receiptEntries.find(entry => entry.receiptLot.receiptLotId === itemId);
 
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.receiptLot.receiptLotStatus === "Done") {
@@ -148,24 +131,18 @@ const ManageGoodReceipt = () => {
       await receiptLotApi.updateReceiptLotStatus(updateReceiptLotStatus);
 
       // Update local state
-      const updateEntries = entries => {
-        return entries.map(entry => {
-          if (entry.receiptLot.receiptLotId === itemId) {
-            return {
-              ...entry,
-              receiptLot: {
-                ...entry.receiptLot,
-                receiptLotStatus: reversedStatus
-              }
-            };
-          }
-          return entry;
-        });
-      };
-
-      setReceiptEntries(updateEntries(receiptEntries));
-      setTodayReceiptEntries(updateEntries(todayReceiptEntries));
-      setLastWeekReceiptEntries(updateEntries(lastWeekReceiptEntries));
+      setReceiptEntries(entries => entries.map(entry => {
+        if (entry.receiptLot.receiptLotId === itemId) {
+          return {
+            ...entry,
+            receiptLot: {
+              ...entry.receiptLot,
+              receiptLotStatus: reversedStatus
+            }
+          };
+        }
+        return entry;
+      }));
       toast.success("Cập nhật trạng thái lô thành công!", {
         position: "top-right",
         autoClose: 3000,
@@ -217,31 +194,47 @@ const ManageGoodReceipt = () => {
           </ListSection>
 
           <ListSection elevated>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <HeaderItem>Lô nhập kho trong ngày</HeaderItem>
-              <Tag variant="accent">{filteredTodayEntries.length} lô</Tag>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <HeaderItem>Lô nhập kho</HeaderItem>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {PERIOD_OPTIONS.map((opt) => (
+                    <ActionButton
+                      key={opt.value}
+                      active={period === opt.value}
+                      variant={period === opt.value ? undefined : 'secondary'}
+                      onClick={() => setPeriod(opt.value)}
+                      style={periodButtonStyle}
+                    >
+                      {opt.label}
+                    </ActionButton>
+                  ))}
+                </div>
+                <Tag variant="accent">{displayedEntries.length} lô</Tag>
+              </div>
             </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
+            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "420px"}}>
               {loading ? (
                 <LoadingSpinner />
-              ) : filteredTodayEntries.length > 0 ? (
+              ) : displayedEntries.length > 0 ? (
                 <Table>
                   <thead>
                     <tr>
                       <TableHeader>STT</TableHeader>
-                      <TableHeader>Tên sản phẩm</TableHeader>
-                      <TableHeader>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
+                      <TableHeader style={{width: "8%"}}>Mã sản phẩm</TableHeader>
                       <TableHeader>ĐVT</TableHeader>
-                      <TableHeader>Mã lô/Số PO</TableHeader>
-                      <TableHeader>Số lượng nhập</TableHeader>
-                      <TableHeader>Nhân viên</TableHeader>
-                      <TableHeader>Ghi chú</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
-                      <TableHeader></TableHeader>
+                      <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
+                      <TableHeader style={{width: "8%"}}>Số lượng nhập</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Ngày nhập kho</TableHeader>
+                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Ghi chú</TableHeader>
+                      <TableHeader style={{width: "12%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTodayEntries.map((item, index) => (
+                    {displayedEntries.map((item, index) => (
                       <tr key={index}>
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
@@ -250,6 +243,8 @@ const ManageGoodReceipt = () => {
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.receiptLot.importedQuantity}</TableCell>
                         <TableCell>{item.personName}</TableCell>
+                        <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{item.warehouseName}</TableCell>
                         <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <ReceiptProgress
@@ -267,63 +262,7 @@ const ManageGoodReceipt = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  Không có dữ liệu trong ngày
-                </div>
-              )}
-            </div>
-          </ListSection>
-          <ListSection style={{ marginTop: '2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <HeaderItem>Lô nhập kho gần đây</HeaderItem>
-              <Tag variant="neutral">{filteredLastWeekEntries.length} lô</Tag>
-            </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "300px"}}>
-              {loading ? (
-                <LoadingSpinner />
-              ) : filteredLastWeekEntries.length > 0 ? (
-                <Table>
-                  <thead>
-                    <tr>
-                      <TableHeader>STT</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{width: "5%"}}>Mã sản phẩm</TableHeader>
-                      <TableHeader>ĐVT</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Số lượng nhập</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Ngày nhập kho</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tiến độ</TableHeader>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredLastWeekEntries.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{item.materialName}</TableCell>
-                        <TableCell>{item.materialId}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
-                        <TableCell>{item.lotNumber}</TableCell>
-                        <TableCell>{item.receiptLot.importedQuantity}</TableCell>
-                        <TableCell>{item.personName}</TableCell>
-                        <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{item.warehouseName}</TableCell>
-                        <TableCell style={{ textAlign: 'center' }}>
-                          <ReceiptProgress
-                            item={{
-                              id: item.receiptLot.receiptLotId,
-                              status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
-                            }}
-                            handleStatusChange={handleStatusChange}
-                          />
-                        </TableCell>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  {warehouseFilter || searchTerm ? "Không có lô nhập kho gần đây phù hợp." : "Không có dữ liệu kho gần đây"}
+                  {warehouseFilter || searchTerm ? "Không có lô nhập kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
                 </div>
               )}
             </div>
