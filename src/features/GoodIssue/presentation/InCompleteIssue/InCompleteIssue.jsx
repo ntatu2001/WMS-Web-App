@@ -245,16 +245,25 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
             // Call API to update the issue sublots
             await issueSubLotApi.updateIssueSubLot(updatedIssueSubLot);
 
-            // Sau khi phân bổ vị trí xong, chuyển các lô đang "Pending" sang "InProgress"
-            // để chúng hiển thị trong "Quản lý xuất kho" (trang đó lọc bỏ các lô "Pending").
-            await Promise.all(
-                issueLots.map(lot =>
+            // Sau khi phân bổ vị trí xong, chuyển các lô ĐÃ THỰC SỰ được phân bổ trong lượt này
+            // (issueLotId xuất hiện trong updatedItems) từ "Pending" sang "InProgress" để chúng
+            // hiển thị trong "Quản lý xuất kho". Chỉ xử lý các lô đó, không phải toàn bộ
+            // issueLots đang chờ của kho hàng, vì có thể còn lô chưa được giải thuật phân bổ.
+            const approvedLotIds = new Set(updatedItems.map(item => item.issueLotId));
+            const lotsToTransition = issueLots.filter(lot => approvedLotIds.has(lot.issueLotId));
+            const statusResults = await Promise.allSettled(
+                lotsToTransition.map(lot =>
                     issueLotApi.updateIssueLotStatus({
                         issueLotId: lot.issueLotId,
                         issueLotStatus: "InProgress"
                     })
                 )
             );
+            statusResults.forEach((result, index) => {
+                if (result.status === 'rejected' || result.value === false) {
+                    console.error("Failed to update issue lot status:", lotsToTransition[index]?.issueLotId, result);
+                }
+            });
 
             toast.success("Duyệt danh sách xuất kho thành công!", {
                 position: "top-right",

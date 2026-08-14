@@ -248,16 +248,25 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
             // Call API to update the material lot adjustment
             await receiptSubLotApi.updateReceiptSubLot(updatedReceiptSubLot);
 
-            // Sau khi phân bổ vị trí xong, chuyển các lô đang "Pending" sang "InProgress"
-            // để chúng hiển thị trong "Quản lý nhập kho" (trang đó lọc bỏ các lô "Pending").
-            await Promise.all(
-                receiptLots.map(lot =>
+            // Sau khi phân bổ vị trí xong, chuyển các lô ĐÃ THỰC SỰ được phân bổ trong lượt này
+            // (lotNumber xuất hiện trong updatedItems) từ "Pending" sang "InProgress" để chúng
+            // hiển thị trong "Quản lý nhập kho". Chỉ xử lý các lô đó, không phải toàn bộ
+            // receiptLots đang chờ của kho hàng, vì có thể còn lô chưa được giải thuật phân bổ.
+            const approvedLotIds = new Set(updatedItems.map(item => item.lotNumber));
+            const lotsToTransition = receiptLots.filter(lot => approvedLotIds.has(lot.receiptLotId));
+            const statusResults = await Promise.allSettled(
+                lotsToTransition.map(lot =>
                     receiptLotApi.updateReceiptLotStatus({
                         receiptLotId: lot.receiptLotId,
                         receiptLotStatus: "InProgress"
                     })
                 )
             );
+            statusResults.forEach((result, index) => {
+                if (result.status === 'rejected' || result.value === false) {
+                    console.error("Failed to update receipt lot status:", lotsToTransition[index]?.receiptLotId, result);
+                }
+            });
 
             toast.success("Duyệt danh sách nhập kho thành công!", {
                 position: "top-right",

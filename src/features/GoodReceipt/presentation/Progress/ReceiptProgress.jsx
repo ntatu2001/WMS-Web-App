@@ -31,15 +31,19 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
   }, [isOpen]);
 
   // Hàm xử lý khi chọn một option
-  const handleSelect = (status) => {
-    // Chỉ gọi API khi người dùng chọn trạng thái khác với trạng thái hiện tại
-    if (status !== currentStatus) {
-      handleStatusChange(item.id, status); // Gọi hàm xử lý thay đổi status
-    }
-    
-    // Luôn cập nhật state local ngay lập tức để hiển thị UI
-    setCurrentStatus(status);
+  const handleSelect = async (status) => {
     setIsOpen(false); // Đóng dropdown sau khi chọn
+
+    // Chỉ gọi API khi người dùng chọn trạng thái khác với trạng thái hiện tại
+    if (status === currentStatus) return;
+
+    // Chỉ cập nhật UI khi backend xác nhận thành công (trả về true) — tránh hiển thị
+    // "lạc quan" một trạng thái mà thực tế chưa được lưu (backend có thể từ chối do
+    // vi phạm điều kiện nghiệp vụ mà không ném lỗi HTTP).
+    const success = await handleStatusChange(item.id, status);
+    if (success) {
+      setCurrentStatus(status);
+    }
   };
 
   // Check if status is "Hoàn thành" to disable dropdown

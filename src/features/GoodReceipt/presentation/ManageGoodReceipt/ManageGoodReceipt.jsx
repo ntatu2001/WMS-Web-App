@@ -109,7 +109,7 @@ const ManageGoodReceipt = () => {
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.receiptLot.receiptLotStatus === "Done") {
         console.log("Cannot modify completed receipt lots");
-        return;
+        return false;
       }
 
       // Find the reverse mapping for the new status (from UI display status to backend status)
@@ -119,7 +119,7 @@ const ManageGoodReceipt = () => {
 
       if (!reversedStatus) {
         console.error("Invalid status mapping");
-        return;
+        return false;
       }
 
       const updateReceiptLotStatus = {
@@ -128,7 +128,23 @@ const ManageGoodReceipt = () => {
       }
       console.log(updateReceiptLotStatus)
       // Make API call to update the status
-      await receiptLotApi.updateReceiptLotStatus(updateReceiptLotStatus);
+      const success = await receiptLotApi.updateReceiptLotStatus(updateReceiptLotStatus);
+
+      // Backend có thể trả về false (từ chối do vi phạm điều kiện nghiệp vụ) mà không ném lỗi HTTP,
+      // nên phải kiểm tra giá trị trả về trước khi coi là thành công, nếu không UI sẽ hiển thị
+      // sai trạng thái "lạc quan" trong khi backend chưa thực sự lưu.
+      if (success === false) {
+        toast.error("Không thể cập nhật trạng thái lô này. Có thể lô chưa đủ điều kiện để hoàn thành.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        return false;
+      }
 
       // Update local state
       setReceiptEntries(entries => entries.map(entry => {
@@ -152,6 +168,7 @@ const ManageGoodReceipt = () => {
         draggable: true,
         progress: undefined,
       });
+      return true;
     } catch (error) {
       console.error("Error updating receipt lot status:", error);
       toast.error("Cập nhật trạng thái lô thất bại!", {
@@ -163,6 +180,7 @@ const ManageGoodReceipt = () => {
         draggable: true,
         progress: undefined,
       });
+      return false;
     }
   };
 

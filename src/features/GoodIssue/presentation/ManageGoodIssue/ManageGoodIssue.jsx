@@ -110,14 +110,14 @@ const ManageGoodIssue = () => {
 
       if (!reversedStatus) {
             console.error("Invalid status mapping");
-      return;
+      return false;
       }
       // Find the issue entry to check its current status
       const entryToUpdate = issueEntries.find(entry => entry.issueLot.issueLotId === itemId);
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
         console.log("Cannot modify completed issue lots");
-        return;
+        return false;
       }
 
       const updateIssueLotStatus = {
@@ -125,7 +125,22 @@ const ManageGoodIssue = () => {
         issueLotStatus: reversedStatus
       }
       // Make API call to update the status
-      await issueLotApi.updateIssueLotStatus(updateIssueLotStatus);
+      const success = await issueLotApi.updateIssueLotStatus(updateIssueLotStatus);
+
+      // Backend có thể trả về false (từ chối do vi phạm điều kiện nghiệp vụ) mà không ném lỗi HTTP,
+      // nên phải kiểm tra giá trị trả về trước khi coi là thành công.
+      if (success === false) {
+        toast.error("Không thể cập nhật trạng thái lô này. Có thể lô chưa đủ điều kiện để hoàn thành.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        return false;
+      }
 
       // Update local state
       setIssueEntries(entries => entries.map(entry => {
@@ -149,6 +164,7 @@ const ManageGoodIssue = () => {
         draggable: true,
         progress: undefined,
       });
+      return true;
     } catch (error) {
       console.error("Error updating issue lot status:", error);
       toast.error("Cập nhật trạng thái lô thất bại!", {
@@ -160,6 +176,7 @@ const ManageGoodIssue = () => {
         draggable: true,
         progress: undefined,
       });
+      return false;
     }
   };
 
