@@ -23,6 +23,7 @@ const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
   { value: 'week', label: 'Tuần' },
   { value: 'month', label: 'Tháng' },
+  { value: 'year', label: 'Năm' },
   { value: 'all', label: 'Tất cả' },
 ];
 
@@ -34,6 +35,7 @@ const getPeriodStart = (period) => {
   start.setHours(0, 0, 0, 0);
   if (period === 'week') start.setDate(start.getDate() - 6);
   if (period === 'month') start.setDate(start.getDate() - 29);
+  if (period === 'year') start.setDate(start.getDate() - 364);
   return start;
 };
 
