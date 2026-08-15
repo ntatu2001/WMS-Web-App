@@ -52,6 +52,13 @@ const ManageGoodIssue = () => {
       try {
         setLoading(true);
         const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
+        const missingIssueLot = issueEntryList.filter(entry => !entry.issueLot);
+        if (missingIssueLot.length > 0) {
+          console.warn(
+            `GetAllIssueEntries: ${missingIssueLot.length}/${issueEntryList.length} entries thiếu issueLot (bị loại khỏi "Quản lý xuất kho"):`,
+            missingIssueLot.map(entry => ({ inventoryIssueEntryId: entry.inventoryIssueEntryId, lotNumber: entry.lotNumber }))
+          );
+        }
         const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot && entry.issueLot.issueLotStatus !== "Pending");
         setIssueEntries(issueEntryNotPending);
       } catch (error) {
