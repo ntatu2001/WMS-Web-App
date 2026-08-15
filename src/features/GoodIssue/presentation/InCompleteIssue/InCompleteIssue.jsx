@@ -158,7 +158,11 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
             setLoadingIssueLot(true);
             try {
                 const issueLotList = await issueLotApi.getIssueLotsNotDone(warehouseId);
-                const issueOptionsList = await issueLotList.map(x => x.inventoryIssueEntryId);
+                // GetIssueLotsNotDone trả về mọi lô chưa "Done" (kể cả "InProgress"), nhưng giải
+                // thuật phân bổ chỉ xử lý lô "Pending" — chỉ hiển thị đúng các lô đó ở đây để tránh
+                // gây hiểu nhầm là lô sẽ được giải thuật xử lý.
+                const pendingIssueLots = issueLotList.filter(lot => lot.issueLotStatus === "Pending");
+                const issueOptionsList = pendingIssueLots.map(x => x.inventoryIssueEntryId);
                 const issueEntryOptions = await Promise.all(issueOptionsList.map(id => inventoryIssueEntryApi.getIssueEntryById(id)));
                 setIssueLots(issueEntryOptions);
             } catch (error) {

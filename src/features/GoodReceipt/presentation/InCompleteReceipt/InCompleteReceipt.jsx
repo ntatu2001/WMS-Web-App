@@ -167,7 +167,11 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
             setLoadingReceiptLot(true);
             try {
                 const receiptLotList = await receiptLotApi.getReceiptLotByNotDone(warehouseId);
-                setReceiptLots(receiptLotList);
+                // GetReceiptLotByNotDone trả về mọi lô chưa "Done" (kể cả "InProgress"), nhưng giải
+                // thuật phân bổ chỉ xử lý lô "Pending" — chỉ hiển thị đúng các lô đó ở đây để tránh
+                // gây hiểu nhầm là lô sẽ được giải thuật xử lý.
+                const pendingReceiptLots = receiptLotList.filter(lot => lot.receiptLotStatus === "Pending");
+                setReceiptLots(pendingReceiptLots);
             } catch (error) {
                 console.error("Error fetching receipt lot data:", error);
             } finally {
