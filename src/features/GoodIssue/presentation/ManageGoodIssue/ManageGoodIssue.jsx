@@ -23,10 +23,13 @@ const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
   { value: 'week', label: 'Tuần' },
   { value: 'month', label: 'Tháng' },
+  { value: 'all', label: 'Tất cả' },
 ];
 
 // Mốc bắt đầu của khoảng thời gian được chọn, tính đến hết ngày hôm nay
+// "all" không có mốc bắt đầu -> trả về null để bỏ qua lọc theo ngày
 const getPeriodStart = (period) => {
+  if (period === 'all') return null;
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   if (period === 'week') start.setDate(start.getDate() - 6);
@@ -86,7 +89,7 @@ const ManageGoodIssue = () => {
   const displayedEntries = useMemo(() => {
     const periodStart = getPeriodStart(period);
     return issueEntries
-      .filter(entry => new Date(entry.issueDate) >= periodStart)
+      .filter(entry => !periodStart || new Date(entry.issueDate) >= periodStart)
       .filter(matchesFilter)
       .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
   }, [issueEntries, period, warehouseFilter, searchTerm]);
@@ -234,16 +237,13 @@ const ManageGoodIssue = () => {
                 <Table>
                   <thead>
                     <tr>
-                      <TableHeader>STT</TableHeader>
+                      <TableHeader style={{width: "6%"}}>STT</TableHeader>
                       <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
                       <TableHeader style={{width: "8%"}}>Mã sản phẩm</TableHeader>
-                      <TableHeader>ĐVT</TableHeader>
                       <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
                       <TableHeader style={{width: "8%"}}>Số lượng xuất</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Nhân viên</TableHeader>
                       <TableHeader style={{width: "12%"}}>Ngày xuất kho</TableHeader>
                       <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
-                      <TableHeader style={{width: "12%"}}>Ghi chú</TableHeader>
                       <TableHeader style={{width: "12%"}}>Tiến độ</TableHeader>
                     </tr>
                   </thead>
@@ -253,13 +253,10 @@ const ManageGoodIssue = () => {
                         <TableCell>{index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
                         <TableCell>{item.materialId}</TableCell>
-                        <TableCell>{item.unit}</TableCell>
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.issueLot.requestedQuantity}</TableCell>
-                        <TableCell>{item.personName}</TableCell>
                         <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
-                        <TableCell>{item.note === "None" ? "--" : item.note}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           <IssueProgress
                             item={{

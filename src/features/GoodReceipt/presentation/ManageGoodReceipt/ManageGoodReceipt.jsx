@@ -23,10 +23,13 @@ const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
   { value: 'week', label: 'Tuần' },
   { value: 'month', label: 'Tháng' },
+  { value: 'all', label: 'Tất cả' },
 ];
 
 // Mốc bắt đầu của khoảng thời gian được chọn, tính đến hết ngày hôm nay
+// "all" không có mốc bắt đầu -> trả về null để bỏ qua lọc theo ngày
 const getPeriodStart = (period) => {
+  if (period === 'all') return null;
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   if (period === 'week') start.setDate(start.getDate() - 6);
@@ -87,7 +90,7 @@ const ManageGoodReceipt = () => {
   const displayedEntries = useMemo(() => {
     const periodStart = getPeriodStart(period);
     return receiptEntries
-      .filter(entry => new Date(entry.receiptDate) >= periodStart)
+      .filter(entry => !periodStart || new Date(entry.receiptDate) >= periodStart)
       .filter(matchesFilter)
       .sort((a, b) => new Date(b.receiptDate) - new Date(a.receiptDate));
   }, [receiptEntries, period, warehouseFilter, searchTerm]);
