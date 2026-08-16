@@ -29,25 +29,6 @@
     font-weight: 800;
 }
 
-.modalClose {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    background-color: rgba(10, 24, 48, 0.06);
-    border: none;
-    border-radius: v.$radius-sm;
-    color: v.$color-text;
-    cursor: pointer;
-
-    &:hover {
-        background-color: rgba(244, 63, 94, 0.14);
-        color: #f43f5e;
-    }
-}
-
 .loading {
     display: flex;
     justify-content: center;

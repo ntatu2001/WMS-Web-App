@@ -59,7 +59,7 @@ const Storage = () => {
         const GetWarehouses = async () => {
             setIsLoading(true);
             try {
-                const wareHouseList = await wareHouseApi.getAllWareHouses();
+                const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
                 setWareHouse(wareHouseList);
             } catch (error) {
                 console.error("Error fetching warehouses:", error);

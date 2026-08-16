@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton';
-import { AiOutlineClose } from 'react-icons/ai';
 import clsx from 'clsx';
 import styles from './DetailModal.module.scss';
 import { ClipLoader } from 'react-spinners';
@@ -21,6 +20,33 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
     });
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const modalRef = useRef(null);
+
+    // Kéo popup vào lại bên trong màn hình nếu nó tràn ra ngoài viewport. Chạy lại
+    // khi isLoading chuyển từ true -> false vì lúc đó chiều cao thật của popup mới
+    // xác định được (phần "Lô hàng lưu trữ"/"Xem chi tiết" chỉ render sau khi có data).
+    useEffect(() => {
+        if (!modalRef.current) return;
+        const margin = 12;
+        const rect = modalRef.current.getBoundingClientRect();
+
+        setModalPosition((prev) => {
+            let top = prev.top;
+            let left = prev.left;
+
+            if (rect.bottom > window.innerHeight - margin) {
+                top -= rect.bottom - (window.innerHeight - margin);
+            }
+            if (top < margin) top = margin;
+
+            if (rect.right > window.innerWidth - margin) {
+                left -= rect.right - (window.innerWidth - margin);
+            }
+            if (left < margin) left = margin;
+
+            return (top === prev.top && left === prev.left) ? prev : { top, left };
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isLoading]);
 
     // Function to handle close button click
     const handleClose = (e) => {
@@ -105,9 +131,6 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
         >
             <div className={styles.modalHeader}>
                 <h3 className={styles.modalTitle}>Vị trí {data.position}</h3>
-                <button onClick={handleClose} className={styles.modalClose} aria-label="Đóng">
-                    <AiOutlineClose />
-                </button>
             </div>
 
             {isLoading ? (
@@ -160,6 +183,14 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                         }}
                     >
                         Xem chi tiết
+                    </ActionButton>
+
+                    <ActionButton
+                        variant="secondary"
+                        style={{ width: '100%', margin: '8px 0 0', padding: '14px', fontSize: '14px' }}
+                        onClick={handleClose}
+                    >
+                        Đóng
                     </ActionButton>
                 </>
             )}
