@@ -107,14 +107,9 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
 
     const details = data.selectedDetails;
     const lotInfors = details?.lotInfors || [];
-    const hasStock = lotInfors.length > 0;
-    const selectedLot = data.selectedLotNumber
-        ? lotInfors.find(lot => lot.lotnumber === data.selectedLotNumber)
-        : lotInfors[0];
     const maxVolume = details?.maxVolume;
-    const usableVolume = details?.usableVolume;
     // Dùng storageRate do backend tính sẵn (LocationStorageInfoDTO.storageRate) thay vì tự suy ra từ
-    // usableVolume/maxVolume — 2 field đó có thể không phản ánh đúng thể tích đã dùng thực tế.
+    // usedVolume/maxVolume — có thể không phản ánh đúng thể tích đã dùng thực tế.
     const fillRate = details?.storageRate ?? 0;
 
     return (
@@ -154,26 +149,26 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
 
                         <span className={styles.infoLabel}>Tình trạng:</span>
                         <span className={styles.statusValue} style={{ color: getStatusColor(details?.status) }}>{details?.status}</span>
+
+                        <span className={styles.infoLabel}>Thể tích tối đa:</span>
+                        <span className={styles.infoValue}>{maxVolume?.toFixed(2)}m³</span>
+
+                        <span className={styles.infoLabel}>Tỷ lệ lấp đầy:</span>
+                        <span className={styles.infoValue}>{fillRate.toFixed(2)}%</span>
                     </div>
 
-                    {hasStock && (
-                        <div className={styles.infoGrid}>
+                    {lotInfors.map((lot, index) => (
+                        <div className={styles.infoGrid} key={`${lot.lotnumber}-${index}`}>
                             <span className={styles.infoLabel}>Lô hàng lưu trữ:</span>
-                            <span className={styles.infoValue}>{selectedLot?.lotnumber}</span>
+                            <span className={styles.infoValue}>{lot.lotnumber}</span>
 
                             <span className={styles.infoLabel}>Số lượng lưu trữ:</span>
-                            <span className={styles.infoValue}>{selectedLot?.quantity}</span>
+                            <span className={styles.infoValue}>{lot.quantity} {lot.unitOfMeasure}</span>
 
                             <span className={styles.infoLabel}>Thể tích sử dụng:</span>
-                            <span className={styles.infoValue}>{usableVolume >= maxVolume ? maxVolume?.toFixed(2) : usableVolume?.toFixed(2)}</span>
-
-                            <span className={styles.infoLabel}>Thể tích tối đa:</span>
-                            <span className={styles.infoValue}>{maxVolume?.toFixed(2)}</span>
-
-                            <span className={styles.infoLabel}>Tỷ lệ lấp đầy:</span>
-                            <span className={styles.infoValue}>{fillRate.toFixed(2)}%</span>
+                            <span className={styles.infoValue}>{lot.usedVolume?.toFixed(2)}m³ ({maxVolume ? ((lot.usedVolume / maxVolume) * 100).toFixed(2) : '0.00'}%)</span>
                         </div>
-                    )}
+                    ))}
 
                     <ActionButton
                         style={{ width: '100%', margin: '8px 0 0', padding: '14px', fontSize: '14px' }}
