@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AiFillCaretLeft } from 'react-icons/ai';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
@@ -26,6 +26,22 @@ const Detail = ({ data, activeTab }) => {
     const [selectedDate1, setSelectedDate1] = useState(null);
     const [stockLocationHistories, setStockLocationHistories] = useState([]);
     const [currentLotRows, setCurrentLotRows] = useState([]);
+    const pageRef = useRef(null);
+
+    // Trang này thường được mở khi người dùng đã cuộn sâu trong lưới "Sơ đồ kho" — vì cả 2
+    // đều render bên trong cùng vùng cuộn của layout, vị trí cuộn cũ bị giữ nguyên và che mất
+    // tiêu đề. Tự tìm ancestor có thể cuộn gần nhất và đưa về đầu khi trang này vừa mount.
+    useEffect(() => {
+        let node = pageRef.current?.parentElement;
+        while (node) {
+            const style = window.getComputedStyle(node);
+            if (/(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight) {
+                node.scrollTop = 0;
+                break;
+            }
+            node = node.parentElement;
+        }
+    }, []);
 
     useEffect(() => {
         const fetchStockLocationHistories = async () => {
@@ -125,7 +141,7 @@ const Detail = ({ data, activeTab }) => {
         ];
 
     return (
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
             <div className={styles.headerRow}>
                 <div className={styles.headerLeft}>
                     <button className={styles.backButton} onClick={() => activeTab('storage')} aria-label="Quay lại">
