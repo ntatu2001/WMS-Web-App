@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import { BiCube } from 'react-icons/bi';
 import { AiOutlineAppstore, AiFillCheckCircle } from 'react-icons/ai';
@@ -31,7 +32,22 @@ const headerActionButtonStyle = {
 const GoodIssue = () => {
   const roles = useSelector((state) => state.auth.roles);
   const canManage = roles.includes('Manager') || roles.includes('Admin');
-  const [activeTab, setActiveTab] = useState('create');
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Đồng bộ tab đang chọn với query param ?tab= trên URL để reload trang vẫn
+  // giữ đúng tab thay vì luôn quay về "Tạo phiếu xuất kho". "viewResult" là
+  // bước xem tạm trong luồng phân bổ nên không lưu vào URL.
+  const [activeTab, setActiveTabState] = useState(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'create') return 'create';
+    if (canManage && (tab === 'incomplete' || tab === 'manage')) return tab;
+    return 'create';
+  });
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    if (tab !== 'viewResult') {
+      setSearchParams({ tab }, { replace: true });
+    }
+  };
   const [incompleteIssueMounted, setIncompleteIssueMounted] = useState(false);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isComingFromViewResult, setIsComingFromViewResult] = useState(false);
