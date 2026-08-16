@@ -106,8 +106,7 @@ const RequestLotAdjustment = () => {
 
             setIsLotLoading(true);
             try {
-                const materialLotList = await materialLotApi.GetMaterialLotsByWarehouseId(selectedZone);
-                const lotNumberList = await materialLotList.map(lotNumberList => lotNumberList.lotNumber);
+                const lotNumberList = await materialLotApi.GetLotNumbersByWarehouseId(selectedZone);
 
                 setLotNumbers(lotNumberList);
             } catch (error) {
@@ -125,17 +124,17 @@ const RequestLotAdjustment = () => {
             try {
                 if (selectedLotNumber) {
                     setIsLotDetailsLoading(true);
-                    const result = await materialLotApi.getMaterialLotById(selectedLotNumber);
+                    const materialId = await materialLotApi.getMaterialIdByLotNumber(selectedLotNumber);
                     const materialSubLotsByLotNumber = await materialSubLotApi.getMaterialSubLotsByLotNumber(selectedLotNumber);
-                    const materialById = await materialApi.getMaterialById(result.materialId);
-                    const unitByMaterialId = await materialApi.getUnitByMaterialId(result.materialId);
+                    const materialById = await materialApi.getMaterialById(materialId);
+                    const unitByMaterialId = await materialApi.getUnitByMaterialId(materialId);
                     const note = materialById?.properties?.find(prop => prop.propertyName?.trim() === "Note")?.propertyValue || "";
 
                     // Initialize real quantities array with objects containing realQuantity and locationId
                     const initialRealQuantities = materialSubLotsByLotNumber.map(subLot => ({
                         materialSubLotId: subLot.materialSubLotId,
                         previousQuantity: subLot.existingQuantity,
-                        realQuantity: subLot.realTimeQuality || 0,
+                        realQuantity: subLot.realTimeQuality || subLot.existingQuantity || 0,
                         locationId: subLot.locationId
                     }));
 
@@ -162,7 +161,7 @@ const RequestLotAdjustment = () => {
             const newQuantities = [...prev];
             newQuantities[index] = {
                 ...newQuantities[index],
-                realQuantity: value
+                realQuantity: parseInt(value) || 0
             };
             return newQuantities;
         });
@@ -642,7 +641,7 @@ const RequestLotAdjustment = () => {
                         <ActionButton
                             style={{ width: "35%", padding: "14px", fontSize: "14px" }}
                             onClick={updateMaterialLotAdjustment}
-                            disabled={isUpdateLoading}
+                            disabled={isUpdateLoading || !lotAdjustmentId}
                         >
                             {isUpdateLoading ? (
                                 <ClipLoader color="#ffffff" size={20} />

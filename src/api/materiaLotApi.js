@@ -12,6 +12,11 @@ const materiaLotApi = {
         return axiosClient.get(url);
     },
 
+    getMaterialIdByLotNumber(lotNumber) {
+        const url = `MaterialLot/GetMaterialIdByLotNumber/${lotNumber}`;
+        return axiosClient.get(url);
+    },
+
     GetMaterialLotsByMaterialId(id) {
         const url = `MaterialLot/GetMaterialLotsByMaterialId/${id}`;
         return axiosClient.get(url);
@@ -29,6 +34,11 @@ const materiaLotApi = {
 
     GetMaterialLotsByWarehouseId(id) {
         const url = `MaterialLot/GetMaterialLotsByWarehouseId/${id}`;
+        return axiosClient.get(url);
+    },
+
+    GetLotNumbersByWarehouseId(id) {
+        const url = `MaterialLot/GetLotNumbersByWarehouseId/${id}`;
         return axiosClient.get(url);
     }
 };
