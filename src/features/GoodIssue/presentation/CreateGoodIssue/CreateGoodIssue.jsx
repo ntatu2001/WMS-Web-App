@@ -98,7 +98,19 @@ const CreateGoodIssue = () => {
       try {
         const materialList = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(selectedZone);
         setMaterialsList(materialList);
-        setMaterialOptionNames(materialList.map(material => material.materialName));
+
+        // Lấy sẵn danh sách Lot Number đang chứa từng sản phẩm để hiển thị ngay trong
+        // tên ở combo box, ví dụ "[ML_08, RL_15] Tên sản phẩm". Dùng allSettled để một
+        // material lỗi không làm hỏng cả danh sách hiển thị.
+        const lotResults = await Promise.allSettled(
+          materialList.map(material => materiaLotApi.GetLotNumbersByMaterialId(material.materialId))
+        );
+        const options = materialList.map((material, index) => {
+          const lotNumbers = lotResults[index].status === 'fulfilled' ? lotResults[index].value : [];
+          const prefix = lotNumbers.length > 0 ? `[${lotNumbers.join(', ')}] ` : '';
+          return { name: material.materialName, label: `${prefix}${material.materialName}` };
+        });
+        setMaterialOptionNames(options);
       } catch (error) {
         console.error('Error fetching materials:', error);
       }
@@ -379,10 +391,13 @@ const CreateGoodIssue = () => {
                               onChange={(e) => handleMaterialNameChange(index, e.target.value)}
                               placeholder="Tên sản phẩm"
                               style={{ fontSize: "90%" }}
+                              // Danh sách mở ra vẫn hiển thị "[Lot Number] Tên sản phẩm" để dễ phân
+                              // biệt, nhưng sau khi chọn xong ô đóng chỉ hiển thị tên sản phẩm cho gọn.
+                              formatOptionLabel={(option, { context }) => context === 'menu' ? option.label : option.value}
                             >
-                              {materialOptionNames.map((name, i) => (
-                                <option key={`material-${index}-${i}`} value={name}>
-                                  {name}
+                              {materialOptionNames.map((opt, i) => (
+                                <option key={`material-${index}-${i}`} value={opt.name}>
+                                  {opt.label}
                                 </option>
                               ))}
                             </Select>
@@ -430,6 +445,11 @@ const CreateGoodIssue = () => {
                             value={row.requestedQuantity}
                             onChange={(e) => updateRow(index, 'requestedQuantity', e.target.value)}
                           />
+                          {row.existingQuantity !== null && (
+                            <div style={{ fontSize: '11px', color: '#767676', marginTop: '4px' }}>
+                              Tồn kho: {row.existingQuantity}
+                            </div>
+                          )}
                           {rowErrors[index]?.requestedQuantity && (
                             <div style={errorTextStyle}>{rowErrors[index].requestedQuantity}</div>
                           )}
