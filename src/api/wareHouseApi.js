@@ -6,6 +6,11 @@ const wareHouseApi = {
         return axiosClient.get(url, {params});
     },
 
+    getAllWarehouseNameId(params) {
+        const url = 'Warehouse/GetAllWarehouseNameId';
+        return axiosClient.get(url, {params});
+    },
+
     getWarehouseIdByWarehouseName(name) {
         const url = `Warehouse/GetWarehouseIdByWarehouseName/${name}`;
         return axiosClient.get(url);

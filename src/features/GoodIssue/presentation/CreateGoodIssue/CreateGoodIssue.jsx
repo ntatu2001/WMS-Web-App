@@ -62,9 +62,9 @@ const CreateGoodIssue = () => {
     const GetApi = async () => {
       try {
         setIsLoading(true);
-        const wareHouseList = await wareHouseApi.getAllWareHouses();
-        const customerList = await customerApi.getAllCustomers();
-        const employeeList = await employeeApi.getAllEmployees();
+        const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
+        const customerList = await customerApi.getAllCustomerNameId();
+        const employeeList = await employeeApi.getAllEmployeeNameId();
         setPeople(employeeList);
         setWareHouses(wareHouseList);
         setCustomers(customerList);
@@ -139,8 +139,8 @@ const CreateGoodIssue = () => {
       console.error('Error fetching unit:', error);
     }
     try {
-      const materialLotList = await materiaLotApi.GetMaterialLotsByMaterialId(material.materialId);
-      updateRow(index, 'lotNumberList', materialLotList.map(lot => lot.lotNumber));
+      const lotNumberList = await materiaLotApi.GetLotNumbersByMaterialId(material.materialId);
+      updateRow(index, 'lotNumberList', lotNumberList);
     } catch (error) {
       updateRow(index, 'lotNumberList', []);
     }

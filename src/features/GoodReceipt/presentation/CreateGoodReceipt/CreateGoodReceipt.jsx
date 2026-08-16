@@ -61,14 +61,14 @@ const CreateGoodReceipt = () => {
     const GetApi = async () => {
       try {
         setIsLoading(true);
-        const wareHouseList = await wareHouseApi.getAllWareHouses();
-        const supplierList = await supplierApi.getAllSupplier();
-        const employeeList = await employeeApi.getAllEmployees();
-        const receiptLotList = await receiptLotApi.getAllReceiptLots();
+        const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
+        const supplierList = await supplierApi.getAllSupplierNameId();
+        const employeeList = await employeeApi.getAllEmployeeNameId();
+        const receiptLotIdList = await receiptLotApi.getAllReceiptLotIds();
         setPeople(employeeList);
         setWareHouses(wareHouseList);
         setSuppliers(supplierList);
-        setReceiptLotIdList(receiptLotList.map(lot => lot.receiptLotId));
+        setReceiptLotIdList(receiptLotIdList);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error("Lỗi khi tải dữ liệu!");
