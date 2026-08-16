@@ -27,16 +27,19 @@ const PERIOD_OPTIONS = [
   { value: 'all', label: 'Tất cả' },
 ];
 
-// Mốc bắt đầu của khoảng thời gian được chọn, tính đến hết ngày hôm nay
-// "all" không có mốc bắt đầu -> trả về null để bỏ qua lọc theo ngày
-const getPeriodStart = (period) => {
-  if (period === 'all') return null;
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-  if (period === 'week') start.setDate(start.getDate() - 6);
-  if (period === 'month') start.setDate(start.getDate() - 29);
-  if (period === 'year') start.setDate(start.getDate() - 364);
-  return start;
+// Khoảng thời gian (fromDate -> toDate) tương ứng với lựa chọn period, gửi lên
+// backend để lọc dữ liệu ngay tại nguồn thay vì tải hết rồi lọc ở client.
+// "all" lấy mốc bắt đầu rất xa trong quá khứ để lấy toàn bộ dữ liệu.
+const getDateRange = (period) => {
+  const toDate = new Date();
+  toDate.setHours(23, 59, 59, 999);
+  const fromDate = new Date();
+  fromDate.setHours(0, 0, 0, 0);
+  if (period === 'all') fromDate.setFullYear(2000, 0, 1);
+  if (period === 'week') fromDate.setDate(fromDate.getDate() - 6);
+  if (period === 'month') fromDate.setDate(fromDate.getDate() - 29);
+  if (period === 'year') fromDate.setDate(fromDate.getDate() - 364);
+  return { fromDate, toDate };
 };
 
 const periodButtonStyle = { margin: 0, width: 'auto', padding: '8px 24px', fontSize: '14px' };
@@ -53,7 +56,8 @@ const ManageGoodIssue = () => {
     const GetApi = async() => {
       try {
         setLoading(true);
-        const issueEntryList = await inventoryIssueEntryApi.getAllIssueEntries();
+        const { fromDate, toDate } = getDateRange(period);
+        const issueEntryList = await inventoryIssueEntryApi.getIssueEntriesByDate(fromDate.toISOString(), toDate.toISOString());
         const missingIssueLot = issueEntryList.filter(entry => !entry.issueLot);
         if (missingIssueLot.length > 0) {
           console.warn(
@@ -71,12 +75,12 @@ const ManageGoodIssue = () => {
     };
 
     GetApi();
-  },[])
+  },[period])
 
   useEffect(() => {
     const fetchWarehouses = async () => {
       try {
-        const wareHouseList = await wareHouseApi.getAllWareHouses();
+        const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
         setWarehouses(wareHouseList);
       } catch (error) {
         console.error("Error fetching warehouse data:", error);
@@ -96,12 +100,10 @@ const ManageGoodIssue = () => {
   };
 
   const displayedEntries = useMemo(() => {
-    const periodStart = getPeriodStart(period);
     return issueEntries
-      .filter(entry => !periodStart || new Date(entry.issueDate) >= periodStart)
       .filter(matchesFilter)
       .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
-  }, [issueEntries, period, warehouseFilter, searchTerm]);
+  }, [issueEntries, warehouseFilter, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
