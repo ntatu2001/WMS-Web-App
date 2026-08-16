@@ -18,7 +18,6 @@ import Tag from '../../../../common/components/Tag/Tag.jsx';
 import clsx from 'clsx';
 import styles from './InCompleteIssue.module.scss'
 import issueLotApi from '../../../../api/issueLotApi.js';
-import inventoryIssueEntryApi from '../../../../api/inventoryIssueEntryApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
 import { ClipLoader} from 'react-spinners';
 import schedulingApi from '../../../../api/schedulingApi.js';
@@ -157,14 +156,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
 
             setLoadingIssueLot(true);
             try {
-                const issueLotList = await issueLotApi.getIssueLotsNotDone(warehouseId);
-                // GetIssueLotsNotDone trả về mọi lô chưa "Done" (kể cả "InProgress"), nhưng giải
-                // thuật phân bổ chỉ xử lý lô "Pending" — chỉ hiển thị đúng các lô đó ở đây để tránh
-                // gây hiểu nhầm là lô sẽ được giải thuật xử lý.
-                const pendingIssueLots = issueLotList.filter(lot => lot.issueLotStatus === "Pending");
-                const issueOptionsList = pendingIssueLots.map(x => x.inventoryIssueEntryId);
-                const issueEntryOptions = await Promise.all(issueOptionsList.map(id => inventoryIssueEntryApi.getIssueEntryById(id)));
-                setIssueLots(issueEntryOptions);
+                const issueLotList = await issueLotApi.getIssueLotsPending(warehouseId);
+                setIssueLots(issueLotList);
             } catch (error) {
                 console.error("Error fetching issue lot data:", error);
             } finally {
@@ -179,7 +172,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     useEffect(() => {
         const fetchWarehouses = async() => {
             try {
-                const wareHouseList = await wareHouseApi.getAllWareHouses();
+                const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
                 setWarehouses(wareHouseList);
             } catch (error) {
                 console.error("Error fetching warehouse data:", error);
