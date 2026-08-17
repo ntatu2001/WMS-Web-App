@@ -365,7 +365,6 @@ const IssueHistory = () => {
                     <TableHeader>ĐVT</TableHeader>
                     <TableHeader>Vị trí lưu trữ</TableHeader>
                     <TableHeader>Số lượng xuất</TableHeader>
-                    <TableHeader>Ghi chú</TableHeader>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,7 +382,6 @@ const IssueHistory = () => {
                       <TableCell>{item.unitOfMeasure || "--"}</TableCell>
                       <TableCell>{item.locationId || "--"}</TableCell>
                       <TableCell>{item.requestedQuantity || "--"}</TableCell>
-                      <TableCell>--</TableCell>
                     </tr>
                   ))}
                 </tbody>

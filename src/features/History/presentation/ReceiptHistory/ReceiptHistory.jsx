@@ -30,7 +30,7 @@ const ReceiptHistory = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
   const [selectedDate2, setSelectedDate2] = useState(null);
   const [searchLotNumber, setSearchLotNumber] = useState('');
-  const [searchSupplierId, setSearchSupplierId] = useState('');
+  const [searchSupplierName, setSearchSupplierName] = useState('');
   const [listReceiptHistory, setListReceiptHistory] = useState([
     {
       lotNumber: "--",
@@ -46,7 +46,7 @@ const ReceiptHistory = () => {
 
   const handleSearch = async () => {
     const lotNumber = searchLotNumber.trim();
-    const supplierId = searchSupplierId.trim();
+    const supplierName = searchSupplierName.trim();
 
     const toHanoiTime = (date) => {
       const utcDate = new Date(date);
@@ -63,17 +63,17 @@ const ReceiptHistory = () => {
         ? toHanoiTime(selectedDate2).toISOString()
         : (startTime ? toHanoiTime(new Date()).toISOString() : ''); // Convert current date to Hanoi timezone if needed
 
-    if (!lotNumber && !supplierId && !startTime && !endTime) {
+    if (!lotNumber && !supplierName && !startTime && !endTime) {
       console.warn('Please enter at least one search criterion.');
       return;
     }
 
-    console.log("Searching with criteria:", { lotNumber, supplierId, startTime, endTime });
+    console.log("Searching with criteria:", { lotNumber, supplierName, startTime, endTime });
 
     setIsLoading(true); // Start loading
     try {
       setListReceiptStorage([]); // Clear table data initially
-      const response = await ReceiptApi.getAllReceipt(lotNumber, supplierId, startTime, endTime);
+      const response = await ReceiptApi.getAllReceipt(lotNumber, supplierName, startTime, endTime);
       console.log("API response:", response); // Debug log to inspect the response structure
 
       if (response && Array.isArray(response) && response.length > 0) {
@@ -146,8 +146,8 @@ const ReceiptHistory = () => {
           <input
             type="text"
             placeholder="Tìm kiếm theo nhà cung cấp"
-            value={searchSupplierId}
-            onChange={(e) => setSearchSupplierId(e.target.value)}
+            value={searchSupplierName}
+            onChange={(e) => setSearchSupplierName(e.target.value)}
             style={{ width: "90%", marginLeft:"20px", padding: "5px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
           />
           <div style={{ display: "flex", marginBottom: "5px" }}>
@@ -338,7 +338,6 @@ const ReceiptHistory = () => {
                     <TableHeader>ĐVT</TableHeader>
                     <TableHeader>Vị trí lưu trữ</TableHeader>
                     <TableHeader>Số lượng nhập</TableHeader>
-                    <TableHeader>Ghi chú</TableHeader>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,7 +355,6 @@ const ReceiptHistory = () => {
                       <TableCell>{item.unitOfMeasure || "--"}</TableCell>
                       <TableCell>{item.locationId || "--"}</TableCell>
                       <TableCell>{item.importedQuantity || "--"}</TableCell>
-                      <TableCell>{"--"}</TableCell>
                     </tr>
                   ))}
                 </tbody>

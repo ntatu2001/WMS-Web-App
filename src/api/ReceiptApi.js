@@ -1,10 +1,10 @@
 import axiosClient from "./axiosClient";
 
 const ReceiptApi = {
-    getAllReceipt(lotNumber, supplierId = "", startTime = "", endTime = "") {
+    getAllReceipt(lotNumber, supplierName = "", startTime = "", endTime = "") {
         const params = new URLSearchParams();
         params.append("lotNumber", lotNumber || "");
-        params.append("supplierId", supplierId);
+        params.append("supplierName", supplierName);
         params.append("startTime", startTime);
         params.append("endTime", endTime);
 

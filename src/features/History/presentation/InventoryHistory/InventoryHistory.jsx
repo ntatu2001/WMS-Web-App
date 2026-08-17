@@ -368,7 +368,6 @@ const InventoryHistory = () => {
                     <TableHeader>Tồn kho</TableHeader>
                     <TableHeader>Thực tế</TableHeader>
                     <TableHeader>SL lệch</TableHeader>
-                    <TableHeader>Ghi chú</TableHeader>
                   </tr>
                 </thead>
                 <tbody>
@@ -388,7 +387,6 @@ const InventoryHistory = () => {
                       <TableCell>{item.previousQuantity !== null && item.previousQuantity !== undefined ? item.previousQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
                       <TableCell>{item.realAdjustmentQuantity !== null && item.realAdjustmentQuantity !== undefined ? item.realAdjustmentQuantity : "--"}</TableCell> {/* Render 0 if value is 0 */}
                       <TableCell>{item.quantityDifference !== null && item.quantityDifference !== undefined ? item.quantityDifference : "--"}</TableCell> {/* Render 0 if value is 0 */}
-                      <TableCell>--</TableCell>
                     </tr>
                   ))}
                 </tbody>
