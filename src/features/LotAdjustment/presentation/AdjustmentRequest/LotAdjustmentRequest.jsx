@@ -71,8 +71,8 @@ const RequestLotAdjustment = () => {
         const GetApi = async() => {
             setIsInitialLoading(true);
             try {
-                const wareHouseList = await wareHouseApi.getAllWareHouses();
-                const employeeList = await employeeApi.getAllEmployees();
+                const wareHouseList = await wareHouseApi.getAllWarehouseNameId();
+                const employeeList = await employeeApi.getAllEmployeeNameId();
 
                 setPeople(employeeList);
                 setWareHouses(wareHouseList);
