@@ -1,16 +1,73 @@
+@use '../../../../common/styles/variables' as v;
+
 .divOfList {
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px;
-    border-bottom-width: 1px;
-    border-radius: 6px;
-    padding: 20px 0px;
-    border-color: rgba(209, 213, 219, 1); 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
-                0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    background-color: #FFF;
+    border-radius: v.$radius-sm;
+    border-top: 3px solid v.$color-border;
+    padding: 14px 16px;
+    box-shadow: v.$shadow-sm;
+    background-color: v.$color-surface;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 
     &:hover {
-    background-color: #ccc;
+        border-top-color: v.$color-teal;
     }
+}
+
+.selected {
+    border-top-color: v.$color-teal-dark;
+    background-color: rgba(45, 212, 191, 0.08);
+}
+
+.lotCode {
+    font-weight: 700;
+    color: v.$color-navy;
+}
+
+.mutedLabel {
+    color: v.$color-text-muted;
+}
+
+.emptyState {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 0 16px;
+    color: v.$color-text-muted;
+    text-align: center;
+    font-size: 13px;
+}
+
+.emptyDetail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 340px;
+    border: 1px dashed v.$color-border;
+    border-radius: v.$radius-sm;
+    color: v.$color-text-muted;
+    text-align: center;
+    font-size: 14px;
+}
+
+.infoPanel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px 24px;
+    background-color: rgba(45, 212, 191, 0.08);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    border-radius: v.$radius-sm;
+    padding: 16px;
+    margin-bottom: 24px;
+    font-size: 14.5px;
+}
+
+.infoRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }

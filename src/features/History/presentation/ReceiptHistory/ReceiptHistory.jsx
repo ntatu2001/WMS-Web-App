@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
-import { FaEye } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
+import Select from '../../../../common/components/Selection/Select.jsx';
+import SearchInput from '../../../../common/components/Input/SearchInput.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import DateInput from '../../../../common/components/DateInput/DateInput.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
 import FormSection from '../../../../common/components/Section/FormSection.jsx';
 import ListSection from '../../../../common/components/Section/ListSection.jsx';
-import DeleteButton from '../../../../common/components/Button/DeleteButton/DeleteButton.jsx';
+import Tag from '../../../../common/components/Tag/Tag.jsx';
 import clsx from 'clsx';
 import styles from './ReceiptHistory.module.scss';
-import ReceiptApi from '../../../../api/ReceiptApi.js'; // Import the API module
+import ReceiptApi from '../../../../api/ReceiptApi.js';
+import supplierApi from '../../../../api/supplierApi.js';
 import { ClipLoader } from 'react-spinners';
 
 const statusMapping = {
@@ -26,23 +28,63 @@ const statusMapping = {
   IsBlocked: { label: "Bị chặn", color: "#911C0F" },
 };
 
+const StatusTag = ({ status, style }) => (
+  <span
+    style={{
+      borderRadius: '999px',
+      backgroundColor: statusMapping[status]?.color || "#767676",
+      padding: '3px 10px',
+      color: 'white',
+      fontWeight: 700,
+      fontSize: '12px',
+      whiteSpace: 'nowrap',
+      ...style,
+    }}
+  >
+    {statusMapping[status]?.label || "--"}
+  </span>
+);
+
 const ReceiptHistory = () => {
   const [selectedDate1, setSelectedDate1] = useState(null);
   const [selectedDate2, setSelectedDate2] = useState(null);
   const [searchLotNumber, setSearchLotNumber] = useState('');
   const [searchSupplierName, setSearchSupplierName] = useState('');
-  const [listReceiptHistory, setListReceiptHistory] = useState([
-    {
-      lotNumber: "--",
-      receiptDate: "--",
-      personName: "--",
-      supplierName: "--",
-      lotStatus: "--",
-    },
-  ]); // Default placeholder data
+  const [suppliers, setSuppliers] = useState([]);
+  const [listReceiptHistory, setListReceiptHistory] = useState([]);
   const [listReceiptStorage, setListReceiptStorage] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const supplierList = await supplierApi.getAllSupplierNameId();
+        setSuppliers(supplierList);
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+      }
+    };
+
+    fetchSuppliers();
+  }, []);
+
+  const mapReceiptEntriesToStorageRows = (entries) =>
+    entries.flatMap((item, index) =>
+      Array.isArray(item.receiptSubLots)
+        ? item.receiptSubLots.map((sub, subIdx) => ({
+            id: `${index + 1}.${subIdx + 1}`,
+            materialName: item.materialName,
+            materialId: item.materialId,
+            unitOfMeasure: item.unitOfMeasure,
+            warehouseID: item.warehouseID,
+            importedQuantity: sub.importedQuantity,
+            locationId: sub.locationId,
+            lotNumber: item.lotNumber,
+          }))
+        : []
+    );
 
   const handleSearch = async () => {
     const lotNumber = searchLotNumber.trim();
@@ -68,302 +110,197 @@ const ReceiptHistory = () => {
       return;
     }
 
-    console.log("Searching with criteria:", { lotNumber, supplierName, startTime, endTime });
-
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
+    setSelectedItem(null);
+    setListReceiptStorage([]);
     try {
-      setListReceiptStorage([]); // Clear table data initially
       const response = await ReceiptApi.getAllReceipt(lotNumber, supplierName, startTime, endTime);
-      console.log("API response:", response); // Debug log to inspect the response structure
-
-      if (response && Array.isArray(response) && response.length > 0) {
-        setListReceiptHistory(response); // Update with API data
-        console.log("Updated listReceiptHistory:", response); // Debug log
-        // Ensure locationId is mapped from API response
-        const storageData = response.flatMap((item, index) =>
-          Array.isArray(item.receiptSubLots)
-            ? item.receiptSubLots.map((sub, subIdx) => ({
-                id: `${index + 1}.${subIdx + 1}`,
-                materialName: item.materialName,
-                materialId: item.materialId,
-                unitOfMeasure: item.unitOfMeasure,
-                warehouseID: item.warehouseID,
-                importedQuantity: sub.importedQuantity,
-                locationId: sub.locationId,
-                lotNumber: item.lotNumber,
-              }))
-            : []
-        );
-        setListReceiptStorage(storageData); // Update storage data
-        console.log("Updated listReceiptStorage:", storageData); // Debug log
-      } else {
-        console.warn("No valid data received from API.");
-        setListReceiptHistory([
-          {
-            lotNumber: "--",
-            receiptDate: "--",
-            personName: "--",
-            supplierName: "--",
-            lotStatus: "--",
-          },
-        ]); // Reset to placeholder data
-      }
+      setListReceiptHistory(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error("Error fetching receipt history:", error.message || error);
-      if (error.response) {
-        console.error("Error response status:", error.response.status); // Log HTTP status
-        console.error("Error response data:", error.response.data); // Log error data
-      }
-      setListReceiptHistory([
-        {
-          lotNumber: "--",
-          receiptDate: "--",
-          personName: "--",
-          supplierName: "--",
-          lotStatus: "--",
-        },
-      ]); // Reset to placeholder data
-      setListReceiptStorage([]); // Clear storage data
+      setListReceiptHistory([]);
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 
+  const selectLot = async (item) => {
+    setSelectedItem(item);
+    setIsDetailLoading(true);
+    try {
+      const response = await ReceiptApi.getAllReceipt(item.lotNumber);
+      setListReceiptStorage(Array.isArray(response) ? mapReceiptEntriesToStorageRows(response) : []);
+    } catch (error) {
+      console.error("Error fetching lot detail:", error);
+      setListReceiptStorage([]);
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
+  const totalQuantity = listReceiptStorage.reduce((sum, item) => sum + (Number(item.importedQuantity) || 0), 0);
+
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <FormSection style={{ width: "25%", margin: "0px 20px", height: "100%" }}>
-        <SectionTitle style={{ fontSize: "24px", padding: "0 10px", marginBottom: 0 }}>Truy xuất lịch sử nhập kho</SectionTitle>
-        <div>
-          <SectionTitle style={{ textAlign: 'left', fontSize: "16px", marginBottom: 0, marginLeft: "20px" }}>Mã lô/ Số PO:</SectionTitle>
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo Mã lô/ số PO"
-            value={searchLotNumber}
-            onChange={(e) => setSearchLotNumber(e.target.value)}
-            style={{ width: "90%", marginLeft:"20px", padding: "5px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
-          />
-          <SectionTitle style={{ textAlign: 'left', fontSize: "16px", marginBottom: 0, marginLeft: "20px" }}>Nhà cung cấp:</SectionTitle>
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo nhà cung cấp"
-            value={searchSupplierName}
-            onChange={(e) => setSearchSupplierName(e.target.value)}
-            style={{ width: "90%", marginLeft:"20px", padding: "5px", marginBottom: "10px", border: "1px solid #ccc", borderRadius: "4px" }}
-          />
-          <div style={{ display: "flex", marginBottom: "5px" }}>
-            <FormGroup>
-              <SelectContainer>
-                <DateInput
-                  style={{ width: "80%", left: "9%",}}
-                  selectedDate={selectedDate1}
-                  onChange={(date) => setSelectedDate1(date || null)} // Reset to null when cleared
-                />
-              </SelectContainer>
-            </FormGroup>
-            <FormGroup>
-              <SelectContainer>
-                <DateInput
-                  style={{ width: "80%", right: "9%" }}
-                  selectedDate={selectedDate2}
-                  onChange={(date) => setSelectedDate2(date || null)} // Reset to null when cleared
-                />
-              </SelectContainer>
-            </FormGroup>
-          </div>
-          <ActionButton 
-            style={{ padding: "5px", marginTop: 0, fontSize: "16px" }} 
-            onClick={handleSearch}
-            disabled={isLoading} // Disable button while loading
-          >
-            {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
-          </ActionButton>
-        </div>
-        <SectionTitle style={{ fontSize: "20px", padding: "10px", marginBottom: 0 }}>Danh sách lô nhập kho</SectionTitle>
-        <div style={{ height: "52%", overflow: "auto" }}>
-          {listReceiptHistory.map((item, index) => (
-            <div
-              className={clsx(styles.divOfList)}
-              key={index}
-              onClick={async () => {
-                setSelectedItem(item); // Set selected item for "Thông tin lô nhập kho"
-                try {
-                  const response = await ReceiptApi.getAllReceipt(item.lotNumber); // Fetch data by lotNumber
-                  // Lấy dữ liệu từ receiptSubLots nếu có
-                  if (response && Array.isArray(response)) {
-                    const storageData = response.flatMap((item, idx) =>
-                      Array.isArray(item.receiptSubLots)
-                        ? item.receiptSubLots.map((sub, subIdx) => ({
-                            id: `${idx + 1}.${subIdx + 1}`,
-                            materialName: item.materialName,
-                            materialId: item.materialId,
-                            unitOfMeasure: item.unitOfMeasure,
-                            warehouseID: item.warehouseID,
-                            importedQuantity: sub.importedQuantity,
-                            locationId: sub.locationId,
-                            lotNumber: item.lotNumber,
-                          }))
-                        : []
-                    );
-                    setListReceiptStorage(storageData); // Update table data with API response
-                  } else {
-                    setListReceiptStorage([]); // Clear table data if no valid data is received
-                  }
-                } catch (error) {
-                  setListReceiptStorage([]); // Clear table data on error
-                }
-              }}
-              style={{
-                backgroundColor: selectedItem === item ? '#f5f5f5' : '#FFF',
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "15px",
-                marginBottom: "5px",
-                height: "50%",
-              }}
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "20px" }}>
+      {/* Left Section - Search & lot list */}
+      <FormSection style={{ flex: "0 0 380px", width: "380px" }}>
+        <SectionTitle>Truy xuất lịch sử nhập kho</SectionTitle>
+
+        <FormGroup>
+          <Label>Mã lô/ Số PO:</Label>
+          <SelectContainer>
+            <SearchInput
+              placeholder="Tìm kiếm theo Mã lô/ số PO"
+              value={searchLotNumber}
+              onChange={(e) => setSearchLotNumber(e.target.value)}
+              style={{ width: "100%", margin: 0, boxSizing: "border-box" }}
+            />
+          </SelectContainer>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Nhà cung cấp:</Label>
+          <SelectContainer>
+            <Select
+              value={searchSupplierName}
+              onChange={(e) => setSearchSupplierName(e.target.value)}
+              placeholder="Tất cả nhà cung cấp"
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                <div style={{ fontWeight: "500", fontSize: "12px", width: "40%" }}>Mã lô/ Số PO:</div>
-                <span style={{ width: "60%", textAlign: "right", fontSize: "13px" }}>{item.lotNumber}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                <div style={{ fontWeight: "500", fontSize: "12px", width: "40%" }}>Thời gian nhập kho:</div>
-                <span style={{ width: "70%", textAlign: "right", fontSize: "13px" }}>{item.receiptDate}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                <div style={{ fontWeight: "500", fontSize: "12px", width: "40%" }}>Nhân viên:</div>
-                <span style={{ width: "60%", textAlign: "right", fontSize: "13px" }}>{item.personName}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                <div style={{ fontWeight: "500", fontSize: "12px", width: "30%" }}>Nhà cung cấp:</div>
-                <span style={{ width: "80%", textAlign: "right" , fontSize: "13px"}}>{item.supplierName}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                <div style={{ fontWeight: "500", fontSize: "12px", width: "40%" , fontSize: "13px"}}>Trạng thái:</div>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    backgroundColor: statusMapping[item.lotStatus]?.color || "white",
-                    padding: '5px 10px',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '13px',
-                    width: "50%",
-                  }}
-                >
-                  {statusMapping[item.lotStatus]?.label || "--"}
+              <option value="">Tất cả nhà cung cấp</option>
+              {suppliers.map((supplier, index) => (
+                <option key={`supplier-${index}`} value={supplier.supplierName}>
+                  {supplier.supplierName}
+                </option>
+              ))}
+            </Select>
+          </SelectContainer>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Từ ngày:</Label>
+          <SelectContainer>
+            <DateInput selectedDate={selectedDate1} onChange={(date) => setSelectedDate1(date || null)} />
+          </SelectContainer>
+        </FormGroup>
+
+        <FormGroup>
+          <Label>Đến ngày:</Label>
+          <SelectContainer>
+            <DateInput selectedDate={selectedDate2} onChange={(date) => setSelectedDate2(date || null)} />
+          </SelectContainer>
+        </FormGroup>
+
+        <ActionButton
+          style={{ width: "100%", margin: "8px 0 20px", padding: "14px", fontSize: "14px" }}
+          onClick={handleSearch}
+          disabled={isLoading}
+        >
+          {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
+        </ActionButton>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>Danh sách lô nhập kho</SectionTitle>
+          <Tag variant="neutral">{listReceiptHistory.length} lô</Tag>
+        </div>
+
+        <div style={{ maxHeight: "520px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", paddingRight: "2px" }}>
+          {listReceiptHistory.length === 0 ? (
+            <div className={styles.emptyState}>Không có lô nhập kho phù hợp.</div>
+          ) : (
+            listReceiptHistory.map((item, index) => (
+              <div
+                key={index}
+                className={clsx(styles.divOfList, selectedItem?.lotNumber === item.lotNumber && styles.selected)}
+                onClick={() => selectLot(item)}
+              >
+                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "4px 8px", fontSize: "13px" }}>
+                  <span className={styles.mutedLabel}>Mã lô/ Số PO:</span>
+                  <span className={styles.lotCode} style={{ textAlign: "right" }}>{item.lotNumber}</span>
+
+                  <span className={styles.mutedLabel}>Thời gian nhập kho:</span>
+                  <span style={{ textAlign: "right" }}>{item.receiptDate}</span>
+
+                  <span className={styles.mutedLabel}>Nhân viên:</span>
+                  <span style={{ textAlign: "right" }}>{item.personName}</span>
+
+                  <span className={styles.mutedLabel}>Nhà cung cấp:</span>
+                  <span style={{ textAlign: "right" }}>{item.supplierName}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px" }}>
+                  <span className={styles.mutedLabel} style={{ fontSize: "13px" }}>Trạng thái:</span>
+                  <StatusTag status={item.lotStatus} />
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </FormSection>
-      {/* Right Section */}
-      <FormSection style={{ flex: 2, marginRight: 0, right: "0.5%", height: "100%" }}>
-        <SectionTitle style={{ fontSize: "24px" }}>Thông tin nhập kho chi tiết</SectionTitle>
-        <h1 style={{marginLeft:"10px", marginBottom:"10px",fontWeight:"Bold", fontSize:"20px",}}>Thông tin lô nhập kho</h1>
-        {selectedItem ? (
-          <FormSection style={{ margin: "0px 10px 30px", backgroundColor: "#F5F5F5", height: "190px", padding: "10px", display: "flex" }}>
-            <div style={{ flexDirection: "column", width: "50%", marginTop: "10px", marginLeft: "5px" }}>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "30%" }}>Kho hàng:</Label>
-                <span>{selectedItem.warehouseName || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "30%" }}>Khu vực:</Label>
-                <span>{selectedItem.warehouseID || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "50%" }}>Nhân viên nhập kho:</Label>
-                <span>{selectedItem.personName || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "15%", fontSize: "14px" }}>
-                <Label style={{ width: "50%" }}>Tổng sản phẩm:</Label>
-                <span>{selectedItem.importedQuantity || "--"}</span>
-              </FormGroup>
+
+      {/* Right Section - Selected lot detail */}
+      <ListSection elevated style={{ flex: 1, minWidth: 0 }}>
+        <SectionTitle>Thông tin nhập kho chi tiết</SectionTitle>
+
+        {!selectedItem ? (
+          <div className={styles.emptyDetail}>
+            Chọn một lô ở danh sách bên trái để xem chi tiết
+          </div>
+        ) : (
+          <>
+            <SectionTitle style={{ fontSize: "16px", marginBottom: "12px" }}>Thông tin lô nhập kho</SectionTitle>
+            <div className={styles.infoPanel}>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Kho hàng:</span><span>{selectedItem.warehouseName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Mã lô/ Số PO:</span><span style={{ fontWeight: 700 }}>{selectedItem.lotNumber || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Khu vực:</span><span>{selectedItem.warehouseID || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Nhà cung cấp:</span><span>{selectedItem.supplierName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Nhân viên nhập kho:</span><span>{selectedItem.personName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Ngày nhập kho:</span><span>{selectedItem.receiptDate || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>Tổng sản phẩm:</span><span style={{ fontWeight: 700 }}>{totalQuantity}</span></div>
+              <div className={styles.infoRow}>
+                <span className={styles.mutedLabel}>Trạng thái:</span>
+                <StatusTag status={selectedItem.lotStatus} />
+              </div>
             </div>
 
-            <div style={{ flexDirection: "column", width: "50%", marginTop: "10px", marginLeft: "0px" }}>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "5%", fontSize: "14px" }}>
-                <Label style={{ width: "40%" }}>Mã lô/ Số PO:</Label>
-                <span>{selectedItem.lotNumber || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "5%", fontSize: "14px" }}>
-                <Label style={{ width: "30%" }}>Nhà cung cấp:</Label>
-                <span>{selectedItem.supplierName || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "5%", fontSize: "14px" }}>
-                <Label style={{ width: "40%" }}>Ngày nhập kho:</Label>
-                <span>{selectedItem.receiptDate || "--"}</span>
-              </FormGroup>
-              <FormGroup style={{ justifyContent: "space-between", marginRight: "5%", fontSize: "14px" }}>
-                <Label style={{ width: "50%" }}>Trạng thái:</Label>
-                <div
-                  style={{
-                    width: '40%',
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    backgroundColor: statusMapping[selectedItem.lotStatus]?.color || "#ccc",
-                    padding: '2%',
-                    margin: '0',
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '12px',
-                  }}
-                >
-                  {statusMapping[selectedItem.lotStatus]?.label || "--"}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "20px 0 12px" }}>
+              <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>Bảng phân bố vị trí lưu trữ</SectionTitle>
+              <Tag variant="accent">Tổng SL nhập: {totalQuantity}</Tag>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              {isDetailLoading ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+                  <ClipLoader size={40} color="#0089D7" />
                 </div>
-              </FormGroup>
-            </div>
-          </FormSection>
-        ) : (
-          <div style={{ textAlign: "center", marginTop: "20px", color: "#888" }}>Chọn một mục để xem chi tiết</div>
-        )}
-        <h1 style={{ marginLeft: "10px", marginBottom: "10px", fontWeight: "Bold", fontSize: "20px" }}>
-          Bảng phân bố vị trí lưu trữ
-        </h1>
-        <ListSection style={{ padding: 0, margin: "0px 10px", maxHeight: "calc(85% - 250px)", overflowY: "auto" }}>
-          {isLoading ? (
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-              <ClipLoader size={50} color="#007bff" />
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <Table>
-                <thead>
-                  <tr>
-                    <TableHeader>STT</TableHeader>
-                    <TableHeader>Tên sản phẩm</TableHeader>
-                    <TableHeader>Mã sản phẩm</TableHeader>
-                    <TableHeader>ĐVT</TableHeader>
-                    <TableHeader>Vị trí lưu trữ</TableHeader>
-                    <TableHeader>Số lượng nhập</TableHeader>
-                  </tr>
-                </thead>
-                <tbody>
-                  {listReceiptStorage.map((item, index) => (
-                    <tr
-                      key={index}
-                      style={{
-                        cursor: "pointer",
-                        backgroundColor: selectedItem?.lotNumber === item.lotNumber ? "#f5f5f5" : "#FFF",
-                      }}
-                    >
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.materialName || "--"}</TableCell>
-                      <TableCell>{item.materialId || "--"}</TableCell>
-                      <TableCell>{item.unitOfMeasure || "--"}</TableCell>
-                      <TableCell>{item.locationId || "--"}</TableCell>
-                      <TableCell>{item.importedQuantity || "--"}</TableCell>
+              ) : (
+                <Table style={{ minWidth: "760px" }}>
+                  <thead>
+                    <tr>
+                      <TableHeader style={{ width: "6%" }}>STT</TableHeader>
+                      <TableHeader>Tên sản phẩm</TableHeader>
+                      <TableHeader>Mã sản phẩm</TableHeader>
+                      <TableHeader style={{ width: "8%" }}>ĐVT</TableHeader>
+                      <TableHeader>Vị trí lưu trữ</TableHeader>
+                      <TableHeader>Số lượng nhập</TableHeader>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {listReceiptStorage.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item.materialName || "--"}</TableCell>
+                        <TableCell>{item.materialId || "--"}</TableCell>
+                        <TableCell>{item.unitOfMeasure || "--"}</TableCell>
+                        <TableCell>{item.locationId || "--"}</TableCell>
+                        <TableCell>{item.importedQuantity || "--"}</TableCell>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
             </div>
-          )}
-        </ListSection>
-      </FormSection>
-      
+          </>
+        )}
+      </ListSection>
     </div>
   );
 };

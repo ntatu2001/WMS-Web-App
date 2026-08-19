@@ -286,15 +286,15 @@ const RequestLotAdjustment = () => {
             setIsUpdateLoading(true);
             const updatedMaterialLotAdjustment = {
                 lotNumber: selectedLotNumber,
-                materialLotAdjustmentId: lotAdjustmentId,
+                stockTakeId: lotAdjustmentId,
                 materialSubLots: realQuantities.map((item, index) => ({
                     ...item,
                     subLotStatus: subLots[index]?.subLotStatus,
                     unitOfMeasure: subLots[index]?.unitOfMeasure,
                 })),
             }
-            // Call API to update the material sub lots for the stock take
-            await materialSubLotApi.updateMaterialSubLot(updatedMaterialLotAdjustment);
+            // Call API to update the stock take with the entered real quantities
+            await lotAdjustmentApi.updateStockTake(updatedMaterialLotAdjustment);
             toast.success("Duyệt kiểm kê thành công!", {
                 position: "top-right",
                 autoClose: 3000,

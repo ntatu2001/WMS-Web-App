@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
@@ -9,8 +10,20 @@ import ReceiptHistory from '../ReceiptHistory/ReceiptHistory.jsx';
 import IssueHistory from '../IssueHistory/IssueHistory.jsx';
 import InventoryHistory from '../InventoryHistory/InventoryHistory.jsx';
 
+const VALID_TABS = ['receipt', 'issue', 'inventory'];
+
 const History = () => {
-  const [activeTab, setActiveTab] = useState('receipt');
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Đồng bộ tab đang chọn với query param ?tab= trên URL để reload trang vẫn giữ
+  // đúng tab thay vì luôn quay về "Lịch sử nhập kho".
+  const [activeTab, setActiveTabState] = useState(() => {
+    const tab = searchParams.get('tab');
+    return VALID_TABS.includes(tab) ? tab : 'receipt';
+  });
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    setSearchParams({ tab }, { replace: true });
+  };
   const headerText = activeTab === 'receipt' ? "Lịch sử nhập kho" :
                      activeTab === 'issue' ? "Lịch sử xuất kho" : "Lịch sử kiểm kê";
 
