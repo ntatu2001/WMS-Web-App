@@ -3,7 +3,8 @@ import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import 'react-datepicker/dist/react-datepicker.css';
 import { BiCube } from 'react-icons/bi';
-import { AiOutlineAppstore, AiFillCheckCircle } from 'react-icons/ai';
+import { AiOutlineAppstore } from 'react-icons/ai';
+import { FaCheckCircle } from 'react-icons/fa';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import TabContainer from '../../../../common/components/Tab/TabContainer.jsx';
@@ -151,7 +152,7 @@ const GoodReceipt = () => {
                   disabled={isApproving}
                   style={headerActionButtonStyle}
                 >
-                  <AiFillCheckCircle size={18} /> Duyệt danh sách nhập kho
+                  <FaCheckCircle size={16} /> Duyệt danh sách nhập kho
                 </ActionButton>
             </div>
           )}

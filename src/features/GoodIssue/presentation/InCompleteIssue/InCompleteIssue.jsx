@@ -38,6 +38,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState(null);
     const [prevWarehouseId, setPrevWarehouseId] = useState(null);
+    const [checkedLotIds, setCheckedLotIds] = useState(new Set());
 
     // Remove dataFetchedRef since we want to fetch data every time warehouse changes
     const schedulingFetchedRef = useRef({});
@@ -90,9 +91,11 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
         setLoadingScheduling(true);
         try {
             const issueDetailSchedulingData = await schedulingApi.getIssueDetailScheduling(warehouseId);
+            // Chỉ giữ lại kết quả phân bổ của các lô đang được tick chọn ở panel trái
+            const filteredScheduling = issueDetailSchedulingData.filter(item => checkedLotIds.has(item.issueLotId));
 
             // Initialize updated items with the fetched data
-            const initialUpdatedItems = issueDetailSchedulingData.map(item => ({
+            const initialUpdatedItems = filteredScheduling.map(item => ({
                 issueSublotId: item.issueSublotId || "",
                 materialId: item.materialId || "",
                 materialName: item.materialName || "",
@@ -134,7 +137,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
         if (onButtonClick) {
             onButtonClick(fetchIssueDetailScheduling);
         }
-    }, [onButtonClick, warehouseId]);
+    }, [onButtonClick, warehouseId, checkedLotIds]);
 
     // Make the approve action available to parent component via prop
     useEffect(() => {
@@ -183,9 +186,28 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     }, []); // Only fetch warehouses once on component mount
 
     // Filter issueLots based on selectedWarehouse
-    const filteredIssueLots = selectedWarehouse
-        ? issueLots.filter(item => item.warehouseName === selectedWarehouse)
-        : issueLots;
+    const filteredIssueLots = useMemo(() => (
+        selectedWarehouse
+            ? issueLots.filter(item => item.warehouseName === selectedWarehouse)
+            : issueLots
+    ), [issueLots, selectedWarehouse]);
+
+    // Default: chọn tất cả các lô mỗi khi danh sách lô pending thay đổi (đổi kho / reload / reset sau khi duyệt)
+    useEffect(() => {
+        setCheckedLotIds(new Set(filteredIssueLots.map(lot => lot.issueLotId)));
+    }, [filteredIssueLots]);
+
+    const toggleLotChecked = (lotId) => {
+        setCheckedLotIds(prev => {
+            const next = new Set(prev);
+            if (next.has(lotId)) {
+                next.delete(lotId);
+            } else {
+                next.add(lotId);
+            }
+            return next;
+        });
+    };
 
     // Handle warehouse selection change
     const handleWarehouseChange = (e) => {
@@ -321,7 +343,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
 
                     <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 10px"}}>
                         <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>Danh sách lô xuất kho</SectionTitle>
-                        <Tag variant="neutral">{filteredIssueLots.length} lô</Tag>
+                        <Tag variant="neutral">{checkedLotIds.size}/{filteredIssueLots.length} lô</Tag>
                     </div>
 
                     <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
@@ -334,14 +356,20 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                                 <div className={clsx(styles.divOfList)}
                                     key={item.issueLotId}
                                 >
-                                    <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Mã lô:</LabelSmallSize>
-                                        <span className={clsx(styles.lotCode)} style={{marginTop: "2px", fontSize: "14px"}}>{item.lotNumber}</span>
+                                    <div style={{display: "flex", alignItems: "center", gap: "8px", marginRight: "3%"}}>
+                                        <input
+                                            type="checkbox"
+                                            className={styles.lotCheckbox}
+                                            checked={checkedLotIds.has(item.issueLotId)}
+                                            onChange={() => toggleLotChecked(item.issueLotId)}
+                                            aria-label={`Chọn lô ${item.lotNumber}`}
+                                        />
+                                        <span className={clsx(styles.lotCode)} style={{fontSize: "14px"}}>{item.lotNumber}</span>
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Sản phẩm:</LabelSmallSize>
-                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialName}</span>
+                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Sản phẩm:</LabelSmallSize>
+                                        <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500, textAlign: "right"}}>{item.materialName}</span>
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
@@ -350,7 +378,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Số lượng xuất kho:</LabelSmallSize>
+                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Số lượng xuất kho:</LabelSmallSize>
                                         <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.requestedQuantity}</span>
                                     </div>
                                 </div>

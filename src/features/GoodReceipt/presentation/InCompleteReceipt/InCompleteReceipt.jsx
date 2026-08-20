@@ -46,6 +46,24 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState(null);
     const [prevWarehouseId, setPrevWarehouseId] = useState(null);
+    const [checkedLotIds, setCheckedLotIds] = useState(new Set());
+
+    // Default: chọn tất cả các lô mỗi khi danh sách lô pending thay đổi (đổi kho / reload / reset sau khi duyệt)
+    useEffect(() => {
+        setCheckedLotIds(new Set(receiptLots.map(lot => lot.receiptLotId)));
+    }, [receiptLots]);
+
+    const toggleLotChecked = (lotId) => {
+        setCheckedLotIds(prev => {
+            const next = new Set(prev);
+            if (next.has(lotId)) {
+                next.delete(lotId);
+            } else {
+                next.add(lotId);
+            }
+            return next;
+        });
+    };
 
     const locationColorPalette = ['#2dd4bf', '#0a1830', '#5980a6', '#dc7010'];
     const locationOrder = useMemo(() => {
@@ -99,9 +117,11 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
         setLoadingScheduling(true);
         try {
             const receiptDetailScheduling = await schedulingApi.getReceiptDetailScheduling(warehouseId);
-            setReceiptDetailScheduling(receiptDetailScheduling);
+            // Chỉ giữ lại kết quả phân bổ của các lô đang được tick chọn ở panel trái
+            const filteredScheduling = receiptDetailScheduling.filter(item => checkedLotIds.has(item.lotNumber));
+            setReceiptDetailScheduling(filteredScheduling);
             // Initialize updated items with the fetched data
-            const initialUpdatedItems = receiptDetailScheduling.map(item => ({
+            const initialUpdatedItems = filteredScheduling.map(item => ({
                 receiptSubLotId: item.receiptSublotId || "",
                 materialId: item.materialId || "",
                 materialName: item.materialName || "",
@@ -144,7 +164,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
         if (onButtonClick) {
             onButtonClick(fetchReceiptDetailScheduling);
         }
-    }, [onButtonClick, selectedWarehouse]);
+    }, [onButtonClick, selectedWarehouse, checkedLotIds]);
 
     // Make the approve action available to parent component via prop
     useEffect(() => {
@@ -328,7 +348,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
 
                             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 10px"}}>
                                 <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>Danh sách lô nhập kho</SectionTitle>
-                                <Tag variant="neutral">{receiptLots.length} lô</Tag>
+                                <Tag variant="neutral">{checkedLotIds.size}/{receiptLots.length} lô</Tag>
                             </div>
 
                             <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
@@ -342,14 +362,20 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                             key={item.receiptLotId}
                                             
                                         >
-                                            <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize>Mã lô:</LabelSmallSize>
-                                                <span className={clsx(styles.lotCode)} style={{marginTop: "2px", fontSize: "14px"}}>{item.receiptLotId}</span>
+                                            <div style={{display: "flex", alignItems: "center", gap: "8px", marginRight: "3%"}}>
+                                                <input
+                                                    type="checkbox"
+                                                    className={styles.lotCheckbox}
+                                                    checked={checkedLotIds.has(item.receiptLotId)}
+                                                    onChange={() => toggleLotChecked(item.receiptLotId)}
+                                                    aria-label={`Chọn lô ${item.receiptLotId}`}
+                                                />
+                                                <span className={clsx(styles.lotCode)} style={{fontSize: "14px"}}>{item.receiptLotId}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize>Sản phẩm:</LabelSmallSize>
-                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialName}</span>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Sản phẩm:</LabelSmallSize>
+                                                <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500, textAlign: "right"}}>{item.materialName}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
@@ -358,12 +384,12 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize>Số lượng nhập kho:</LabelSmallSize>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Số lượng nhập kho:</LabelSmallSize>
                                                 <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.importedQuantity}</span>
-                                            </div>  
+                                            </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between", alignItems: "center"}}>
-                                                <LabelSmallSize>Giới hạn tầng lưu trữ:</LabelSmallSize>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Giới hạn tầng lưu trữ:</LabelSmallSize>
                                                 <span style={{
                                                     backgroundColor: storageLevel[item.storageLevel],
                                                     color: "white",

@@ -17,6 +17,23 @@
     color: v.$color-navy;
 }
 
+.lotCheckbox {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1.5px solid v.$color-teal-dark;
+    border-radius: 50%;
+    cursor: pointer;
+    background-color: #fff;
+
+    &:checked {
+        background-color: v.$color-teal-dark;
+        border-color: v.$color-teal-dark;
+    }
+}
+
 .resultTableWrapper {
     overflow-x: auto;
 }
