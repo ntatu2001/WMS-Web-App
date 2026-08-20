@@ -9,6 +9,17 @@ const materialSubLotApi = {
     updateMaterialSubLot(data) {
         const url = 'MaterialSubLot/UpdateMaterialSubLot';
         return axiosClient.put(url, data);
+    },
+
+    getMaterialSubLotsByLocationId(locationId) {
+        const url = `MaterialSubLot/GetMaterialSubLotsByLocationId/${locationId}`;
+        return axiosClient.get(url);
+    },
+
+    moveMaterialSubLot(data) {
+        // data: { materialSubLotId, toLocationId }
+        const url = 'MaterialSubLot/MoveMaterialSubLot';
+        return axiosClient.put(url, data);
     }
 };
 

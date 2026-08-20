@@ -188,6 +188,11 @@
     cursor: pointer;
 }
 
+.cellDropTarget {
+    outline: 2px dashed #0089D7;
+    outline-offset: -2px;
+}
+
 .cellLot {
     position: absolute;
     top: 0;
@@ -220,4 +225,43 @@
     font-size: 13px;
     font-weight: 700;
     color: v.$color-teal-dark;
+}
+
+.moveConfirmOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+}
+
+.moveConfirmCard {
+    background-color: v.$color-surface;
+    padding: 20px;
+    border-radius: v.$radius-md;
+    width: 360px;
+    box-shadow: v.$shadow-md;
+}
+
+.moveConfirmTitle {
+    margin: 0 0 8px;
+    color: v.$color-navy;
+}
+
+.moveConfirmBody {
+    margin: 0;
+    color: v.$color-text;
+    line-height: 1.5;
+}
+
+.moveConfirmActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }

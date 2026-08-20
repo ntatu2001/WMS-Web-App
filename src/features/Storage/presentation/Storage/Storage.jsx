@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import clsx from 'clsx';
+import {
+    DndContext,
+    useDraggable,
+    useDroppable,
+    useSensor,
+    useSensors,
+    PointerSensor,
+    closestCenter
+} from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import DetailModal from '../Modal/DetailModal.jsx';
 import Detail from '../Detail/Detail.jsx';
 import HeaderContainer from '../../../../common/components/Header/HeaderContainer.jsx';
@@ -8,8 +20,10 @@ import Separator from '../../../../common/components/Header/Separator.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import Select from '../../../../common/components/Selection/Select.jsx';
 import Tag from '../../../../common/components/Tag/Tag.jsx';
+import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import locationApi from '../../../../api/locationApi.js';
 import wareHouseApi from '../../../../api/wareHouseApi.js';
+import materialSubLotApi from '../../../../api/materialSubLotApi.js';
 import { ClipLoader } from 'react-spinners';
 import styles from './Storage.module.scss';
 
@@ -18,7 +32,129 @@ const STATUS_COLORS = {
     'Đã đầy': '#00294D',
 };
 
+const FULL_STATUS = 'Đã đầy';
+
 const getCellColor = (status) => STATUS_COLORS[status] || '#FFFFFF';
+
+// Định danh draggable ghép từ vị trí nguồn + số lô, vì lotInfors trên sơ đồ kho
+// không mang materialSubLotId (chỉ có khi gọi GetMaterialSubLotsByLocationId lúc xác nhận di chuyển).
+const buildDragId = (locationId, lotNumber) => `${locationId}::${lotNumber}`;
+const parseDragId = (dragId) => {
+    const separatorIndex = dragId.lastIndexOf('::');
+    return {
+        locationId: dragId.slice(0, separatorIndex),
+        lotNumber: dragId.slice(separatorIndex + 2)
+    };
+};
+
+// Diễn giải lỗi trả về từ API MoveMaterialSubLot (xem UserGuide/MoveMaterialSubLot_API.md mục 4-5).
+const getMoveErrorMessage = (error) => {
+    const data = error?.response?.data;
+    if (!data) return 'Di chuyển lô phụ thất bại. Vui lòng thử lại.';
+
+    if (data.code === 'NotFound.MaterialSubLot') return 'Lô phụ không tồn tại.';
+    if (data.code === 'NotFound.Location') return 'Vị trí đích không tồn tại.';
+    if (data.code === 'LocationCapacityExceeded') {
+        const d = data.detail || {};
+        const fmt = (n) => (typeof n === 'number' ? n.toFixed(2) : n);
+        return `Vị trí ${d.locationId} hiện dùng ${fmt(d.currentUsedVolume)}/${fmt(d.maxVolume)} m³, thêm lô này (${fmt(d.incomingVolume)} m³) sẽ thành ${fmt(d.resultingRate)}% — vượt quá sức chứa cho phép (100%).`;
+    }
+
+    const message = data.message || '';
+    if (message.includes('different warehouses')) return 'Không thể di chuyển sang kho khác.';
+    if (message.includes('pending StockTake')) return 'Lô hàng đang có đợt kiểm kê chưa hoàn tất, không thể di chuyển.';
+
+    return message || 'Di chuyển lô phụ thất bại. Vui lòng thử lại.';
+};
+
+// Panel của 1 lô phụ trong ô — kéo được (trừ khi ô đang mở popup chi tiết).
+const CellLotPanel = ({ cell, cellLocationId, lot, index, onLotClick }) => {
+    const dragId = buildDragId(cellLocationId, lot.lotNumber);
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+        id: dragId,
+        data: { lotNumber: lot.lotNumber, quantity: lot.quantity, locationId: cellLocationId }
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            className={styles.cellLot}
+            onClick={(e) => {
+                e.stopPropagation();
+                onLotClick(cell, cellLocationId, e, lot.lotNumber);
+            }}
+            style={{
+                left: `${lot.startPosition * 100}%`,
+                width: `${lot.width * 100}%`,
+                backgroundColor: cell.status === FULL_STATUS ? '#00294D' : '#0089D7',
+                borderRight: index < cell.allLotInfors.length - 1 ? '1px solid #000' : 'none',
+                fontSize: lot.width < 0.18 ?
+                    '6px' :
+                    (lot.width < 0.4 ?
+                        `${Math.max(10, lot.width * 20)}px` :
+                        '14px'),
+                padding: '0 2px',
+                opacity: isDragging ? 0.35 : 1,
+                zIndex: isDragging ? 5 : undefined,
+                transform: transform ? CSS.Translate.toString(transform) : undefined,
+                touchAction: 'none'
+            }}
+        >
+            <span className={styles.cellLotLabel}>{lot.lotNumber}</span>
+        </div>
+    );
+};
+
+// Một ô vị trí trong sơ đồ — nhận thả lô phụ khi chưa đầy và có location thật.
+const Cell = ({ cell, cellIndex, rowIndex, rackId, rowsCount, onCellClick, showModal, curPoint, modalData, modalPosition, onModalClose, onViewDetails, isModalLoading }) => {
+    const realRowNum = rowsCount - rowIndex;
+    const colNum = cellIndex + 1;
+    const cellLocationId = cell?.details?.locationId || `${rackId}.${colNum}.${realRowNum}`;
+    const isClickable = Boolean(cell && cell.details);
+    const pointKey = `${rackId}-${cellIndex}-${rowIndex}`;
+    const canDrop = isClickable && cell.status !== FULL_STATUS;
+
+    const { isOver, setNodeRef } = useDroppable({
+        id: cellLocationId,
+        disabled: !canDrop
+    });
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={clsx(
+                styles.cell,
+                isClickable && styles.cellClickable,
+                canDrop && isOver && styles.cellDropTarget
+            )}
+            onClick={(e) => onCellClick(cell, pointKey, e, cellLocationId, null)}
+            style={{ backgroundColor: cell ? getCellColor(cell.status) : '#FFFFFF' }}
+            title={cellLocationId}
+        >
+            {cell && cell.allLotInfors && cell.allLotInfors.map((lot, index) => (
+                <CellLotPanel
+                    key={`lot-${index}`}
+                    cell={cell}
+                    cellLocationId={cellLocationId}
+                    lot={lot}
+                    index={index}
+                    onLotClick={(c, locId, e, lotNumber) => onCellClick(c, pointKey, e, locId, lotNumber)}
+                />
+            ))}
+            {(curPoint === pointKey && showModal) && (
+                <DetailModal
+                    data={modalData}
+                    onClose={onModalClose}
+                    position={modalPosition}
+                    onViewDetails={onViewDetails}
+                    isLoading={isModalLoading}
+                />
+            )}
+        </div>
+    );
+};
 
 const Storage = () => {
     const [activeTab, setActiveTab] = useState('storage'); // Trạng thái tab hiện tại
@@ -36,6 +172,12 @@ const Storage = () => {
     const [isModalLoading, setIsModalLoading] = useState(false);
     const [selectedLotNumber, setSelectedLotNumber] = useState(null);
     const [selectedLotForDetail, setSelectedLotForDetail] = useState(null);
+    const [pendingMove, setPendingMove] = useState(null);
+    const [isMoving, setIsMoving] = useState(false);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+    );
 
     useEffect(() => {
         const GetInforByLocationId = async () => {
@@ -127,39 +269,6 @@ const Storage = () => {
             setShowModal(true);
         }
     };
-
-
-    // Process warehouse data to create visualization grid
-    useEffect(() => {
-        setDataTable({});
-
-        if (!selectedZone) return;
-
-        try {
-            const GetLocations = async () => {
-                setIsLoading(true);
-                try {
-                    const locationList = await locationApi.GetLocationsByWarehouseId(selectedZone);
-                    if (Array.isArray(locationList) && locationList.length > 0) {
-                        const filteredLocations = locationList.filter(location =>
-                            location.locationId.includes(selectedZone)
-                        );
-                        const processedData = processLocationsData(filteredLocations);
-                        setDataTable(processedData);
-                    }
-                } catch (error) {
-                    console.error("Error fetching locations:", error);
-                } finally {
-                    setIsLoading(false);
-                }
-            }
-
-            GetLocations();
-        } catch (err) {
-            console.error("Error processing warehouse data:", err);
-            setDataTable({});
-        }
-    }, [selectedZone]);
 
     // Function to process location data into visualization grid
     const processLocationsData = (locations) => {
@@ -268,60 +377,86 @@ const Storage = () => {
         return sections;
     };
 
-    // Function to render a cell
-    const renderCell = (cell, cellIndex, rowIndex, rackId, rowsCount) => {
-        const realRowNum = rowsCount - rowIndex;
-        const colNum = cellIndex + 1;
-        const cellLocationId = cell?.details?.locationId || `${rackId}.${colNum}.${realRowNum}`;
-        const isClickable = Boolean(cell && cell.details);
-        const pointKey = `${rackId}-${cellIndex}-${rowIndex}`;
+    // Process warehouse data to create visualization grid
+    const fetchLocations = useCallback(async () => {
+        if (!selectedZone) {
+            setDataTable({});
+            return;
+        }
 
-        return (
-            <div
-                key={pointKey}
-                className={clsx(styles.cell, isClickable && styles.cellClickable)}
-                onClick={(e) => handleCellClick(cell, pointKey, e, cellLocationId, null)}
-                style={{ backgroundColor: cell ? getCellColor(cell.status) : '#FFFFFF' }}
-                title={cellLocationId}
-            >
-                {cell && cell.allLotInfors && cell.allLotInfors.map((lot, index) => (
-                    <div
-                        key={`lot-${index}`}
-                        className={styles.cellLot}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleCellClick(cell, pointKey, e, cellLocationId, lot.lotNumber);
-                        }}
-                        style={{
-                            left: `${lot.startPosition * 100}%`,
-                            width: `${lot.width * 100}%`,
-                            backgroundColor: cell.status === "Đã đầy" ? "#00294D" : "#0089D7",
-                            borderRight: index < cell.allLotInfors.length - 1 ? "1px solid #000" : "none",
-                            fontSize: lot.width < 0.18 ?
-                                "6px" :
-                                (lot.width < 0.4 ?
-                                    `${Math.max(10, lot.width * 20)}px` :
-                                    "14px"),
-                            padding: "0 2px"
-                        }}
-                    >
-                        <span className={styles.cellLotLabel}>{lot.lotNumber}</span>
-                    </div>
-                ))}
-                {(curPoint === pointKey && showModal) && (
-                    <DetailModal
-                        data={{ selectedDetails, position: cellLocationId, selectedLotNumber }}
-                        onClose={() => {
-                            setShowModal(false);
-                            setSelectedLotNumber(null);
-                        }}
-                        position={modalPosition}
-                        onViewDetails={handleViewDetails}
-                        isLoading={isModalLoading}
-                    />
-                )}
-            </div>
-        );
+        setIsLoading(true);
+        try {
+            const locationList = await locationApi.GetLocationsByWarehouseId(selectedZone);
+            if (Array.isArray(locationList) && locationList.length > 0) {
+                const filteredLocations = locationList.filter(location =>
+                    location.locationId.includes(selectedZone)
+                );
+                setDataTable(processLocationsData(filteredLocations));
+            } else {
+                setDataTable({});
+            }
+        } catch (error) {
+            console.error("Error fetching locations:", error);
+        } finally {
+            setIsLoading(false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedZone]);
+
+    useEffect(() => {
+        fetchLocations();
+    }, [fetchLocations]);
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (!active || !over) return;
+
+        const { locationId: oldLocationId, lotNumber } = parseDragId(String(active.id));
+        const newLocationId = String(over.id);
+        if (newLocationId === oldLocationId) return;
+
+        setPendingMove({
+            lotNumber,
+            quantity: active.data?.current?.quantity,
+            oldLocationId,
+            newLocationId
+        });
+    };
+
+    const handleCancelMove = () => {
+        if (isMoving) return;
+        setPendingMove(null);
+    };
+
+    const handleConfirmMove = async () => {
+        if (!pendingMove) return;
+
+        setIsMoving(true);
+        try {
+            const subLots = await materialSubLotApi.getMaterialSubLotsByLocationId(pendingMove.oldLocationId);
+            const matchedSubLot = Array.isArray(subLots)
+                ? subLots.find((subLot) => subLot.lotNumber === pendingMove.lotNumber)
+                : null;
+
+            if (!matchedSubLot) {
+                toast.error('Không tìm thấy lô phụ tại vị trí hiện tại.');
+                return;
+            }
+
+            await materialSubLotApi.moveMaterialSubLot({
+                materialSubLotId: matchedSubLot.materialSubLotId,
+                toLocationId: pendingMove.newLocationId
+            });
+
+            toast.success(`Đã di chuyển lô phụ ${pendingMove.lotNumber} sang vị trí ${pendingMove.newLocationId}`);
+            setPendingMove(null);
+            await fetchLocations();
+        } catch (error) {
+            console.error("Error moving material sub lot:", error);
+            toast.error(getMoveErrorMessage(error));
+        } finally {
+            setIsMoving(false);
+        }
     };
 
     const warehouseNameOptions = Array.from(new Set(wareHouse.map(w => w.warehouseName)));
@@ -395,88 +530,138 @@ const Storage = () => {
                         </span>
                     </div>
 
-                    <div className={styles.zoneList}>
-                        {Object.entries(dataTable || {})
-                            .sort(([sectionA], [sectionB]) => {
-                                // Extract the number part from section IDs like "BB01_4", "BB01_3", etc.
-                                const numA = parseInt(sectionA.split('_')[1] || '0', 10);
-                                const numB = parseInt(sectionB.split('_')[1] || '0', 10);
-                                // Sort in descending order (higher numbers first)
-                                return numB - numA;
-                            })
-                            .map(([sectionId, sectionData]) => {
-                                const { racks, parentSection } = sectionData;
-                                // Get rack entries and sort them (highest rack number on top)
-                                const rackEntries = Object.entries(racks).sort(([, rackA], [, rackB]) => {
-                                    return parseInt(rackB.rackNumber, 10) - parseInt(rackA.rackNumber, 10);
-                                });
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <div className={styles.zoneList}>
+                            {Object.entries(dataTable || {})
+                                .sort(([sectionA], [sectionB]) => {
+                                    // Extract the number part from section IDs like "BB01_4", "BB01_3", etc.
+                                    const numA = parseInt(sectionA.split('_')[1] || '0', 10);
+                                    const numB = parseInt(sectionB.split('_')[1] || '0', 10);
+                                    // Sort in descending order (higher numbers first)
+                                    return numB - numA;
+                                })
+                                .map(([sectionId, sectionData]) => {
+                                    const { racks, parentSection } = sectionData;
+                                    // Get rack entries and sort them (highest rack number on top)
+                                    const rackEntries = Object.entries(racks).sort(([, rackA], [, rackB]) => {
+                                        return parseInt(rackB.rackNumber, 10) - parseInt(rackA.rackNumber, 10);
+                                    });
 
-                                return (
-                                    <div key={sectionId} className={styles.zoneCard}>
-                                        <div className={styles.zoneCardHeader}>
-                                            <span className={styles.zoneKicker}>Khu vực</span>
-                                            <h2 className={styles.zoneTitle}>{parentSection}</h2>
-                                        </div>
+                                    return (
+                                        <div key={sectionId} className={styles.zoneCard}>
+                                            <div className={styles.zoneCardHeader}>
+                                                <span className={styles.zoneKicker}>Khu vực</span>
+                                                <h2 className={styles.zoneTitle}>{parentSection}</h2>
+                                            </div>
 
-                                        <div className={styles.rackScroll}>
-                                            <div className={styles.rackList}>
-                                                {rackEntries.map(([rackKey, rack], rackIndex) => {
-                                                    const colsCount = rack.columns.length;
-                                                    const rowsCount = rack.rows.length;
-                                                    const isFirstRack = rackIndex === 0;
-                                                    const isLastRack = rackIndex === rackEntries.length - 1;
-                                                    const reversedRows = rack.rows.slice().reverse();
+                                            <div className={styles.rackScroll}>
+                                                <div className={styles.rackList}>
+                                                    {rackEntries.map(([rackKey, rack], rackIndex) => {
+                                                        const colsCount = rack.columns.length;
+                                                        const rowsCount = rack.rows.length;
+                                                        const isFirstRack = rackIndex === 0;
+                                                        const isLastRack = rackIndex === rackEntries.length - 1;
+                                                        const reversedRows = rack.rows.slice().reverse();
 
-                                                    return (
-                                                        <div key={rackKey} className={styles.rack}>
-                                                            <Tag variant="neutral" className={styles.rackLabel}>Dãy kệ {rack.rackNumber}</Tag>
+                                                        return (
+                                                            <div key={rackKey} className={styles.rack}>
+                                                                <Tag variant="neutral" className={styles.rackLabel}>Dãy kệ {rack.rackNumber}</Tag>
 
-                                                            <div className={styles.rackGrid} style={{ gridTemplateColumns: '1fr 34px' }}>
-                                                                {isFirstRack && (
-                                                                    <>
-                                                                        <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
-                                                                            {rack.columns.map((col) => (
-                                                                                <div key={col} className={styles.colHeaderCell}>{col}</div>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className={styles.colHeaderSpacer}></div>
-                                                                    </>
-                                                                )}
+                                                                <div className={styles.rackGrid} style={{ gridTemplateColumns: '1fr 34px' }}>
+                                                                    {isFirstRack && (
+                                                                        <>
+                                                                            <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                                {rack.columns.map((col) => (
+                                                                                    <div key={col} className={styles.colHeaderCell}>{col}</div>
+                                                                                ))}
+                                                                            </div>
+                                                                            <div className={styles.colHeaderSpacer}></div>
+                                                                        </>
+                                                                    )}
 
-                                                                <div className={styles.cellsColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
-                                                                    {reversedRows.map((row, rowIndex) => (
-                                                                        <div key={rowIndex} className={styles.cellRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
-                                                                            {row.map((cell, cellIndex) => renderCell(cell, cellIndex, rowIndex, rack.rackId, rowsCount))}
-                                                                        </div>
-                                                                    ))}
+                                                                    <div className={styles.cellsColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
+                                                                        {reversedRows.map((row, rowIndex) => (
+                                                                            <div key={rowIndex} className={styles.cellRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                                {row.map((cell, cellIndex) => (
+                                                                                    <Cell
+                                                                                        key={`${rack.rackId}-${cellIndex}-${rowIndex}`}
+                                                                                        cell={cell}
+                                                                                        cellIndex={cellIndex}
+                                                                                        rowIndex={rowIndex}
+                                                                                        rackId={rack.rackId}
+                                                                                        rowsCount={rowsCount}
+                                                                                        onCellClick={handleCellClick}
+                                                                                        showModal={showModal}
+                                                                                        curPoint={curPoint}
+                                                                                        modalData={{ selectedDetails, position: cell?.details?.locationId, selectedLotNumber }}
+                                                                                        modalPosition={modalPosition}
+                                                                                        onModalClose={() => {
+                                                                                            setShowModal(false);
+                                                                                            setSelectedLotNumber(null);
+                                                                                        }}
+                                                                                        onViewDetails={handleViewDetails}
+                                                                                        isModalLoading={isModalLoading}
+                                                                                    />
+                                                                                ))}
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    <div className={styles.floorColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
+                                                                        {reversedRows.map((_, rowIndex) => (
+                                                                            <div key={rowIndex} className={styles.floorCell}>{rowsCount - rowIndex}</div>
+                                                                        ))}
+                                                                    </div>
+
+                                                                    {isLastRack && (
+                                                                        <>
+                                                                            <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
+                                                                                {rack.columns.map((col) => (
+                                                                                    <div key={col} className={styles.colHeaderCell}>{col}</div>
+                                                                                ))}
+                                                                            </div>
+                                                                            <div className={styles.colHeaderSpacer}></div>
+                                                                        </>
+                                                                    )}
                                                                 </div>
-
-                                                                <div className={styles.floorColumn} style={{ gridTemplateRows: `repeat(${rowsCount}, 64px)` }}>
-                                                                    {reversedRows.map((_, rowIndex) => (
-                                                                        <div key={rowIndex} className={styles.floorCell}>{rowsCount - rowIndex}</div>
-                                                                    ))}
-                                                                </div>
-
-                                                                {isLastRack && (
-                                                                    <>
-                                                                        <div className={styles.colHeaderRow} style={{ gridTemplateColumns: `repeat(${colsCount}, 1fr)` }}>
-                                                                            {rack.columns.map((col) => (
-                                                                                <div key={col} className={styles.colHeaderCell}>{col}</div>
-                                                                            ))}
-                                                                        </div>
-                                                                        <div className={styles.colHeaderSpacer}></div>
-                                                                    </>
-                                                                )}
                                                             </div>
-                                                        </div>
-                                                    );
-                                                })}
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                    </div>
+                                    );
+                                })}
+                        </div>
+                    </DndContext>
+
+                    {pendingMove && (
+                        <div className={styles.moveConfirmOverlay}>
+                            <div className={styles.moveConfirmCard}>
+                                <h4 className={styles.moveConfirmTitle}>Xác nhận di chuyển</h4>
+                                <p className={styles.moveConfirmBody}>
+                                    Di chuyển lô phụ <strong>{pendingMove.lotNumber}</strong> từ vị trí <strong>{pendingMove.oldLocationId}</strong> sang vị trí <strong>{pendingMove.newLocationId}</strong>?
+                                </p>
+                                <div className={styles.moveConfirmActions}>
+                                    <ActionButton
+                                        variant="secondary"
+                                        style={{ width: 'auto', margin: 0, padding: '10px 18px', fontSize: '14px' }}
+                                        onClick={handleCancelMove}
+                                        disabled={isMoving}
+                                    >
+                                        Huỷ bỏ
+                                    </ActionButton>
+                                    <ActionButton
+                                        style={{ width: 'auto', margin: 0, padding: '10px 18px', fontSize: '14px' }}
+                                        onClick={handleConfirmMove}
+                                        disabled={isMoving}
+                                    >
+                                        {isMoving ? 'Đang xử lý...' : 'Xác nhận'}
+                                    </ActionButton>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
