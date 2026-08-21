@@ -2,9 +2,9 @@ import axiosClient from "./axiosClient";
 
 
 const inventoryReceiptEntryApi = {
-    getReceiptEntriesByDate(fromDate, toDate) {
+    getReceiptEntriesByDate(fromDate, toDate, warehouseName) {
         const url = 'InventoryReceiptEntry/GetReceiptEntriesByDate';
-        return axiosClient.get(url, {params: {fromDate, toDate}});
+        return axiosClient.get(url, {params: {fromDate, toDate, warehouseName}});
     },
     
     getReceiptEntryById(id) {

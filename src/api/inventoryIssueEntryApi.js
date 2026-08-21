@@ -3,9 +3,9 @@ import axiosClient from "./axiosClient";
 
 
 const inventoryIssueEntryApi = {
-    getIssueEntriesByDate(fromDate, toDate) {
+    getIssueEntriesByDate(fromDate, toDate, warehouseName) {
         const url = 'InventoryIssueEntry/GetIssueEntriesByDate';
-        return axiosClient.get(url, {params: {fromDate, toDate}});
+        return axiosClient.get(url, {params: {fromDate, toDate, warehouseName}});
     },
     
     getIssueEntryById(id) {

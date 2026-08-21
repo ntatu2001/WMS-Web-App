@@ -49,6 +49,11 @@ const ManageGoodIssue = () => {
   const [loading, setLoading] = useState(true);
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseFilter, setWarehouseFilter] = useState('');
+  // Một số kho hàng trùng tên (do mở rộng thêm kho mới), nên chỉ hiển thị mỗi tên 1 lần trên bộ lọc
+  const uniqueWarehouseNames = useMemo(
+    () => Array.from(new Set(warehouses.map(w => w.warehouseName))),
+    [warehouses]
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [period, setPeriod] = useState('today');
 
@@ -57,7 +62,7 @@ const ManageGoodIssue = () => {
       try {
         setLoading(true);
         const { fromDate, toDate } = getDateRange(period);
-        const issueEntryList = await inventoryIssueEntryApi.getIssueEntriesByDate(fromDate.toISOString(), toDate.toISOString());
+        const issueEntryList = await inventoryIssueEntryApi.getIssueEntriesByDate(fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined);
         const missingIssueLot = issueEntryList.filter(entry => !entry.issueLot);
         if (missingIssueLot.length > 0) {
           console.warn(
@@ -75,7 +80,7 @@ const ManageGoodIssue = () => {
     };
 
     GetApi();
-  },[period])
+  },[period, warehouseFilter])
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -91,19 +96,17 @@ const ManageGoodIssue = () => {
   }, []);
 
   const matchesFilter = (entry) => {
-    const matchesWarehouse = !warehouseFilter || entry.warehouseName === warehouseFilter;
     const term = searchTerm.trim().toLowerCase();
-    const matchesSearch = !term
+    return !term
       || entry.lotNumber?.toLowerCase().includes(term)
       || entry.materialName?.toLowerCase().includes(term);
-    return matchesWarehouse && matchesSearch;
   };
 
   const displayedEntries = useMemo(() => {
     return issueEntries
       .filter(matchesFilter)
       .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
-  }, [issueEntries, warehouseFilter, searchTerm]);
+  }, [issueEntries, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -206,9 +209,9 @@ const ManageGoodIssue = () => {
                 placeholder="Tất cả kho hàng"
               >
                 <option value="">Tất cả kho hàng</option>
-                {warehouses.map((warehouse, index) => (
-                  <option key={`filter-warehouse-${index}`} value={warehouse.warehouseName}>
-                    {warehouse.warehouseName}
+                {uniqueWarehouseNames.map((warehouseName, index) => (
+                  <option key={`filter-warehouse-${index}`} value={warehouseName}>
+                    {warehouseName}
                   </option>
                 ))}
               </Select>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaTrash, FaChevronDown } from 'react-icons/fa';
 import clsx from 'clsx';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
@@ -45,6 +45,12 @@ const RequestLotAdjustment = () => {
     const [selectedReason, setSelectedReason] = useState(null);
     const [selectedLotAdjustmentType, setSelectedLotAdjustmentType] = useState(null);
     const [wareHouses, setWareHouses] = useState([]);
+    // Một số kho hàng trùng tên (do mở rộng thêm kho mới), nên chỉ hiển thị mỗi tên 1 lần
+    // trên Select "Kho hàng"; việc phân biệt các kho trùng tên do người dùng chọn tiếp ở "Mã kho hàng"
+    const uniqueWarehouseNames = useMemo(
+        () => Array.from(new Set(wareHouses.map(w => w.warehouseName))),
+        [wareHouses]
+    );
     const [people, setPeople] = useState([]);
     const [lotNumbers, setLotNumbers] = useState([]);
     const [isDetailsVisible, setIsDetailsVisible] = useState(true);
@@ -355,9 +361,9 @@ const RequestLotAdjustment = () => {
                                 onChange={(e) => setSelectedWarehouse(e.target.value)}
                                 placeholder="Chọn loại kho hàng"
                                 >
-                                {wareHouses.map((warehouse, index) => (
-                                    <option key = {`warehouse-${index}`} value= {warehouse.warehouseName}>
-                                    {warehouse.warehouseName}
+                                {uniqueWarehouseNames.map((warehouseName, index) => (
+                                    <option key = {`warehouse-${index}`} value= {warehouseName}>
+                                    {warehouseName}
                                     </option>
                                 ))}
                             </Select>

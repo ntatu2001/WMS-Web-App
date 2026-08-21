@@ -61,22 +61,18 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     // Update warehouse change effect
     useEffect(() => {
         if (selectedWarehouse && onWarehouseChange) {
-            const warehouseId = warehouses.find(warehouse => warehouse.warehouseName === selectedWarehouse)?.warehouseId;
-            setWarehouseId(warehouseId);
-            if (warehouseId) {
-                onWarehouseChange(warehouseId);
-                // Save previous warehouse ID
-                setPrevWarehouseId(warehouseId);
-            }
+            setWarehouseId(selectedWarehouse);
+            onWarehouseChange(selectedWarehouse);
+            // Save previous warehouse ID
+            setPrevWarehouseId(selectedWarehouse);
         }
-    }, [selectedWarehouse, warehouses, onWarehouseChange]);
+    }, [selectedWarehouse, onWarehouseChange]);
 
     // Function to fetch issue detail scheduling
     const fetchIssueDetailScheduling = async(skipAPICall = false) => {
         if (!selectedWarehouse) return;
 
-        const warehouseId = warehouses.find(warehouse => warehouse.warehouseName === selectedWarehouse)?.warehouseId;
-        if (!warehouseId) return;
+        const warehouseId = selectedWarehouse;
 
         // Skip API call if:
         // 1. Coming from viewResult AND
@@ -185,12 +181,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
         fetchWarehouses();
     }, []); // Only fetch warehouses once on component mount
 
-    // Filter issueLots based on selectedWarehouse
-    const filteredIssueLots = useMemo(() => (
-        selectedWarehouse
-            ? issueLots.filter(item => item.warehouseName === selectedWarehouse)
-            : issueLots
-    ), [issueLots, selectedWarehouse]);
+    // issueLots đã được API getIssueLotsPending lọc theo warehouseId sẵn, không cần lọc lại theo tên kho
+    const filteredIssueLots = issueLots;
 
     // Default: chọn tất cả các lô mỗi khi danh sách lô pending thay đổi (đổi kho / reload / reset sau khi duyệt)
     useEffect(() => {
@@ -211,9 +203,20 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
 
     // Handle warehouse selection change
     const handleWarehouseChange = (e) => {
-        const warehouseName = e.target.value;
-        setSelectedWarehouse(warehouseName);
+        setSelectedWarehouse(e.target.value);
     };
+
+    // Một số kho hàng có thể trùng tên (do mở rộng thêm kho mới), nên cần bổ sung
+    // mã kho vào nhãn hiển thị để phân biệt các lựa chọn trùng tên trên Selection Box
+    const warehouseNameCounts = useMemo(() => {
+        const counts = new Map();
+        warehouses.forEach(w => counts.set(w.warehouseName, (counts.get(w.warehouseName) || 0) + 1));
+        return counts;
+    }, [warehouses]);
+    const getWarehouseLabel = (warehouse) =>
+        warehouseNameCounts.get(warehouse.warehouseName) > 1
+            ? `${warehouse.warehouseName} (${warehouse.warehouseId})`
+            : warehouse.warehouseName;
 
     // Handle changes to editable fields
     const handleItemChange = (index, field, value) => {
@@ -333,8 +336,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                             >
                                 <option value="" disabled selected>Chọn loại kho hàng</option>
                                 {warehouses.map((warehouse, index) => (
-                                    <option key={`warehouse-${index}`} value={warehouse.warehouseName}>
-                                        {warehouse.warehouseName}
+                                    <option key={`warehouse-${index}`} value={warehouse.warehouseId}>
+                                        {getWarehouseLabel(warehouse)}
                                     </option>
                                 ))}
                             </Select>
