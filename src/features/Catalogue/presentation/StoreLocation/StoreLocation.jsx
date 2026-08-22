@@ -10,18 +10,19 @@ import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
 import TableCell from '../../../../common/components/Table/TableCell.jsx';
 import Tag from '../../../../common/components/Tag/Tag.jsx';
 import locationApi from '../../../../api/locationApi.js';
+import wareHouseApi from '../../../../api/wareHouseApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import styles from './StoreLocation.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
-// Chỉ tải 100 dòng đầu mặc định để trang load nhanh; khi người dùng thực sự bấm Tìm kiếm
-// mới tải toàn bộ (GetAllLocations không hỗ trợ tìm kiếm phía server, chỉ có phân trang).
-const DEFAULT_PAGE_SIZE = 100;
-const FULL_LOAD_SIZE = 100000;
+// Location/GetAllLocations và Location/SearchLocationsByLocationId đều hỗ trợ phân trang thật
+// (pageNumber/itemsPerPage), nên duyệt danh sách hay tìm kiếm đều chỉ tải đúng 1 trang.
+const PAGE_SIZE = 7;
 
 const warehouseOptions = [
   "Kho thành phẩm",
@@ -60,42 +61,79 @@ const mapLocation = (location) => {
   return { ...location, status, height, width, length };
 };
 
-const fetchLocations = async (itemsPerPage = DEFAULT_PAGE_SIZE) => {
+const fetchLocations = async ({ pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
   // GetAllLocations trả về QueryResult<LocationDTO> (results + totalItems)
-  const response = await locationApi.getAllLocations({ pageNumber: 1, itemsPerPage });
-  return (response?.results || []).map(mapLocation);
+  const response = await locationApi.getAllLocations({ pageNumber, itemsPerPage });
+  return { results: (response?.results || []).map(mapLocation), totalItems: response?.totalItems || 0 };
+};
+
+const searchLocations = async (locationId, warehouseId, { pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
+  const response = await locationApi.searchLocationsByLocationId(locationId || undefined, warehouseId || undefined, pageNumber, itemsPerPage);
+  return { results: (response?.results || []).map(mapLocation), totalItems: response?.totalItems || 0 };
 };
 
 const StoreLocation = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
-  const [locations, setLocations] = useState([]);
   const [searchCode, setSearchCode] = useState("");
+  // Từ khóa thực sự dùng để gọi API — chỉ cập nhật khi bấm nút "Tìm kiếm"/Enter,
+  // tránh gọi lại API theo từng ký tự gõ.
+  const [appliedSearchCode, setAppliedSearchCode] = useState("");
+  // Danh sách rút gọn cho Selection box lọc theo Kho hàng (backend GetAllWarehouseNameId).
+  const [warehouseFilterOptions, setWarehouseFilterOptions] = useState([]);
+  const [selectedWarehouseFilter, setSelectedWarehouseFilter] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  // Tăng mỗi lần tạo mới vị trí thành công để buộc effect tải lại dữ liệu ngay cả khi
+  // appliedSearchCode/page không đổi giá trị.
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [isCreateSectionHidden, setCreateSectionHidden] = useState(true);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Kho hàng -> quay về trang 1
+  useEffect(() => {
+    setPage(1);
+  }, [appliedSearchCode, selectedWarehouseFilter]);
+
+  const isFiltering = Boolean(appliedSearchCode || selectedWarehouseFilter);
+
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      const loadingSetter = isFiltering ? setIsSearching : setIsLoading;
+      loadingSetter(true);
       try {
-        const mapped = await fetchLocations();
-        setLocations(mapped);
-        setFilteredData(mapped);
+        const { results, totalItems: total } = isFiltering
+          ? await searchLocations(appliedSearchCode, selectedWarehouseFilter, { pageNumber: page, itemsPerPage: PAGE_SIZE })
+          : await fetchLocations({ pageNumber: page, itemsPerPage: PAGE_SIZE });
+        setTotalItems(total);
+        setFilteredData(results);
       } catch (error) {
         console.error("Error fetching locations:", error);
       } finally {
-        setIsLoading(false);
+        loadingSetter(false);
       }
     };
 
     fetchData();
+  }, [appliedSearchCode, selectedWarehouseFilter, isFiltering, page, refreshToken]);
+
+  useEffect(() => {
+    const fetchWarehouseFilterOptions = async () => {
+      try {
+        const response = await wareHouseApi.getAllWarehouseNameId();
+        setWarehouseFilterOptions(response || []);
+      } catch (error) {
+        console.error("Error fetching warehouse name/id list:", error);
+      }
+    };
+
+    fetchWarehouseFilterOptions();
   }, []);
 
   useEffect(() => {
@@ -173,15 +211,12 @@ const StoreLocation = () => {
           progress: undefined,
         });
 
-        const mappedNewLocation = {
-          ...newLocation,
-          status: formData.status || "--",
-          width: dimensionsArray[0] || "--",
-          length: dimensionsArray[1] || "--",
-          height: dimensionsArray[2] || "--",
-        };
-        setLocations((prev) => [...prev, mappedNewLocation]);
-        setFilteredData((prev) => [...prev, mappedNewLocation]);
+        // Quay về trang 1 chế độ duyệt và tải lại từ server để totalItems/phân trang đúng
+        setSearchCode("");
+        setAppliedSearchCode("");
+        setSelectedWarehouseFilter("");
+        setPage(1);
+        setRefreshToken((prev) => prev + 1);
 
         setFormData(emptyFormData);
         setFieldErrors({});
@@ -201,27 +236,8 @@ const StoreLocation = () => {
     }
   };
 
-  const handleSearch = async () => {
-    const normalized = searchCode.trim().toLowerCase();
-
-    if (!normalized || isFullyLoaded) {
-      setFilteredData(
-        normalized ? locations.filter((item) => item.locationId?.toLowerCase().includes(normalized)) : locations
-      );
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const fullList = await fetchLocations(FULL_LOAD_SIZE);
-      setLocations(fullList);
-      setIsFullyLoaded(true);
-      setFilteredData(fullList.filter((item) => item.locationId?.toLowerCase().includes(normalized)));
-    } catch (error) {
-      console.error("Error fetching all locations for search:", error);
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearch = () => {
+    setAppliedSearchCode(searchCode.trim());
   };
 
   return (
@@ -340,6 +356,20 @@ const StoreLocation = () => {
         {!isSearchSectionHidden && (
           <div>
             <div className={styles.searchBar}>
+              <SelectContainer style={{ maxWidth: "220px" }}>
+                <Select
+                  value={selectedWarehouseFilter}
+                  onChange={(e) => setSelectedWarehouseFilter(e.target.value)}
+                  placeholder="Tất cả kho hàng"
+                >
+                  <option value="">Tất cả kho hàng</option>
+                  {warehouseFilterOptions.map((item) => (
+                    <option key={item.warehouseId} value={item.warehouseId}>
+                      {item.warehouseName} ({item.warehouseId})
+                    </option>
+                  ))}
+                </Select>
+              </SelectContainer>
               <Label style={{ width: "120px", fontWeight: "bold" }}>Mã vị trí:</Label>
               <input
                 type="text"
@@ -357,7 +387,7 @@ const StoreLocation = () => {
               >
                 {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
-              <Tag variant="accent">{filteredData.length} vị trí</Tag>
+              <Tag variant="accent">{totalItems} vị trí</Tag>
             </div>
 
             <div className={styles.tableWrapper}>
@@ -382,7 +412,7 @@ const StoreLocation = () => {
                   <tbody>
                     {filteredData.map((item, index) => (
                       <tr key={index}>
-                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{(page - 1) * PAGE_SIZE + index + 1}</TableCell>
                         <TableCell>{item.equipmentName}</TableCell>
                         <TableCell>{item.locationId}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
@@ -394,6 +424,15 @@ const StoreLocation = () => {
                 </Table>
               )}
             </div>
+            {!isLoading && !isSearching && (
+              <Pagination
+                currentPage={page}
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="vị trí"
+              />
+            )}
           </div>
         )}
       </div>

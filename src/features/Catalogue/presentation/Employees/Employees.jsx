@@ -15,12 +15,34 @@ import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import styles from './Employees.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
-// Chỉ hiển thị mặc định 100 dòng đầu (Employee/GetAllEmployees không hỗ trợ phân trang phía server).
-const DEFAULT_PAGE_SIZE = 100;
+// Employee/GetAllEmployees và Employee/SearchEmployeesByEmployeeId đều hỗ trợ phân trang thật
+// (pageNumber/itemsPerPage), nên duyệt danh sách hay tìm kiếm đều chỉ tải đúng 1 trang.
+const PAGE_SIZE = 7;
+
+const fetchEmployees = async ({ pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
+  try {
+    const response = await employeeApi.getAllEmployees({ pageNumber, itemsPerPage });
+    return { results: (response?.results || []).map(mapEmployee), totalItems: response?.totalItems || 0 };
+  } catch (error) {
+    console.error('Error fetching employees:', error);
+    return { results: [], totalItems: 0 };
+  }
+};
+
+const searchEmployees = async (employeeId, employeeClassId, { pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
+  try {
+    const response = await employeeApi.searchEmployeesByEmployeeId(employeeId || undefined, employeeClassId || undefined, pageNumber, itemsPerPage);
+    return { results: (response?.results || []).map(mapEmployee), totalItems: response?.totalItems || 0 };
+  } catch (error) {
+    console.error('Error searching employees:', error);
+    return { results: [], totalItems: 0 };
+  }
+};
 
 const emptyFormData = {
   employeeName: "",
@@ -57,33 +79,72 @@ const mapEmployee = (employee) => {
 const Employees = () => {
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
-  const [employees, setEmployees] = useState([]);
   const [employeeClasses, setEmployeeClasses] = useState([]);
+  // Danh sách rút gọn cho Selection box lọc theo Chức vụ (backend GetAllEmployeeClassNameId).
+  const [employeeClassFilterOptions, setEmployeeClassFilterOptions] = useState([]);
+  const [selectedEmployeeClassFilter, setSelectedEmployeeClassFilter] = useState("");
   const [searchCode, setSearchCode] = useState("");
+  // Từ khóa thực sự dùng để gọi API — chỉ cập nhật khi bấm nút "Tìm kiếm"/Enter,
+  // tránh gọi lại API theo từng ký tự gõ.
+  const [appliedSearchCode, setAppliedSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  // Tăng mỗi lần tạo mới nhân viên thành công để buộc effect tải lại dữ liệu ngay cả khi
+  // appliedSearchCode/page không đổi giá trị.
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [isCreateSectionHidden, setCreateSectionHidden] = useState(true);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Chức vụ -> quay về trang 1
+  useEffect(() => {
+    setPage(1);
+  }, [appliedSearchCode, selectedEmployeeClassFilter]);
+
+  const isFiltering = Boolean(appliedSearchCode || selectedEmployeeClassFilter);
+
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      const loadingSetter = isFiltering ? setIsSearching : setIsLoading;
+      loadingSetter(true);
       try {
-        const response = await employeeApi.getAllEmployees();
-        const mapped = (response || []).map(mapEmployee);
-        setEmployees(mapped);
-        // Employee/GetAllEmployees không hỗ trợ phân trang (luôn trả về toàn bộ), nên chỉ giới hạn
-        // số dòng hiển thị mặc định ở client; Tìm kiếm vẫn lọc trên toàn bộ `employees` đã tải.
-        setFilteredData(mapped.slice(0, DEFAULT_PAGE_SIZE));
+        const { results, totalItems: total } = isFiltering
+          ? await searchEmployees(appliedSearchCode, selectedEmployeeClassFilter, { pageNumber: page, itemsPerPage: PAGE_SIZE })
+          : await fetchEmployees({ pageNumber: page, itemsPerPage: PAGE_SIZE });
+        setTotalItems(total);
+        setFilteredData(results);
       } catch (error) {
         console.error("Error fetching employees:", error);
       } finally {
-        setIsLoading(false);
+        loadingSetter(false);
       }
     };
+
+    fetchData();
+  }, [appliedSearchCode, selectedEmployeeClassFilter, isFiltering, page, refreshToken]);
+
+  useEffect(() => {
+    const fetchEmployeeClassFilterOptions = async () => {
+      try {
+        const response = await employeeClassApi.getAllEmployeeClassNameId();
+        setEmployeeClassFilterOptions(response || []);
+      } catch (error) {
+        console.error("Error fetching employee class name/id list:", error);
+      }
+    };
+
+    fetchEmployeeClassFilterOptions();
+  }, []);
+
+  // Chỉ gọi API danh sách Chức vụ (cho dropdown của form Tạo mới) khi người dùng
+  // thực sự bấm "Hiện" để mở mục Tạo mới, không tải sẵn lúc vào trang.
+  useEffect(() => {
+    if (isCreateSectionHidden || employeeClasses.length > 0) return;
 
     const fetchEmployeeClasses = async () => {
       try {
@@ -94,9 +155,8 @@ const Employees = () => {
       }
     };
 
-    fetchData();
     fetchEmployeeClasses();
-  }, []);
+  }, [isCreateSectionHidden, employeeClasses.length]);
 
   useEffect(() => {
     if (hasSubmitted) {
@@ -117,12 +177,6 @@ const Employees = () => {
     if (!formData.employeeClassId) nextFieldErrors.employeeClassId = 'Vui lòng chọn chức vụ';
     setFieldErrors(nextFieldErrors);
     return Object.keys(nextFieldErrors).length === 0;
-  };
-
-  const applyFilter = (list, term) => {
-    const normalized = term.trim().toLowerCase();
-    if (!normalized) return list;
-    return list.filter((item) => item.employeeId?.toLowerCase().includes(normalized));
   };
 
   const handleSave = async () => {
@@ -171,13 +225,12 @@ const Employees = () => {
           progress: undefined,
         });
 
-        const mappedNewEmployee = mapEmployee({
-          ...newEmployee,
-          employeePropertyDTOs: newEmployee.properties,
-        });
-        const updatedEmployees = [...employees, mappedNewEmployee];
-        setEmployees(updatedEmployees);
-        setFilteredData(applyFilter(updatedEmployees, searchCode));
+        // Quay về trang 1 chế độ duyệt và tải lại từ server để totalItems/phân trang đúng
+        setSearchCode("");
+        setAppliedSearchCode("");
+        setSelectedEmployeeClassFilter("");
+        setPage(1);
+        setRefreshToken((prev) => prev + 1);
 
         setFormData(emptyFormData);
         setFieldErrors({});
@@ -198,7 +251,7 @@ const Employees = () => {
   };
 
   const handleSearch = () => {
-    setFilteredData(applyFilter(employees, searchCode));
+    setAppliedSearchCode(searchCode.trim());
   };
 
   const employeeClassLabels = employeeClasses.reduce(
@@ -331,6 +384,20 @@ const Employees = () => {
         {!isSearchSectionHidden && (
           <div>
             <div className={styles.searchBar}>
+              <SelectContainer style={{ maxWidth: "220px" }}>
+                <Select
+                  value={selectedEmployeeClassFilter}
+                  onChange={(e) => setSelectedEmployeeClassFilter(e.target.value)}
+                  placeholder="Tất cả chức vụ"
+                >
+                  <option value="">Tất cả chức vụ</option>
+                  {employeeClassFilterOptions.map((item) => (
+                    <option key={item.employeeClassId} value={item.employeeClassId}>
+                      {item.employeeClassName}
+                    </option>
+                  ))}
+                </Select>
+              </SelectContainer>
               <Label style={{ width: "120px", fontWeight: "bold" }}>Mã nhân viên:</Label>
               <input
                 type="text"
@@ -347,11 +414,11 @@ const Employees = () => {
               >
                 Tìm kiếm
               </ActionButton>
-              <Tag variant="accent">{filteredData.length} nhân viên</Tag>
+              <Tag variant="accent">{totalItems} nhân viên</Tag>
             </div>
 
             <div className={styles.tableWrapper}>
-              {isLoading ? (
+              {isLoading || isSearching ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
                   <ClipLoader size={40} color="#0066CC" />
                 </div>
@@ -373,7 +440,7 @@ const Employees = () => {
                   <tbody>
                     {filteredData.map((item, index) => (
                       <tr key={index}>
-                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{(page - 1) * PAGE_SIZE + index + 1}</TableCell>
                         <TableCell>{item.employeeName}</TableCell>
                         <TableCell>{item.employeeId}</TableCell>
                         <TableCell>{employeeClassLabels[item.employeeClassId] || item.employeeClassId}</TableCell>
@@ -386,6 +453,15 @@ const Employees = () => {
                 </Table>
               )}
             </div>
+            {!isLoading && !isSearching && (
+              <Pagination
+                currentPage={page}
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="nhân viên"
+              />
+            )}
           </div>
         )}
       </div>

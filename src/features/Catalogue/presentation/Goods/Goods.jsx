@@ -18,23 +18,32 @@ import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import styles from './Goods.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
 
-// Chỉ tải 100 dòng đầu mặc định để trang load nhanh; khi người dùng thực sự bấm Tìm kiếm
-// mới tải toàn bộ (GetAllMaterials không hỗ trợ tìm kiếm phía server, chỉ có phân trang).
-const DEFAULT_PAGE_SIZE = 100;
-const FULL_LOAD_SIZE = 100000;
+// Material/GetAllMaterials và Material/SearchMaterialsByMaterialId đều hỗ trợ phân trang thật
+// (pageNumber/itemsPerPage), nên duyệt danh sách hay tìm kiếm đều chỉ tải đúng 1 trang.
+const PAGE_SIZE = 7;
 
-const fetchMaterials = async (itemsPerPage = DEFAULT_PAGE_SIZE) => {
+const fetchMaterials = async ({ pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
   try {
-    // Material/GetAllMaterials is paginated and requires pageNumber/itemsPerPage (API Guide mục 3)
-    const response = await materialApi.getAllMaterials({ pageNumber: 1, itemsPerPage });
-    return response.results || [];
+    const response = await materialApi.getAllMaterials({ pageNumber, itemsPerPage });
+    return { results: response.results || [], totalItems: response.totalItems || 0 };
   } catch (error) {
     console.error('Error fetching materials:', error);
-    return [];
+    return { results: [], totalItems: 0 };
+  }
+};
+
+const searchMaterials = async (materialId, materialClassId, { pageNumber = 1, itemsPerPage = PAGE_SIZE } = {}) => {
+  try {
+    const response = await materialApi.searchMaterialsByMaterialId(materialId || undefined, materialClassId || undefined, pageNumber, itemsPerPage);
+    return { results: response.results || [], totalItems: response.totalItems || 0 };
+  } catch (error) {
+    console.error('Error searching materials:', error);
+    return { results: [], totalItems: 0 };
   }
 };
 
@@ -45,6 +54,16 @@ const fetchMaterialClass = async () => {
   } catch (error) {
     console.error(`Error fetching material classes:`, error);
     return null;
+  }
+};
+
+const fetchMaterialClassNameId = async () => {
+  try {
+    const response = await materialClassApi.getAllMaterialClassNameId();
+    return response || [];
+  } catch (error) {
+    console.error('Error fetching material class name/id list:', error);
+    return [];
   }
 };
 
@@ -68,30 +87,65 @@ const Goods = () => {
   const [formData, setFormData] = useState(emptyFormData);
 
   const [materialClasses, setMaterialClasses] = useState([]);
-  const [products, setProducts] = useState([]);
+  // Danh sách rút gọn cho Selection box lọc theo Loại sản phẩm (backend GetAllMaterialClassNameId).
+  const [materialClassFilterOptions, setMaterialClassFilterOptions] = useState([]);
+  const [selectedMaterialClassFilter, setSelectedMaterialClassFilter] = useState("");
   const [searchCode, setSearchCode] = useState("");
+  // Từ khóa thực sự dùng để gọi API — chỉ cập nhật khi bấm nút "Tìm kiếm"/Enter,
+  // tránh gọi lại API theo từng ký tự gõ.
+  const [appliedSearchCode, setAppliedSearchCode] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  const [isCreateSectionHidden, setCreateSectionHidden] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  // Tăng mỗi lần tạo mới sản phẩm thành công để buộc effect tải lại dữ liệu ngay cả khi
+  // appliedSearchCode/page không đổi giá trị.
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [isCreateSectionHidden, setCreateSectionHidden] = useState(true);
   const [isSearchSectionHidden, setSearchSectionHidden] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Loại sản phẩm -> quay về trang 1
+  useEffect(() => {
+    setPage(1);
+  }, [appliedSearchCode, selectedMaterialClassFilter]);
+
+  const isFiltering = Boolean(appliedSearchCode || selectedMaterialClassFilter);
+
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
+      const loadingSetter = isFiltering ? setIsSearching : setIsLoading;
+      loadingSetter(true);
       try {
-        const data = await fetchMaterials();
-        setProducts(data || []);
-        setFilteredData(data || []);
+        const { results, totalItems: total } = isFiltering
+          ? await searchMaterials(appliedSearchCode, selectedMaterialClassFilter, { pageNumber: page, itemsPerPage: PAGE_SIZE })
+          : await fetchMaterials({ pageNumber: page, itemsPerPage: PAGE_SIZE });
+        setTotalItems(total);
+        setFilteredData(results);
       } catch (error) {
         console.error("Error fetching materials:", error);
       } finally {
-        setIsLoading(false);
+        loadingSetter(false);
       }
     };
+
+    fetchData();
+  }, [appliedSearchCode, selectedMaterialClassFilter, isFiltering, page, refreshToken]);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      const data = await fetchMaterialClassNameId();
+      setMaterialClassFilterOptions(data);
+    };
+    fetchFilterOptions();
+  }, []);
+
+  // Chỉ gọi API danh sách Loại sản phẩm (cho dropdown của form Tạo mới) khi người dùng
+  // thực sự bấm "Hiện" để mở mục Tạo mới, không tải sẵn lúc vào trang.
+  useEffect(() => {
+    if (isCreateSectionHidden || materialClasses.length > 0) return;
 
     const fetchMaterialClasses = async () => {
       try {
@@ -102,9 +156,8 @@ const Goods = () => {
       }
     };
 
-    fetchData();
     fetchMaterialClasses();
-  }, []);
+  }, [isCreateSectionHidden, materialClasses.length]);
 
   useEffect(() => {
     if (hasSubmitted) {
@@ -130,12 +183,6 @@ const Goods = () => {
     if (!formData.StorageLevel || level < 1 || level > 4) nextFieldErrors.storageLevel = 'Giới hạn tầng phải từ 1 đến 4';
     setFieldErrors(nextFieldErrors);
     return Object.keys(nextFieldErrors).length === 0;
-  };
-
-  const applyFilter = (list, term) => {
-    const normalized = term.trim().toLowerCase();
-    if (!normalized) return list;
-    return list.filter((item) => item.materialId?.toLowerCase().includes(normalized));
   };
 
   const handleSave = async () => {
@@ -233,9 +280,12 @@ const Goods = () => {
           progress: undefined,
         });
 
-        const updatedProducts = [...products, newProduct];
-        setProducts(updatedProducts);
-        setFilteredData(applyFilter(updatedProducts, searchCode));
+        // Quay về trang 1 chế độ duyệt và tải lại từ server để totalItems/phân trang đúng
+        setSearchCode("");
+        setAppliedSearchCode("");
+        setSelectedMaterialClassFilter("");
+        setPage(1);
+        setRefreshToken((prev) => prev + 1);
       }
 
       setFormData(emptyFormData);
@@ -255,21 +305,8 @@ const Goods = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (isFullyLoaded || !searchCode.trim()) {
-      setFilteredData(applyFilter(products, searchCode));
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      const fullList = await fetchMaterials(FULL_LOAD_SIZE);
-      setProducts(fullList);
-      setIsFullyLoaded(true);
-      setFilteredData(applyFilter(fullList, searchCode));
-    } finally {
-      setIsSearching(false);
-    }
+  const handleSearch = () => {
+    setAppliedSearchCode(searchCode.trim());
   };
 
   return (
@@ -438,6 +475,20 @@ const Goods = () => {
         {!isSearchSectionHidden && (
           <div>
             <div className={styles.searchBar}>
+              <SelectContainer style={{ maxWidth: "220px" }}>
+                <Select
+                  value={selectedMaterialClassFilter}
+                  onChange={(e) => setSelectedMaterialClassFilter(e.target.value)}
+                  placeholder="Tất cả loại sản phẩm"
+                >
+                  <option value="">Tất cả loại sản phẩm</option>
+                  {materialClassFilterOptions.map((item) => (
+                    <option key={item.materialClassId} value={item.materialClassId}>
+                      {item.materialClassName}
+                    </option>
+                  ))}
+                </Select>
+              </SelectContainer>
               <Label style={{ width: "120px", fontWeight: "bold" }}>Mã sản phẩm:</Label>
               <input
                 type="text"
@@ -455,7 +506,7 @@ const Goods = () => {
               >
                 {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
-              <Tag variant="accent">{filteredData.length} sản phẩm</Tag>
+              <Tag variant="accent">{totalItems} sản phẩm</Tag>
             </div>
 
             <div className={styles.tableWrapper}>
@@ -503,7 +554,7 @@ const Goods = () => {
 
                       return (
                         <tr key={index}>
-                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{(page - 1) * PAGE_SIZE + index + 1}</TableCell>
                           <TableCell>{item.materialName}</TableCell>
                           <TableCell>{item.materialId}</TableCell>
                           <TableCell>{item.materialClassName || item.materialClassId}</TableCell>
@@ -526,6 +577,15 @@ const Goods = () => {
                 </Table>
               )}
             </div>
+            {!isLoading && !isSearching && (
+              <Pagination
+                currentPage={page}
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="sản phẩm"
+              />
+            )}
           </div>
         )}
       </div>

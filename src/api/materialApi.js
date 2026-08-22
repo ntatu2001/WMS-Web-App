@@ -6,6 +6,11 @@ const materialApi = {
         return axiosClient.get(url, { params });
     },
 
+    searchMaterialsByMaterialId(materialId, materialClassId, pageNumber, itemsPerPage) {
+        const url = 'Material/SearchMaterialsByMaterialId';
+        return axiosClient.get(url, { params: { materialId, materialClassId, pageNumber, itemsPerPage } });
+    },
+
     getMaterialsByWarehouseId(id) {
         const url = `Material/GetMaterialsByWarehouseId/${id}`; // Ensure this endpoint exists in your backend
         return axiosClient.get(url);

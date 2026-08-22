@@ -9,6 +9,11 @@ const locationApi = {
         return axiosClient.get(url, {params});
     },
 
+    searchLocationsByLocationId(locationId, warehouseId, pageNumber, itemsPerPage) {
+        const url = 'Location/SearchLocationsByLocationId';
+        return axiosClient.get(url, { params: { locationId, warehouseId, pageNumber, itemsPerPage } });
+    },
+
     createLocation(data) {
         const url = 'Location/CreateNewLocation';
         return axiosClient.post(url, data);
