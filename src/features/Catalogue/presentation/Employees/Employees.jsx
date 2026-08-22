@@ -320,7 +320,7 @@ const Employees = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tìm kiếm nhân viên</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>Danh sách nhân viên</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}

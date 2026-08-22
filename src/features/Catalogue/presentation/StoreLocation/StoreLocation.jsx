@@ -329,7 +329,7 @@ const StoreLocation = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tìm kiếm vị trí lưu trữ</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>Danh sách vị trí lưu trữ</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}

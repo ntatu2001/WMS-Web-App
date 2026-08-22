@@ -18,6 +18,7 @@ import ReceiptProgress from '../Progress/ReceiptProgress';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
+import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
@@ -43,10 +44,13 @@ const getDateRange = (period) => {
 };
 
 const periodButtonStyle = { margin: 0, width: 'auto', padding: '8px 24px', fontSize: '14px' };
+const searchButtonStyle = { margin: 0, width: 'auto', padding: '8px 20px', fontSize: '14px' };
+const PAGE_SIZE = 5;
 
 const ManageGoodReceipt = () => {
 
   const [receiptEntries, setReceiptEntries] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseFilter, setWarehouseFilter] = useState('');
@@ -56,16 +60,48 @@ const ManageGoodReceipt = () => {
     [warehouses]
   );
   const [searchTerm, setSearchTerm] = useState('');
+  // Từ khóa thực sự dùng để gọi API — chỉ cập nhật khi người dùng bấm nút "Tìm kiếm"
+  // (hoặc Enter), tránh gọi API GetReceiptEntriesByLotNumber liên tục theo từng ký tự gõ.
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
   const [period, setPeriod] = useState('today');
+  const [page, setPage] = useState(1);
+
+  const handleSearch = () => setAppliedSearchTerm(searchTerm.trim());
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  // Đổi bộ lọc (kho hàng/khoảng thời gian/từ khóa đã áp dụng) -> quay về trang 1
+  useEffect(() => {
+    setPage(1);
+  }, [period, warehouseFilter, appliedSearchTerm]);
 
   useEffect(() => {
     const GetApi = async() => {
       try {
         setLoading(true);
-        const { fromDate, toDate } = getDateRange(period);
-        const receiptEntryList = await inventoryReceiptEntryApi.getReceiptEntriesByDate(fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined);
-        const receiptEntryNotPending = receiptEntryList.filter(entry => entry.receiptLot && entry.receiptLot.receiptLotStatus !== "Pending");
-        setReceiptEntries(receiptEntryNotPending);
+
+        if (appliedSearchTerm) {
+          // 2 API GetReceiptEntriesByLotNumber không có fromDate/toDate, và lotNumber/materialName
+          // kết hợp là AND — nên gọi song song 2 lượt (khớp lotNumber HOẶC materialName) rồi gộp lại
+          // để giữ đúng hành vi "Tìm mã lô / tên sản phẩm" (khớp 1 trong 2 trường) như trước đây.
+          // Vì không có pageNumber/pageSize ở đây, tải toàn bộ 2 tập kết quả rồi tự phân trang ở client.
+          const [byLotNumber, byMaterialName] = await Promise.all([
+            inventoryReceiptEntryApi.getReceiptEntriesByLotNumber(appliedSearchTerm, undefined, warehouseFilter || undefined),
+            inventoryReceiptEntryApi.getReceiptEntriesByLotNumber(undefined, appliedSearchTerm, warehouseFilter || undefined),
+          ]);
+          const merged = [...(byLotNumber.results || []), ...(byMaterialName.results || [])];
+          const deduped = Array.from(new Map(merged.map(item => [item.inventoryReceiptEntryId, item])).values());
+          setTotalItems(deduped.length);
+          setReceiptEntries(deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+        } else {
+          const { fromDate, toDate } = getDateRange(period);
+          const response = await inventoryReceiptEntryApi.getReceiptEntriesByDate(
+            fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, page, PAGE_SIZE
+          );
+          setTotalItems(response.totalItems || 0);
+          setReceiptEntries(response.results || []);
+        }
       } catch (error) {
         console.error("Error fetching receipt entries:", error);
       } finally {
@@ -74,7 +110,7 @@ const ManageGoodReceipt = () => {
     };
 
     GetApi();
-  },[period, warehouseFilter])
+  },[period, warehouseFilter, appliedSearchTerm, page])
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -88,19 +124,6 @@ const ManageGoodReceipt = () => {
 
     fetchWarehouses();
   }, []);
-
-  const matchesFilter = (entry) => {
-    const term = searchTerm.trim().toLowerCase();
-    return !term
-      || entry.lotNumber?.toLowerCase().includes(term)
-      || entry.materialName?.toLowerCase().includes(term);
-  };
-
-  const displayedEntries = useMemo(() => {
-    return receiptEntries
-      .filter(matchesFilter)
-      .sort((a, b) => new Date(b.receiptDate) - new Date(a.receiptDate));
-  }, [receiptEntries, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -217,8 +240,12 @@ const ManageGoodReceipt = () => {
               placeholder="Tìm mã lô / tên sản phẩm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               style={{ marginBottom: 0, marginLeft: 0, flex: 1 }}
             />
+            <ActionButton onClick={handleSearch} style={searchButtonStyle}>
+              Tìm kiếm
+            </ActionButton>
           </ListSection>
 
           <ListSection elevated>
@@ -238,13 +265,13 @@ const ManageGoodReceipt = () => {
                     </ActionButton>
                   ))}
                 </div>
-                <Tag variant="accent">{displayedEntries.length} lô</Tag>
+                <Tag variant="accent">{totalItems} lô</Tag>
               </div>
             </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', overflowX: 'auto', height: "420px"}}>
+            <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
               {loading ? (
                 <LoadingSpinner />
-              ) : displayedEntries.length > 0 ? (
+              ) : receiptEntries.length > 0 ? (
                 <Table style={{ minWidth: '760px' }}>
                   <thead>
                     <tr>
@@ -259,23 +286,25 @@ const ManageGoodReceipt = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayedEntries.map((item, index) => (
-                      <tr key={index}>
-                        <TableCell>{index + 1}</TableCell>
+                    {receiptEntries.map((item, index) => (
+                      <tr key={item.inventoryReceiptEntryId || index}>
+                        <TableCell>{(page - 1) * PAGE_SIZE + index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
                         <TableCell>{item.materialId}</TableCell>
                         <TableCell>{item.lotNumber}</TableCell>
-                        <TableCell>{item.receiptLot.importedQuantity}</TableCell>
+                        <TableCell>{item.receiptLot?.importedQuantity}</TableCell>
                         <TableCell>{new Date(item.receiptDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <ReceiptProgress
-                            item={{
-                              id: item.receiptLot.receiptLotId,
-                              status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
-                            }}
-                            handleStatusChange={handleStatusChange}
-                          />
+                          {item.receiptLot && (
+                            <ReceiptProgress
+                              item={{
+                                id: item.receiptLot.receiptLotId,
+                                status: lotStatusChangeData[item.receiptLot.receiptLotStatus]
+                              }}
+                              handleStatusChange={handleStatusChange}
+                            />
+                          )}
                         </TableCell>
 
                       </tr>
@@ -284,10 +313,19 @@ const ManageGoodReceipt = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  {warehouseFilter || searchTerm ? "Không có lô nhập kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
+                  {warehouseFilter || appliedSearchTerm ? "Không có lô nhập kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
                 </div>
               )}
             </div>
+            {!loading && (
+              <Pagination
+                currentPage={page}
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="lô"
+              />
+            )}
           </ListSection>
         </div>
       </ContentContainer>

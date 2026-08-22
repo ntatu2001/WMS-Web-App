@@ -427,7 +427,7 @@ const Goods = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tìm kiếm sản phẩm</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>Danh sách sản phẩm</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}

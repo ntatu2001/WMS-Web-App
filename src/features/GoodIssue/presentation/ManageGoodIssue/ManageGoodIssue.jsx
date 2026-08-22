@@ -18,6 +18,7 @@ import IssueProgress from '../Progress/IssueProgress';
 import issueLotApi from '../../../../api/issueLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
+import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
@@ -43,9 +44,12 @@ const getDateRange = (period) => {
 };
 
 const periodButtonStyle = { margin: 0, width: 'auto', padding: '8px 24px', fontSize: '14px' };
+const searchButtonStyle = { margin: 0, width: 'auto', padding: '8px 20px', fontSize: '14px' };
+const PAGE_SIZE = 5;
 
 const ManageGoodIssue = () => {
   const [issueEntries, setIssueEntries] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
   const [warehouses, setWarehouses] = useState([]);
   const [warehouseFilter, setWarehouseFilter] = useState('');
@@ -55,23 +59,48 @@ const ManageGoodIssue = () => {
     [warehouses]
   );
   const [searchTerm, setSearchTerm] = useState('');
+  // Từ khóa thực sự dùng để gọi API — chỉ cập nhật khi người dùng bấm nút "Tìm kiếm"
+  // (hoặc Enter), tránh gọi API GetIssueEntriesByLotNumber liên tục theo từng ký tự gõ.
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
   const [period, setPeriod] = useState('today');
+  const [page, setPage] = useState(1);
+
+  const handleSearch = () => setAppliedSearchTerm(searchTerm.trim());
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  // Đổi bộ lọc (kho hàng/khoảng thời gian/từ khóa đã áp dụng) -> quay về trang 1
+  useEffect(() => {
+    setPage(1);
+  }, [period, warehouseFilter, appliedSearchTerm]);
 
   useEffect(() => {
     const GetApi = async() => {
       try {
         setLoading(true);
-        const { fromDate, toDate } = getDateRange(period);
-        const issueEntryList = await inventoryIssueEntryApi.getIssueEntriesByDate(fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined);
-        const missingIssueLot = issueEntryList.filter(entry => !entry.issueLot);
-        if (missingIssueLot.length > 0) {
-          console.warn(
-            `GetAllIssueEntries: ${missingIssueLot.length}/${issueEntryList.length} entries thiếu issueLot (bị loại khỏi "Quản lý xuất kho"):`,
-            missingIssueLot.map(entry => ({ inventoryIssueEntryId: entry.inventoryIssueEntryId, lotNumber: entry.lotNumber }))
+
+        if (appliedSearchTerm) {
+          // 2 API GetIssueEntriesByLotNumber không có fromDate/toDate, và lotNumber/materialName
+          // kết hợp là AND — nên gọi song song 2 lượt (khớp lotNumber HOẶC materialName) rồi gộp lại
+          // để giữ đúng hành vi "Tìm mã lô / tên sản phẩm" (khớp 1 trong 2 trường) như trước đây.
+          // Vì không có pageNumber/pageSize ở đây, tải toàn bộ 2 tập kết quả rồi tự phân trang ở client.
+          const [byLotNumber, byMaterialName] = await Promise.all([
+            inventoryIssueEntryApi.getIssueEntriesByLotNumber(appliedSearchTerm, undefined, warehouseFilter || undefined),
+            inventoryIssueEntryApi.getIssueEntriesByLotNumber(undefined, appliedSearchTerm, warehouseFilter || undefined),
+          ]);
+          const merged = [...(byLotNumber.results || []), ...(byMaterialName.results || [])];
+          const deduped = Array.from(new Map(merged.map(item => [item.inventoryIssueEntryId, item])).values());
+          setTotalItems(deduped.length);
+          setIssueEntries(deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+        } else {
+          const { fromDate, toDate } = getDateRange(period);
+          const response = await inventoryIssueEntryApi.getIssueEntriesByDate(
+            fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, page, PAGE_SIZE
           );
+          setTotalItems(response.totalItems || 0);
+          setIssueEntries(response.results || []);
         }
-        const issueEntryNotPending = issueEntryList.filter(entry => entry.issueLot && entry.issueLot.issueLotStatus !== "Pending");
-        setIssueEntries(issueEntryNotPending);
       } catch (error) {
         console.error("Error fetching issue entries:", error);
       } finally {
@@ -80,7 +109,7 @@ const ManageGoodIssue = () => {
     };
 
     GetApi();
-  },[period, warehouseFilter])
+  },[period, warehouseFilter, appliedSearchTerm, page])
 
   useEffect(() => {
     const fetchWarehouses = async () => {
@@ -94,19 +123,6 @@ const ManageGoodIssue = () => {
 
     fetchWarehouses();
   }, []);
-
-  const matchesFilter = (entry) => {
-    const term = searchTerm.trim().toLowerCase();
-    return !term
-      || entry.lotNumber?.toLowerCase().includes(term)
-      || entry.materialName?.toLowerCase().includes(term);
-  };
-
-  const displayedEntries = useMemo(() => {
-    return issueEntries
-      .filter(matchesFilter)
-      .sort((a, b) => new Date(b.issueDate) - new Date(a.issueDate));
-  }, [issueEntries, searchTerm]);
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -130,7 +146,7 @@ const ManageGoodIssue = () => {
       return false;
       }
       // Find the issue entry to check its current status
-      const entryToUpdate = issueEntries.find(entry => entry.issueLot.issueLotId === itemId);
+      const entryToUpdate = issueEntries.find(entry => entry.issueLot?.issueLotId === itemId);
       // If the status is already Done, don't allow changing it
       if (entryToUpdate && entryToUpdate.issueLot.issueLotStatus === "Done") {
         console.log("Cannot modify completed issue lots");
@@ -161,7 +177,7 @@ const ManageGoodIssue = () => {
 
       // Update local state
       setIssueEntries(entries => entries.map(entry => {
-        if (entry.issueLot.issueLotId === itemId) {
+        if (entry.issueLot?.issueLotId === itemId) {
           return {
             ...entry,
             issueLot: {
@@ -220,8 +236,12 @@ const ManageGoodIssue = () => {
               placeholder="Tìm mã lô / tên sản phẩm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               style={{ marginBottom: 0, marginLeft: 0, flex: 1 }}
             />
+            <ActionButton onClick={handleSearch} style={searchButtonStyle}>
+              Tìm kiếm
+            </ActionButton>
           </ListSection>
 
           <ListSection elevated>
@@ -241,13 +261,13 @@ const ManageGoodIssue = () => {
                     </ActionButton>
                   ))}
                 </div>
-                <Tag variant="accent">{displayedEntries.length} lô</Tag>
+                <Tag variant="accent">{totalItems} lô</Tag>
               </div>
             </div>
-            <div style={{ marginTop: '1rem', overflowY: 'scroll', height: "420px"}}>
+            <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
               {loading ? (
                 <LoadingSpinner />
-              ) : displayedEntries.length > 0 ? (
+              ) : issueEntries.length > 0 ? (
                 <Table>
                   <thead>
                     <tr>
@@ -262,23 +282,25 @@ const ManageGoodIssue = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {displayedEntries.map((item, index) => (
-                      <tr key={index}>
-                        <TableCell>{index + 1}</TableCell>
+                    {issueEntries.map((item, index) => (
+                      <tr key={item.inventoryIssueEntryId || index}>
+                        <TableCell>{(page - 1) * PAGE_SIZE + index + 1}</TableCell>
                         <TableCell>{item.materialName}</TableCell>
                         <TableCell>{item.materialId}</TableCell>
                         <TableCell>{item.lotNumber}</TableCell>
-                        <TableCell>{item.issueLot.requestedQuantity}</TableCell>
+                        <TableCell>{item.issueLot?.requestedQuantity}</TableCell>
                         <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
-                          <IssueProgress
-                            item={{
-                              id: item.issueLot.issueLotId,
-                              status: lotStatusChangeData[item.issueLot.issueLotStatus]
-                            }}
-                            handleStatusChange={handleStatusChange}
-                          />
+                          {item.issueLot && (
+                            <IssueProgress
+                              item={{
+                                id: item.issueLot.issueLotId,
+                                status: lotStatusChangeData[item.issueLot.issueLotStatus]
+                              }}
+                              handleStatusChange={handleStatusChange}
+                            />
+                          )}
                         </TableCell>
                       </tr>
                     ))}
@@ -286,10 +308,19 @@ const ManageGoodIssue = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
-                  {warehouseFilter || searchTerm ? "Không có lô xuất kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
+                  {warehouseFilter || appliedSearchTerm ? "Không có lô xuất kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
                 </div>
               )}
             </div>
+            {!loading && (
+              <Pagination
+                currentPage={page}
+                totalItems={totalItems}
+                pageSize={PAGE_SIZE}
+                onPageChange={setPage}
+                itemLabel="lô"
+              />
+            )}
           </ListSection>
         </div>
       </ContentContainer>

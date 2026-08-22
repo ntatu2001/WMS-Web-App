@@ -3,7 +3,7 @@ import styles from './SearchInput.module.scss';
 import {AiOutlineSearch} from 'react-icons/ai';
 import React, { useRef } from 'react';
 
-const SearchInput = ({className = "", style, placeholder, value, onChange}) => {
+const SearchInput = ({className = "", style, placeholder, value, onChange, onKeyDown}) => {
     const inputRef = useRef(null);
 
     const handleClick = () => {
@@ -21,6 +21,7 @@ const SearchInput = ({className = "", style, placeholder, value, onChange}) => {
           ref={inputRef}
           value={value}
           onChange={onChange}
+          onKeyDown={onKeyDown}
         />
       </div>
     );
