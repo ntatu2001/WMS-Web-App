@@ -18,6 +18,77 @@
   display: flex;
   flex-direction: column;
   z-index: 10;
+  position: relative;
+  transition: width 0.22s ease;
+
+  &.sidebarCollapsed {
+    width: 72px;
+
+    .sidebarHeader {
+      padding: 28px 8px 22px;
+    }
+
+    .sidebarLogo {
+      width: 40px;
+      height: 40px;
+    }
+
+    .sidebarTitle {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .settingsTrigger {
+      justify-content: center;
+      padding: 14.4px 0;
+      gap: 0;
+    }
+
+    .settingsLabel {
+      display: none;
+    }
+
+    .chevron {
+      display: none;
+    }
+  }
+}
+
+.collapseToggle {
+  position: absolute;
+  top: 76px;
+  right: -16px;
+  z-index: 5;
+  width: 32px;
+  height: 40px;
+  border-radius: 6px;
+  border: none;
+  background: #5980a6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: #4a6d8c;
+  }
+}
+
+.collapseIcon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.22s ease;
+}
+
+.collapseIconRotated {
+  transform: rotate(180deg);
 }
 
 .sidebarHeader {

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { AiOutlineRight } from 'react-icons/ai';
+import { AiOutlineRight, AiOutlineLeft } from 'react-icons/ai';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
@@ -10,10 +10,19 @@ import { menuItems, isMenuItemVisible } from '../../config/menuConfig.js';
 
 const Sidebar = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true');
   const roles = useSelector((state) => state.auth.roles);
   const settingsRef = useRef(null);
 
   const isVisible = (item) => isMenuItemVisible(item, roles);
+
+  const handleToggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebarCollapsed', String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!settingsOpen) return undefined;
@@ -31,7 +40,17 @@ const Sidebar = () => {
   const settingsItem = visibleItems.find((item) => item.isParent);
 
   return (
-    <div className={clsx(styles.sidebar)}>
+    <div className={clsx(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
+      <button
+        type="button"
+        className={clsx(styles.collapseToggle)}
+        onClick={handleToggleCollapse}
+        aria-label={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+        aria-expanded={!collapsed}
+      >
+        <AiOutlineLeft className={clsx(styles.collapseIcon, collapsed && styles.collapseIconRotated)} />
+      </button>
+
       {/* Logo and Title */}
       <div className={clsx(styles.sidebarHeader)}>
         <div className={clsx(styles.sidebarLogo)}>
@@ -44,7 +63,7 @@ const Sidebar = () => {
       <nav className={clsx(styles.sidebarNav)}>
         <div className={clsx(styles.sidebarNavScroll)}>
           {navItems.map((item) => (
-            <MenuItem key={item.id} to={item.path}>
+            <MenuItem key={item.id} to={item.path} collapsed={collapsed} tooltip={item.title}>
               <span className={clsx(styles.sidebarIcon)}><item.icon /></span>
               <span>{item.title}</span>
             </MenuItem>
