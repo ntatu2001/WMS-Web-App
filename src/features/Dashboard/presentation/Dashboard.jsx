@@ -87,65 +87,37 @@ const Dashboard = () => {
     }, [dataEnter, dataExport, dataCheck])
     
     /**
-     * Lấy dữ liệu tổng quan cho Today, ThisWeek, ThisMonth từ API overViewApi.
-     * @returns {Promise<{Today: object, ThisWeek: object, ThisMonth: object}>}
+     * Lấy dữ liệu tổng quan cho 1 mốc thời gian (Today/ThisWeek/ThisMonth) từ API overViewApi.
      */
-    const getAllOverviewData = async () => {
+    const fetchOverviewByType = async (type) => {
         try {
-            const [todayRes, weekRes, monthRes] = await Promise.all([
-                overViewApi.getOverViewById("Today"),
-                overViewApi.getOverViewById("ThisWeek"),
-                overViewApi.getOverViewById("ThisMonth"),
-            ])
-            return {
-                Today: todayRes,
-                ThisWeek: weekRes,
-                ThisMonth: monthRes,
-            }
+            return await overViewApi.getOverViewById(type)
         } catch (error) {
             console.error("Error fetching overview data:", error)
-            return {
-                Today: null,
-                ThisWeek: null,
-                ThisMonth: null,
-            }
+            return null
         }
     }
     /**
-     * Lấy tất cả dữ liệu API từ getInventoryActivityStats với newid = "Today", "ThisWeek", "ThisMonth".
-     * @returns {Promise<{Today: object, ThisWeek: object, ThisMonth: object}>}
+     * Lấy dữ liệu getInventoryActivityStats cho 1 mốc thời gian (Today/ThisWeek/ThisMonth).
      */
-    const getAllInventoryActivityStats = async () => {
+    const fetchInventoryActivityStatsByType = async (type) => {
         try {
-            const [todayRes, weekRes, monthRes] = await Promise.all([
-                overViewApi.getInventoryActivityStats("Today"),
-                overViewApi.getInventoryActivityStats("ThisWeek"),
-                overViewApi.getInventoryActivityStats("ThisMonth"),
-            ])
-            const result = {
-                Today: todayRes,
-                ThisWeek: weekRes,
-                ThisMonth: monthRes,
-            }
-            console.log("getAllInventoryActivityStats result:", result)
-            return result
+            return await overViewApi.getInventoryActivityStats(type)
         } catch (error) {
             console.error("Error fetching inventory activity stats:", error)
-            return {
-                Today: null,
-                ThisWeek: null,
-                ThisMonth: null,
-            }
+            return null
         }
     }
-    // Fetch overview data once on mount
+    // Lấy dữ liệu overview theo overviewType nếu chưa có. Chạy ngay khi mount (overviewType mặc định
+    // là "Today"), và lazy load lại khi người dùng bấm Tuần/Tháng lần đầu.
     useEffect(() => {
+        if (overviewData[overviewType]) return
         const fetchOverview = async () => {
-            const data = await getAllOverviewData()
-            setOverviewData(data)
+            const data = await fetchOverviewByType(overviewType)
+            setOverviewData((prev) => ({ ...prev, [overviewType]: data }))
         }
         fetchOverview()
-    }, [])
+    }, [overviewType])
     // Update displayed data when overviewType changes
     useEffect(() => {
         const data = overviewData[overviewType]
@@ -200,14 +172,16 @@ const Dashboard = () => {
             ])
         }
     }, [overviewType, overviewData])
-    // Fetch warehouse stats once on mount
+    // Lấy warehouseStats theo warehouseStatsType nếu chưa có. Chạy ngay khi mount (warehouseStatsType
+    // mặc định là "Today"), và lazy load lại khi người dùng bấm Tuần/Tháng lần đầu.
     useEffect(() => {
+        if (warehouseStats[warehouseStatsType]) return
         const fetchWarehouseStats = async () => {
-            const data = await getAllInventoryActivityStats()
-            setWarehouseStats(data)
+            const data = await fetchInventoryActivityStatsByType(warehouseStatsType)
+            setWarehouseStats((prev) => ({ ...prev, [warehouseStatsType]: data }))
         }
         fetchWarehouseStats()
-    }, [])
+    }, [warehouseStatsType])
     // Hiển thị dữ liệu warehouseStats[warehouseStatsType] ra giao diện
     useEffect(() => {
         const stats = warehouseStats[warehouseStatsType]
