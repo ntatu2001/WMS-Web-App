@@ -19,6 +19,8 @@ import issueLotApi from '../../../../api/issueLotApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
+import { AiOutlineDownload } from 'react-icons/ai';
+import { exportIssueEntriesToExcel } from '../../utils/exportIssueEntriesExcel.js';
 
 const PERIOD_OPTIONS = [
   { value: 'today', label: 'Hôm nay' },
@@ -64,10 +66,70 @@ const ManageGoodIssue = () => {
   const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
   const [period, setPeriod] = useState('today');
   const [page, setPage] = useState(1);
+  const [exporting, setExporting] = useState(false);
 
   const handleSearch = () => setAppliedSearchTerm(searchTerm.trim());
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter') handleSearch();
+  };
+
+  // Xuất TOÀN BỘ lô hàng khớp bộ lọc hiện tại (không chỉ trang đang xem) ra file .xlsx.
+  const handleExportExcel = async () => {
+    if (totalItems === 0 || loading) return;
+    setExporting(true);
+    try {
+      let rows;
+      if (appliedSearchTerm) {
+        // Nhánh tìm kiếm: 2 API không phân trang, gộp + dedupe như logic tải bảng
+        const [byLotNumber, byMaterialName] = await Promise.all([
+          inventoryIssueEntryApi.getIssueEntriesByLotNumber(appliedSearchTerm, undefined, warehouseFilter || undefined),
+          inventoryIssueEntryApi.getIssueEntriesByLotNumber(undefined, appliedSearchTerm, warehouseFilter || undefined),
+        ]);
+        const merged = [...(byLotNumber.results || []), ...(byMaterialName.results || [])];
+        rows = Array.from(new Map(merged.map(item => [item.inventoryIssueEntryId, item])).values());
+      } else {
+        // Nhánh khoảng thời gian: gọi KHÔNG kèm pageNumber/pageSize -> backend trả full
+        const { fromDate, toDate } = getDateRange(period);
+        const response = await inventoryIssueEntryApi.getIssueEntriesNotPendingByDate(
+          fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, undefined, undefined
+        );
+        rows = response.results || [];
+        // Phòng hờ: nếu backend vẫn cắt trang -> gom nốt các trang còn lại
+        if (rows.length < (response.totalItems || 0)) {
+          const totalPages = Math.ceil((response.totalItems || 0) / PAGE_SIZE);
+          const pages = await Promise.all(
+            Array.from({ length: totalPages }, (_, i) =>
+              inventoryIssueEntryApi.getIssueEntriesNotPendingByDate(
+                fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, i + 1, PAGE_SIZE
+              )
+            )
+          );
+          rows = pages.flatMap(r => r.results || []);
+        }
+      }
+
+      if (!rows.length) {
+        toast.info('Không có lô hàng nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        return;
+      }
+
+      const p2 = (x) => String(x).padStart(2, '0');
+      const n = new Date();
+      const stamp = `${n.getFullYear()}${p2(n.getMonth() + 1)}${p2(n.getDate())}_${p2(n.getHours())}${p2(n.getMinutes())}`;
+      const scope = appliedSearchTerm
+        ? 'tim_kiem'
+        : (PERIOD_OPTIONS.find(o => o.value === period)?.label || period);
+      const whPart = warehouseFilter ? `_${warehouseFilter}` : '';
+      const filename = `Lo_xuat_kho_${scope}${whPart}_${stamp}.xlsx`.replace(/\s+/g, '_');
+
+      await exportIssueEntriesToExcel(rows, filename);
+      toast.success(`Đã xuất ${rows.length} lô ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+    } catch (error) {
+      console.error('Export excel error:', error);
+      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Đổi bộ lọc (kho hàng/khoảng thời gian/từ khóa đã áp dụng) -> quay về trang 1
@@ -262,6 +324,14 @@ const ManageGoodIssue = () => {
                   ))}
                 </div>
                 <Tag variant="accent">{totalItems} lô</Tag>
+                <ActionButton
+                  variant="secondary"
+                  onClick={handleExportExcel}
+                  disabled={exporting || loading || totalItems === 0}
+                  style={{ margin: 0, width: 'auto', padding: '8px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <AiOutlineDownload size={16} /> {exporting ? 'Đang xuất...' : 'Xuất file Excel'}
+                </ActionButton>
               </div>
             </div>
             <div style={{ marginTop: '1rem', overflowX: 'auto' }}>

@@ -52,7 +52,7 @@ export const parseDmY = (s) => {
 export async function parseReceiptExcel(file) {
   let grid;
   try {
-    const XLSX = await import('xlsx');
+    const XLSX = await import('xlsx-js-style');
     const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
     const ws =
       wb.Sheets[SHEET_NAME] ||
