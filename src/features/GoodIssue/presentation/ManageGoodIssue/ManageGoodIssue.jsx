@@ -95,7 +95,7 @@ const ManageGoodIssue = () => {
           setIssueEntries(deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
         } else {
           const { fromDate, toDate } = getDateRange(period);
-          const response = await inventoryIssueEntryApi.getIssueEntriesByDate(
+          const response = await inventoryIssueEntryApi.getIssueEntriesNotPendingByDate(
             fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, page, PAGE_SIZE
           );
           setTotalItems(response.totalItems || 0);

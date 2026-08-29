@@ -2,8 +2,8 @@ import axiosClient from "./axiosClient";
 
 
 const inventoryReceiptEntryApi = {
-    getReceiptEntriesByDate(fromDate, toDate, warehouseName, pageNumber, pageSize) {
-        const url = 'InventoryReceiptEntry/GetReceiptEntriesByDate';
+    getReceiptEntriesNotPendingByDate(fromDate, toDate, warehouseName, pageNumber, pageSize) {
+        const url = 'InventoryReceiptEntry/GetReceiptEntriesNotPendingByDate';
         return axiosClient.get(url, {params: {fromDate, toDate, warehouseName, pageNumber, pageSize}});
     },
 

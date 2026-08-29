@@ -96,7 +96,7 @@ const ManageGoodReceipt = () => {
           setReceiptEntries(deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
         } else {
           const { fromDate, toDate } = getDateRange(period);
-          const response = await inventoryReceiptEntryApi.getReceiptEntriesByDate(
+          const response = await inventoryReceiptEntryApi.getReceiptEntriesNotPendingByDate(
             fromDate.toISOString(), toDate.toISOString(), warehouseFilter || undefined, page, PAGE_SIZE
           );
           setTotalItems(response.totalItems || 0);

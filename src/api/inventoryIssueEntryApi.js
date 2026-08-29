@@ -3,8 +3,8 @@ import axiosClient from "./axiosClient";
 
 
 const inventoryIssueEntryApi = {
-    getIssueEntriesByDate(fromDate, toDate, warehouseName, pageNumber, pageSize) {
-        const url = 'InventoryIssueEntry/GetIssueEntriesByDate';
+    getIssueEntriesNotPendingByDate(fromDate, toDate, warehouseName, pageNumber, pageSize) {
+        const url = 'InventoryIssueEntry/GetIssueEntriesNotPendingByDate';
         return axiosClient.get(url, {params: {fromDate, toDate, warehouseName, pageNumber, pageSize}});
     },
 
