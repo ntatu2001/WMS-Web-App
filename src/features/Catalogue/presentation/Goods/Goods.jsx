@@ -19,6 +19,8 @@ import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
+import { AiOutlineDownload } from 'react-icons/ai';
+import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
 import styles from './Goods.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
@@ -106,6 +108,7 @@ const Goods = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Loại sản phẩm -> quay về trang 1
   useEffect(() => {
@@ -309,6 +312,73 @@ const Goods = () => {
     setAppliedSearchCode(searchCode.trim());
   };
 
+  // Xuất TOÀN BỘ sản phẩm khớp bộ lọc hiện tại (không chỉ trang đang xem) ra file .xlsx.
+  const handleExportExcel = async () => {
+    if (totalItems === 0 || isLoading || isSearching || isExporting) return;
+    setIsExporting(true);
+    try {
+      const fetchPage = isFiltering
+        ? (pn, ip) => searchMaterials(appliedSearchCode, selectedMaterialClassFilter, { pageNumber: pn, itemsPerPage: ip })
+        : (pn, ip) => fetchMaterials({ pageNumber: pn, itemsPerPage: ip });
+
+      const first = await fetchPage(1, totalItems || PAGE_SIZE);
+      let all = first.results;
+      if (all.length < (first.totalItems || 0)) {
+        const pages = Math.ceil((first.totalItems || 0) / PAGE_SIZE);
+        const rest = await Promise.all(
+          Array.from({ length: pages }, (_, i) => fetchPage(i + 1, PAGE_SIZE))
+        );
+        all = rest.flatMap(r => r.results);
+      }
+      if (!all.length) {
+        toast.info('Không có sản phẩm nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        return;
+      }
+
+      const prop = (item, name) => item.properties?.find(p => p.propertyName?.trim() === name)?.propertyValue;
+      const rows = all.map((item, i) => {
+        const dimensions = [
+          prop(item, 'Width') || '--',
+          prop(item, 'Length') || '--',
+          prop(item, 'Height') || '--',
+        ].join(' x ') + ' (m)';
+        const level = Number(prop(item, 'StorageLevel'));
+        return [
+          i + 1,
+          item.materialName ?? '',
+          item.materialId ?? '',
+          item.materialClassName || item.materialClassId || '',
+          prop(item, 'Unit') || '--',
+          Number(prop(item, 'Price') || 0),
+          prop(item, 'MinimumStockLevel') ?? '0',
+          prop(item, 'DefaultStockLevel') ?? '0',
+          dimensions,
+          level >= 1 && level <= 4 ? `Tầng ${level}` : '--',
+        ];
+      });
+
+      await exportTableToExcel({
+        headers: ['STT', 'Tên sản phẩm', 'Mã sản phẩm', 'Loại sản phẩm', 'ĐVT', 'Đơn giá (đ)',
+          'Tồn kho tối thiểu', 'Định mức tồn kho', 'Kích thước', 'Giới hạn tầng lưu trữ'],
+        rows,
+        columnMeta: [
+          { width: 5, align: 'center' }, { width: 34 }, { width: 16 }, { width: 20 },
+          { width: 8, align: 'center' }, { width: 16, align: 'right', numFmt: '#,##0' },
+          { width: 16, align: 'center' }, { width: 16, align: 'center' },
+          { width: 20 }, { width: 18, align: 'center' },
+        ],
+        sheetName: 'Sản phẩm',
+        filename: `Danh_muc_San_pham_${excelStamp()}.xlsx`,
+      });
+      toast.success(`Đã xuất ${rows.length} sản phẩm ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+    } catch (error) {
+      console.error('Export excel error:', error);
+      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div style={{ padding: '0 0 20px' }}>
       {isAdmin && (
@@ -507,6 +577,14 @@ const Goods = () => {
                 {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
               <Tag variant="accent">{totalItems} sản phẩm</Tag>
+              <ActionButton
+                variant="secondary"
+                onClick={handleExportExcel}
+                disabled={isExporting || isLoading || isSearching || totalItems === 0}
+                style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              >
+                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+              </ActionButton>
             </div>
 
             <div className={styles.tableWrapper}>

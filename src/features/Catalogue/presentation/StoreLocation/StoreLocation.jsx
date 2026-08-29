@@ -16,6 +16,8 @@ import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
+import { AiOutlineDownload } from 'react-icons/ai';
+import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
 import styles from './StoreLocation.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
@@ -95,6 +97,7 @@ const StoreLocation = () => {
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Kho hàng -> quay về trang 1
   useEffect(() => {
@@ -238,6 +241,57 @@ const StoreLocation = () => {
 
   const handleSearch = () => {
     setAppliedSearchCode(searchCode.trim());
+  };
+
+  // Xuất TOÀN BỘ vị trí lưu trữ khớp bộ lọc hiện tại (không chỉ trang đang xem) ra file .xlsx.
+  const handleExportExcel = async () => {
+    if (totalItems === 0 || isLoading || isSearching || isExporting) return;
+    setIsExporting(true);
+    try {
+      const fetchPage = isFiltering
+        ? (pn, ip) => searchLocations(appliedSearchCode, selectedWarehouseFilter, { pageNumber: pn, itemsPerPage: ip })
+        : (pn, ip) => fetchLocations({ pageNumber: pn, itemsPerPage: ip });
+
+      const first = await fetchPage(1, totalItems || PAGE_SIZE);
+      let all = first.results;
+      if (all.length < (first.totalItems || 0)) {
+        const pages = Math.ceil((first.totalItems || 0) / PAGE_SIZE);
+        const rest = await Promise.all(
+          Array.from({ length: pages }, (_, i) => fetchPage(i + 1, PAGE_SIZE))
+        );
+        all = rest.flatMap(r => r.results);
+      }
+      if (!all.length) {
+        toast.info('Không có vị trí nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        return;
+      }
+
+      const rows = all.map((item, i) => [
+        i + 1,
+        item.equipmentName ?? '',
+        item.locationId ?? '',
+        item.warehouseName ?? '',
+        item.warehouseId ?? '',
+        `${item.width || '--'} x ${item.length || '--'} x ${item.height || '--'} (m)`,
+      ]);
+
+      await exportTableToExcel({
+        headers: ['STT', 'Tên thiết bị', 'Mã vị trí', 'Kho hàng', 'Khu vực', 'Kích thước'],
+        rows,
+        columnMeta: [
+          { width: 5, align: 'center' }, { width: 24 }, { width: 18 },
+          { width: 22 }, { width: 14, align: 'center' }, { width: 22 },
+        ],
+        sheetName: 'Vị trí lưu trữ',
+        filename: `Danh_muc_Vi_tri_luu_tru_${excelStamp()}.xlsx`,
+      });
+      toast.success(`Đã xuất ${rows.length} vị trí ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+    } catch (error) {
+      console.error('Export excel error:', error);
+      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -388,6 +442,14 @@ const StoreLocation = () => {
                 {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
               </ActionButton>
               <Tag variant="accent">{totalItems} vị trí</Tag>
+              <ActionButton
+                variant="secondary"
+                onClick={handleExportExcel}
+                disabled={isExporting || isLoading || isSearching || totalItems === 0}
+                style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              >
+                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+              </ActionButton>
             </div>
 
             <div className={styles.tableWrapper}>
