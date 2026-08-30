@@ -16,6 +16,8 @@ import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
+import { AiOutlineDownload } from 'react-icons/ai';
+import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
 import styles from './Employees.module.scss';
 
 const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
@@ -100,6 +102,7 @@ const Employees = () => {
   const [formData, setFormData] = useState(emptyFormData);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Đổi từ khóa đã áp dụng hoặc đổi bộ lọc Chức vụ -> quay về trang 1
   useEffect(() => {
@@ -254,10 +257,68 @@ const Employees = () => {
     setAppliedSearchCode(searchCode.trim());
   };
 
-  const employeeClassLabels = employeeClasses.reduce(
-    (acc, item) => ({ ...acc, [item.employeeClassId]: item.employeeClassName }),
-    {}
-  );
+  const employeeClassLabels = {
+    ...employeeClassFilterOptions.reduce(
+      (acc, item) => ({ ...acc, [item.employeeClassId]: item.employeeClassName }),
+      {}
+    ),
+    ...employeeClasses.reduce(
+      (acc, item) => ({ ...acc, [item.employeeClassId]: item.employeeClassName }),
+      {}
+    ),
+  };
+
+  // Xuất TOÀN BỘ nhân viên khớp bộ lọc hiện tại (không chỉ trang đang xem) ra file .xlsx.
+  const handleExportExcel = async () => {
+    if (totalItems === 0 || isLoading || isSearching || isExporting) return;
+    setIsExporting(true);
+    try {
+      const fetchPage = isFiltering
+        ? (pn, ip) => searchEmployees(appliedSearchCode, selectedEmployeeClassFilter, { pageNumber: pn, itemsPerPage: ip })
+        : (pn, ip) => fetchEmployees({ pageNumber: pn, itemsPerPage: ip });
+
+      const first = await fetchPage(1, totalItems || PAGE_SIZE);
+      let all = first.results;
+      if (all.length < (first.totalItems || 0)) {
+        const pages = Math.ceil((first.totalItems || 0) / PAGE_SIZE);
+        const rest = await Promise.all(
+          Array.from({ length: pages }, (_, i) => fetchPage(i + 1, PAGE_SIZE))
+        );
+        all = rest.flatMap(r => r.results);
+      }
+      if (!all.length) {
+        toast.info('Không có nhân viên nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        return;
+      }
+
+      const rows = all.map((item, i) => [
+        i + 1,
+        item.employeeName ?? '',
+        item.employeeId ?? '',
+        employeeClassLabels[item.employeeClassId] || item.employeeClassId || '',
+        item.dateOfBirth ?? '--',
+        item.email ?? '--',
+        item.dailyWorkingTime ?? '--',
+      ]);
+
+      await exportTableToExcel({
+        headers: ['STT', 'Tên nhân viên', 'Mã nhân viên', 'Chức vụ', 'Ngày sinh', 'Email', 'Thời gian làm việc'],
+        rows,
+        columnMeta: [
+          { width: 5, align: 'center' }, { width: 28 }, { width: 16 }, { width: 22 },
+          { width: 16, align: 'center' }, { width: 28 }, { width: 20, align: 'center' },
+        ],
+        sheetName: 'Nhân viên',
+        filename: `Danh_muc_Nhan_vien_${excelStamp()}.xlsx`,
+      });
+      toast.success(`Đã xuất ${rows.length} nhân viên ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+    } catch (error) {
+      console.error('Export excel error:', error);
+      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div style={{ padding: '0 0 20px' }}>
@@ -415,6 +476,14 @@ const Employees = () => {
                 Tìm kiếm
               </ActionButton>
               <Tag variant="accent">{totalItems} nhân viên</Tag>
+              <ActionButton
+                variant="secondary"
+                onClick={handleExportExcel}
+                disabled={isExporting || isLoading || isSearching || totalItems === 0}
+                style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              >
+                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+              </ActionButton>
             </div>
 
             <div className={styles.tableWrapper}>

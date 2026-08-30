@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { FaTrash } from 'react-icons/fa';
-import { AiOutlinePlus } from 'react-icons/ai';
+import { AiOutlinePlus, AiOutlineUpload, AiOutlineDownload } from 'react-icons/ai';
 import SectionTitle from '../../../../common/components/Text/SectionTitle.jsx';
 import Table from '../../../../common/components/Table/Table.jsx';
 import TableHeader from '../../../../common/components/Table/TableHeader.jsx';
@@ -22,6 +22,7 @@ import supplierApi from '../../../../api/supplierApi.js';
 import employeeApi from '../../../../api/employeeApi.js';
 import materialApi from '../../../../api/materialApi.js';
 import receiptLotApi from '../../../../api/receiptLotApi.js';
+import { parseReceiptExcel, parseDmY } from '../../utils/parseReceiptExcel.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -62,6 +63,10 @@ const CreateGoodReceipt = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [rowErrors, setRowErrors] = useState({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+  const [importErrors, setImportErrors] = useState(null); // string[] | null -> banner đỏ
+  const [importNotice, setImportNotice] = useState(null); // string | null -> banner xanh
 
   useEffect(() => {
     const GetApi = async () => {
@@ -96,7 +101,13 @@ const CreateGoodReceipt = () => {
     const codesForSelectedWarehouse = wareHouses
       .filter(w => w.warehouseName === selectedWarehouse)
       .map(w => w.warehouseId);
-    setSelectedZone(codesForSelectedWarehouse[0] || null);
+    // Giữ nguyên mã kho hiện tại nếu nó vẫn thuộc kho vừa chọn (cần cho luồng import
+    // khi mã kho lấy từ file không phải mã đầu tiên trùng tên); nếu không thì chọn mã đầu.
+    setSelectedZone(prev =>
+      prev && codesForSelectedWarehouse.includes(prev)
+        ? prev
+        : (codesForSelectedWarehouse[0] || null)
+    );
   }, [selectedWarehouse, wareHouses]);
 
   useEffect(() => {
@@ -155,6 +166,168 @@ const CreateGoodReceipt = () => {
   };
 
   const totalQuantity = rows.reduce((sum, row) => sum + (Number(row.importedQuantity) || 0), 0);
+
+  // Nhập phiếu + danh sách lô hàng từ file Excel theo mẫu Template_Nhap_Kho.xlsx.
+  // Toàn bộ hoặc không: chỉ khi file hợp lệ 100% mới điền form; có bất kỳ lỗi nào thì
+  // không đổi state form và hiện banner đỏ liệt kê lỗi.
+  const downloadTemplate = () => {
+    const a = document.createElement('a');
+    a.href = '/Template_Nhap_Kho.xlsx';
+    a.download = 'Template_Nhap_Kho.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleImportFile = async (file) => {
+    if (!/\.(xlsx|xls)$/i.test(file.name)) {
+      setImportNotice(null);
+      setImportErrors(['Vui lòng dùng file .xlsx theo mẫu.']);
+      toast.error('Vui lòng dùng file .xlsx theo mẫu.', { position: 'top-right', autoClose: 3000 });
+      return;
+    }
+
+    setImporting(true);
+    setImportErrors(null);
+    setImportNotice(null);
+    try {
+      const parsed = await parseReceiptExcel(file);
+      if (parsed.errors) {
+        setImportErrors(parsed.errors);
+        return;
+      }
+      const { header, items } = parsed;
+
+      if (!wareHouses.length || !suppliers.length || !people.length) {
+        toast.error('Dữ liệu chưa tải xong, vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+        return;
+      }
+
+      const errors = [];
+
+      const nameMatches = wareHouses.filter(w => w.warehouseName === header.warehouseName);
+      if (nameMatches.length === 0) {
+        errors.push(`Mục A: kho hàng "${header.warehouseName}" không tồn tại trong hệ thống.`);
+      }
+      const codeMatch = wareHouses.find(w => w.warehouseId === header.warehouseCode);
+      if (!codeMatch) {
+        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không tồn tại trong hệ thống.`);
+      } else if (codeMatch.warehouseName !== header.warehouseName) {
+        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không thuộc kho hàng "${header.warehouseName}".`);
+      }
+
+      const supplier = suppliers.find(s => s.supplierName === header.supplierName);
+      if (!supplier) {
+        errors.push(`Mục A: nhà cung cấp "${header.supplierName}" không tồn tại trong hệ thống.`);
+      }
+
+      const employee = people.find(p => p.employeeName === header.employeeName);
+      if (!employee) {
+        errors.push(`Mục A: nhân viên "${header.employeeName}" không tồn tại trong hệ thống.`);
+      }
+
+      const receiptDate = parseDmY(header.dateText);
+      if (!receiptDate) {
+        errors.push(`Mục A: ngày nhập kho "${header.dateText}" không hợp lệ (định dạng dd/mm/yyyy).`);
+      }
+
+      if (items.length === 0) {
+        errors.push('File không có dòng sản phẩm nào.');
+      }
+
+      // Danh sách vật tư lấy trực tiếp theo mã kho trong file (không dựa vào state hiện tại)
+      let materialsForZone = [];
+      if (codeMatch) {
+        try {
+          materialsForZone = await materialApi.getMaterialsByWarehouseId(header.warehouseCode);
+        } catch {
+          errors.push('Không tải được danh sách sản phẩm cho kho này. Vui lòng thử lại.');
+        }
+      }
+
+      const resolved = [];
+      const seenLots = new Set();
+      items.forEach((it) => {
+        const prefix = `Dòng ${it.rowNumber}: `;
+        const mat = materialsForZone.find(m => m.materialName === it.productName);
+        if (codeMatch && !mat) {
+          errors.push(`${prefix}sản phẩm "${it.productName}" không có trong kho.`);
+        }
+
+        let q = NaN;
+        if (it.quantity === '') {
+          errors.push(`${prefix}thiếu SL nhập.`);
+        } else {
+          q = Number(it.quantity);
+          if (!Number.isFinite(q)) {
+            errors.push(`${prefix}SL nhập không phải số.`);
+          } else if (!(q > 0)) {
+            errors.push(`${prefix}SL nhập phải lớn hơn 0.`);
+          }
+        }
+
+        if (it.lotNumber && receiptLotIdList.includes(it.lotNumber)) {
+          errors.push(`${prefix}mã lô "${it.lotNumber}" đã tồn tại trong hệ thống.`);
+        }
+        if (it.lotNumber) {
+          if (seenLots.has(it.lotNumber)) {
+            errors.push(`${prefix}mã lô "${it.lotNumber}" bị trùng trong file.`);
+          } else {
+            seenLots.add(it.lotNumber);
+          }
+        }
+
+        if (mat && Number.isFinite(q) && q > 0) {
+          resolved.push({ mat, it, q });
+        }
+      });
+
+      if (errors.length) {
+        setImportErrors(errors);
+        return;
+      }
+
+      // ĐVT: dùng giá trị trong file nếu có, thiếu thì gọi API (giống luồng chọn tay)
+      const finalRows = await Promise.all(
+        resolved.map(async ({ mat, it, q }) => {
+          let unit = it.unit;
+          if (!unit) {
+            try {
+              unit = await materialApi.getUnitByMaterialId(mat.materialId);
+            } catch {
+              unit = '';
+            }
+          }
+          return {
+            id: `row-${++rowIdCounter}`,
+            materialName: mat.materialName,
+            materialId: mat.materialId,
+            unit,
+            lotNumber: it.lotNumber,
+            importedQuantity: String(q),
+          };
+        })
+      );
+
+      setSelectedWarehouse(header.warehouseName);
+      setSelectedZone(header.warehouseCode);
+      setMaterialsList(materialsForZone);
+      setMaterialOptionNames(materialsForZone.map(m => m.materialName));
+      setSelectedSupplier(header.supplierName);
+      setSelectedPerson(header.employeeName);
+      setSelectedDate(receiptDate);
+      setRows(finalRows);
+      setFieldErrors({});
+      setRowErrors({});
+      setHasSubmitted(false);
+      setImportErrors(null);
+      setImportNotice(
+        `Đã nhập phiếu và ${finalRows.length} dòng sản phẩm từ "${file.name}". Vui lòng kiểm tra lại trước khi tạo phiếu.`
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const validate = () => {
     const nextFieldErrors = {};
@@ -215,6 +388,8 @@ const CreateGoodReceipt = () => {
       setFieldErrors({});
       setRowErrors({});
       setHasSubmitted(false);
+      setImportErrors(null);
+      setImportNotice(null);
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Tạo phiếu nhập kho thất bại!'), {
         position: "top-right",
@@ -231,6 +406,56 @@ const CreateGoodReceipt = () => {
         </div>
       ) : (
         <>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <ActionButton
+              variant="secondary"
+              disabled={importing}
+              onClick={() => fileInputRef.current?.click()}
+              style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <AiOutlineUpload size={16} /> {importing ? 'Đang đọc file...' : 'Nhập từ Excel'}
+            </ActionButton>
+            <ActionButton
+              variant="secondary"
+              onClick={downloadTemplate}
+              style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <AiOutlineDownload size={16} /> Tải file Excel mẫu
+            </ActionButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = '';
+                if (f) handleImportFile(f);
+              }}
+            />
+          </div>
+
+          {importErrors && (
+            <div style={{
+              border: '1px solid #f43f5e', background: '#fff1f2', color: '#b91c1c',
+              borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
+            }}>
+              <strong>Không thể nhập file. Chưa thay đổi dữ liệu trên form:</strong>
+              <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
+                {importErrors.map((msg, i) => <li key={i}>{msg}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {importNotice && (
+            <div style={{
+              border: '1px solid #10b981', background: '#ecfdf5', color: '#047857',
+              borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
+            }}>
+              {importNotice}
+            </div>
+          )}
+
           <div style={{ display: "flex" }}>
             <FormSection>
               <SectionTitle>Phiếu nhập kho</SectionTitle>
