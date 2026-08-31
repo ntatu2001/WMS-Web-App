@@ -1,5 +1,5 @@
 import React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import HeaderContainer from "../../../common/components/Header/HeaderContainer.jsx"
 // import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
 import HeaderItem from "../../../common/components/Header/HeaderItem.jsx"
@@ -7,6 +7,8 @@ import ActionButton from "../../../common/components/Button/ActionButton/ActionB
 import styles from "./DashBoard.module.scss"
 import PieDonutChart from "../../../common/components/Chart/PieDonutChart.jsx"
 import overViewApi from "../../../api/overView.js"
+import useOverviewRealtime from "../../../common/hooks/useOverviewRealtime.js"
+import usePolling from "../../../common/hooks/usePolling.js"
 import {
     listTodayEnter,
     listMonthyEnter,
@@ -20,7 +22,35 @@ import {
 } from "../../../app/mockData/InventoryReceiptData.js"
 // import { data } from "autoprefixer"
 // import Chart from "react-apexcharts"
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+// ApexCharts được nạp động trong useEffect bên dưới (window.ApexCharts).
+
+// Lấy dữ liệu tổng quan (getOverViewById) cho 1 mốc thời gian Today/ThisWeek/ThisMonth.
+const fetchOverviewByType = async (type) => {
+    try {
+        return await overViewApi.getOverViewById(type)
+    } catch (error) {
+        console.error("Error fetching overview data:", error)
+        return null
+    }
+}
+// Lấy dữ liệu getInventoryActivityStats (thống kê theo kho) cho 1 mốc thời gian.
+const fetchInventoryActivityStatsByType = async (type) => {
+    try {
+        return await overViewApi.getInventoryActivityStats(type)
+    } catch (error) {
+        console.error("Error fetching inventory activity stats:", error)
+        return null
+    }
+}
+
+// Nhãn + màu chấm trạng thái kết nối realtime hiển thị trên thanh tiêu đề.
+const REALTIME_STATUS_META = {
+    connected: { color: "#16a34a", label: "Trực tiếp" },
+    connecting: { color: "#f59e0b", label: "Đang kết nối…" },
+    reconnecting: { color: "#f59e0b", label: "Đang kết nối lại…" },
+    disconnected: { color: "#dc2626", label: "Ngoại tuyến" },
+}
+
 const Dashboard = () => {
     const [togleButtonPieChart, setTogleButtonPieChart] = useState([true, false, false])
     const [togleButtonColumnChart, setTogleButtonColumnChart] = useState([true, false, false])
@@ -86,38 +116,41 @@ const Dashboard = () => {
         })
     }, [dataEnter, dataExport, dataCheck])
     
+    // Refs "gương" của state để các callback realtime/polling đọc được giá trị mới nhất mà không
+    // cần đưa vào dependency (tránh dựng lại kết nối SignalR mỗi lần đổi tab).
+    const overviewTypeRef = useRef(overviewType)
+    const warehouseStatsTypeRef = useRef(warehouseStatsType)
+    const overviewDataRef = useRef(overviewData)
+    const warehouseStatsRef = useRef(warehouseStats)
+    const lastRefetchAtRef = useRef(0)
+    useEffect(() => { overviewTypeRef.current = overviewType }, [overviewType])
+    useEffect(() => { warehouseStatsTypeRef.current = warehouseStatsType }, [warehouseStatsType])
+    useEffect(() => { overviewDataRef.current = overviewData }, [overviewData])
+    useEffect(() => { warehouseStatsRef.current = warehouseStats }, [warehouseStats])
+
+    const [lastUpdatedAt, setLastUpdatedAt] = useState(null)
+
     /**
-     * Lấy dữ liệu tổng quan cho 1 mốc thời gian (Today/ThisWeek/ThisMonth) từ API overViewApi.
+     * Nạp dữ liệu overview cho 1 mốc thời gian. Mặc định dùng cache; force=true bỏ qua cache
+     * (dùng khi có tín hiệu realtime hoặc fallback polling).
      */
-    const fetchOverviewByType = async (type) => {
-        try {
-            return await overViewApi.getOverViewById(type)
-        } catch (error) {
-            console.error("Error fetching overview data:", error)
-            return null
-        }
-    }
-    /**
-     * Lấy dữ liệu getInventoryActivityStats cho 1 mốc thời gian (Today/ThisWeek/ThisMonth).
-     */
-    const fetchInventoryActivityStatsByType = async (type) => {
-        try {
-            return await overViewApi.getInventoryActivityStats(type)
-        } catch (error) {
-            console.error("Error fetching inventory activity stats:", error)
-            return null
-        }
-    }
-    // Lấy dữ liệu overview theo overviewType nếu chưa có. Chạy ngay khi mount (overviewType mặc định
-    // là "Today"), và lazy load lại khi người dùng bấm Tuần/Tháng lần đầu.
+    const loadOverview = useCallback(async (type, { force = false } = {}) => {
+        if (!force && overviewDataRef.current[type]) return
+        const data = await fetchOverviewByType(type)
+        setOverviewData((prev) => ({ ...prev, [type]: data }))
+    }, [])
+
+    /** Nạp dữ liệu thống kê theo kho cho 1 mốc thời gian. Xem loadOverview. */
+    const loadWarehouseStats = useCallback(async (type, { force = false } = {}) => {
+        if (!force && warehouseStatsRef.current[type]) return
+        const data = await fetchInventoryActivityStatsByType(type)
+        setWarehouseStats((prev) => ({ ...prev, [type]: data }))
+    }, [])
+
+    // Nạp overview theo overviewType nếu chưa có: chạy khi mount và khi bấm Tuần/Tháng lần đầu.
     useEffect(() => {
-        if (overviewData[overviewType]) return
-        const fetchOverview = async () => {
-            const data = await fetchOverviewByType(overviewType)
-            setOverviewData((prev) => ({ ...prev, [overviewType]: data }))
-        }
-        fetchOverview()
-    }, [overviewType])
+        loadOverview(overviewType)
+    }, [overviewType, loadOverview])
     // Update displayed data when overviewType changes
     useEffect(() => {
         const data = overviewData[overviewType]
@@ -172,16 +205,50 @@ const Dashboard = () => {
             ])
         }
     }, [overviewType, overviewData])
-    // Lấy warehouseStats theo warehouseStatsType nếu chưa có. Chạy ngay khi mount (warehouseStatsType
-    // mặc định là "Today"), và lazy load lại khi người dùng bấm Tuần/Tháng lần đầu.
+    // Nạp warehouseStats theo warehouseStatsType nếu chưa có: khi mount và khi bấm Tuần/Tháng lần đầu.
     useEffect(() => {
-        if (warehouseStats[warehouseStatsType]) return
-        const fetchWarehouseStats = async () => {
-            const data = await fetchInventoryActivityStatsByType(warehouseStatsType)
-            setWarehouseStats((prev) => ({ ...prev, [warehouseStatsType]: data }))
-        }
-        fetchWarehouseStats()
-    }, [warehouseStatsType])
+        loadWarehouseStats(warehouseStatsType)
+    }, [warehouseStatsType, loadWarehouseStats])
+
+    // ── Realtime: nhận tín hiệu "overviewChanged" từ SignalR -> refetch mốc đang hiển thị ──────────
+    const handleOverviewChanged = useCallback(() => {
+        // Chặn dồn dập phía client (server đã debounce ~2s, đây là lớp phòng vệ thêm).
+        const now = Date.now()
+        if (now - lastRefetchAtRef.current < 1000) return
+        lastRefetchAtRef.current = now
+
+        const curOverview = overviewTypeRef.current
+        const curWarehouse = warehouseStatsTypeRef.current
+        loadOverview(curOverview, { force: true })
+        loadWarehouseStats(curWarehouse, { force: true })
+        // Các mốc thời gian không hiển thị -> đánh dấu stale để lần bấm tab sau tự nạp lại.
+        setOverviewData((prev) => {
+            const next = { ...prev }
+            Object.keys(next).forEach((k) => { if (k !== curOverview) next[k] = null })
+            return next
+        })
+        setWarehouseStats((prev) => {
+            const next = { ...prev }
+            Object.keys(next).forEach((k) => { if (k !== curWarehouse) next[k] = null })
+            return next
+        })
+        setLastUpdatedAt(new Date())
+    }, [loadOverview, loadWarehouseStats])
+
+    const { status: realtimeStatus } = useOverviewRealtime({ onChange: handleOverviewChanged })
+
+    // Fallback: khi realtime không ở trạng thái connected, tự poll lại mỗi 60s.
+    usePolling(
+        () => {
+            loadOverview(overviewTypeRef.current, { force: true })
+            loadWarehouseStats(warehouseStatsTypeRef.current, { force: true })
+            setLastUpdatedAt(new Date())
+        },
+        60000,
+        realtimeStatus !== "connected"
+    )
+
+    const realtimeMeta = REALTIME_STATUS_META[realtimeStatus] || REALTIME_STATUS_META.connecting
     // Hiển thị dữ liệu warehouseStats[warehouseStatsType] ra giao diện
     useEffect(() => {
         const stats = warehouseStats[warehouseStatsType]
@@ -391,7 +458,25 @@ const Dashboard = () => {
             <HeaderContainer style={{ height: "5%", padding: "0", margin: "0" }}>
                 <HeaderItem>Tổng quan</HeaderItem>
             </HeaderContainer>
-            <div className="w-full h-[5%] flex justify-end gap-[1%]  ">
+            <div className="w-full h-[5%] flex justify-end items-center gap-[1%]  ">
+                {/* Trạng thái kết nối realtime + thời điểm cập nhật gần nhất */}
+                <div className="mr-auto flex items-center gap-[6px] text-[12px] text-gray-600">
+                    <span className="inline-flex items-center gap-[4px]">
+                        <span
+                            style={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: "9999px",
+                                backgroundColor: realtimeMeta.color,
+                                display: "inline-block",
+                            }}
+                        />
+                        {realtimeMeta.label}
+                    </span>
+                    {lastUpdatedAt && (
+                        <span>· Cập nhật {lastUpdatedAt.toLocaleTimeString("vi-VN")}</span>
+                    )}
+                </div>
                 {/* ActionButton cho biểu đồ Pie (tổng quan) */}
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect} `}
