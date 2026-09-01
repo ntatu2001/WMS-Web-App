@@ -18,21 +18,15 @@ import styles from './ReceiptHistory.module.scss';
 import ReceiptApi from '../../../../api/ReceiptApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
 import { ClipLoader } from 'react-spinners';
+import { WORKFLOW_STATUS, STATUS_COLOR, SPINNER_COLOR, SPINNER_ON_ACCENT } from '../../../../common/constants/statusColors.js';
 
-const statusMapping = {
-  Pending: { label: "Chờ xử lý", color: "#767676" },
-  InProgress: { label: "Đang thực hiện", color: "#1D84C9" },
-  Done: { label: "Hoàn thành", color: "#149117" },
-  Cancelled: { label: "Đã hủy", color: "#F03B28" },
-  HoldOn: { label: "Tạm hoãn", color: "#DC7010" },
-  IsBlocked: { label: "Bị chặn", color: "#911C0F" },
-};
+const statusMapping = WORKFLOW_STATUS;
 
 const StatusTag = ({ status, style }) => (
   <span
     style={{
       borderRadius: '999px',
-      backgroundColor: statusMapping[status]?.color || "#767676",
+      backgroundColor: statusMapping[status]?.color || STATUS_COLOR.neutral,
       padding: '3px 10px',
       color: 'white',
       fontWeight: 700,
@@ -195,7 +189,7 @@ const ReceiptHistory = () => {
           onClick={handleSearch}
           disabled={isLoading}
         >
-          {isLoading ? <ClipLoader size={20} color="#fff" /> : "Tìm kiếm"}
+          {isLoading ? <ClipLoader size={20} color={SPINNER_ON_ACCENT} /> : "Tìm kiếm"}
         </ActionButton>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
@@ -269,7 +263,7 @@ const ReceiptHistory = () => {
             <div style={{ overflowX: "auto" }}>
               {isDetailLoading ? (
                 <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
-                  <ClipLoader size={40} color="#0089D7" />
+                  <ClipLoader size={40} color={SPINNER_COLOR} />
                 </div>
               ) : (
                 <Table style={{ minWidth: "760px" }}>

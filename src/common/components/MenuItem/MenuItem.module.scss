@@ -30,8 +30,8 @@
 .tooltip {
     position: fixed;
     transform: translateY(-50%);
-    background: #0a1830;
-    color: #fff;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
     padding: 6px 10px;
     border-radius: 8px;
     font-size: 13px;
@@ -43,16 +43,16 @@
 }
 
 .link_active {
-    background-color: rgba(45, 212, 191, 0.16);
-    color: #fff;
+    background-color: var(--sidebar-item-active);
+    color: var(--sidebar-text);
     font-weight: 700;
 }
 
 .link_inactive {
     background-color: transparent;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--sidebar-text-muted);
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.06);
+        background-color: var(--sidebar-item-hover);
     }
 }

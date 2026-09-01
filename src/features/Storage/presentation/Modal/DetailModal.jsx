@@ -130,7 +130,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
 
             {isLoading ? (
                 <div className={styles.loading}>
-                    <ClipLoader color="#0089D7" size={40} />
+                    <ClipLoader color="var(--color-teal)" size={40} />
                 </div>
             ) : (
                 <>

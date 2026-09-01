@@ -1,0 +1,94 @@
+/*
+ * Dark-mode overrides for react-datepicker.
+ * The library ships a light-only stylesheet (imported per-feature). The calendar
+ * popup is portalled to <body>, so scoping under :root[data-theme="dark"] works
+ * as long as data-theme lives on <html> (it does — see useApplyTheme.js).
+ */
+
+:root[data-theme="dark"] .react-datepicker,
+:root:not([data-theme="light"]) .react-datepicker {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .react-datepicker {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text);
+  }
+}
+
+:root[data-theme="dark"] .react-datepicker__header,
+:root:not([data-theme="light"]) .react-datepicker__header {
+  background-color: var(--color-surface-2);
+  border-bottom-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .react-datepicker__current-month,
+:root[data-theme="dark"] .react-datepicker-time__header,
+:root[data-theme="dark"] .react-datepicker-year-header,
+:root[data-theme="dark"] .react-datepicker__day-name,
+:root[data-theme="dark"] .react-datepicker__day,
+:root[data-theme="dark"] .react-datepicker__time-name,
+:root:not([data-theme="light"]) .react-datepicker__current-month,
+:root:not([data-theme="light"]) .react-datepicker-time__header,
+:root:not([data-theme="light"]) .react-datepicker-year-header,
+:root:not([data-theme="light"]) .react-datepicker__day-name,
+:root:not([data-theme="light"]) .react-datepicker__day,
+:root:not([data-theme="light"]) .react-datepicker__time-name {
+  color: var(--color-text);
+}
+
+:root[data-theme="dark"] .react-datepicker__day:hover,
+:root[data-theme="dark"] .react-datepicker__month-text:hover,
+:root:not([data-theme="light"]) .react-datepicker__day:hover,
+:root:not([data-theme="light"]) .react-datepicker__month-text:hover {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+}
+
+:root[data-theme="dark"] .react-datepicker__day--selected,
+:root[data-theme="dark"] .react-datepicker__day--keyboard-selected,
+:root[data-theme="dark"] .react-datepicker__day--in-range,
+:root:not([data-theme="light"]) .react-datepicker__day--selected,
+:root:not([data-theme="light"]) .react-datepicker__day--keyboard-selected,
+:root:not([data-theme="light"]) .react-datepicker__day--in-range {
+  background-color: var(--color-teal-dark);
+  color: #fff;
+}
+
+:root[data-theme="dark"] .react-datepicker__day--disabled,
+:root:not([data-theme="light"]) .react-datepicker__day--disabled {
+  color: var(--color-text-muted);
+}
+
+:root[data-theme="dark"] .react-datepicker__navigation-icon::before,
+:root:not([data-theme="light"]) .react-datepicker__navigation-icon::before {
+  border-color: var(--color-text-muted);
+}
+
+:root[data-theme="dark"] .react-datepicker__triangle::before,
+:root:not([data-theme="light"]) .react-datepicker__triangle::before {
+  border-bottom-color: var(--color-border) !important;
+}
+:root[data-theme="dark"] .react-datepicker__triangle::after,
+:root:not([data-theme="light"]) .react-datepicker__triangle::after {
+  border-bottom-color: var(--color-surface-2) !important;
+}
+
+:root[data-theme="dark"] .react-datepicker__time-container,
+:root[data-theme="dark"] .react-datepicker__time,
+:root[data-theme="dark"] .react-datepicker__time-box,
+:root:not([data-theme="light"]) .react-datepicker__time-container,
+:root:not([data-theme="light"]) .react-datepicker__time,
+:root:not([data-theme="light"]) .react-datepicker__time-box {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .react-datepicker__time-list-item:hover,
+:root:not([data-theme="light"]) .react-datepicker__time-list-item:hover {
+  background-color: var(--color-accent-soft) !important;
+}

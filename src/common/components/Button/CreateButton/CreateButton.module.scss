@@ -1,7 +1,7 @@
 
 .createButton {
-    background-color: #003f5c;
-    color: white;
+    background-color: var(--control-solid-bg);
+    color: var(--control-solid-fg);
     border: none;
     border-radius: 6px; 
     padding: 6px 8px; 

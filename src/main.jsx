@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
 import './index.css';
+import './common/styles/tokens.css';
+import './common/styles/react-datepicker-dark.css';
 import App from './App.jsx';
 import store from './store/store';
 

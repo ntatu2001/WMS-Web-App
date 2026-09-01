@@ -10,6 +10,7 @@ import {
   AiOutlineUserAdd,
   AiOutlineUser,
   AiOutlineLogout,
+  AiOutlineBgColors,
 } from 'react-icons/ai';
 
 // Nguồn dữ liệu menu dùng chung cho Sidebar và cho việc tính route mặc định theo role.
@@ -31,6 +32,7 @@ export const menuItems = [
     subItems: [
       { id: 8.1, title: 'Tạo tài khoản mới', icon: AiOutlineUserAdd, path: '/setting/users', roles: ['Admin'] },
       { id: 8.2, title: 'Quản lý tài khoản', icon: AiOutlineUser, path: '/setting/account' },
+      { id: 8.4, title: 'Giao diện', icon: AiOutlineBgColors, path: '/setting/appearance' },
       { id: 8.3, title: 'Đăng xuất', icon: AiOutlineLogout, path: '/setting/logout', danger: true },
     ],
   },

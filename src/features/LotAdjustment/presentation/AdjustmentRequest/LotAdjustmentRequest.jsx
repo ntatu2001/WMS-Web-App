@@ -31,7 +31,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader} from 'react-spinners';
 import styles from './LotAdjustmentRequest.module.scss';
 
-const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
 
 const getVariance = (existingQuantity, realQuantity) => (Number(realQuantity) || 0) - (Number(existingQuantity) || 0);
 const getVarianceStatus = (variance) => (variance === 0 ? 'Khớp' : variance < 0 ? 'Thiếu' : 'Dư');
@@ -347,7 +347,7 @@ const RequestLotAdjustment = () => {
 
                 {isInitialLoading && (
                     <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-                        <ClipLoader color="#4A90E2" size={35} />
+                        <ClipLoader color="var(--color-teal)" size={35} />
                     </div>
                 )}
 
@@ -412,7 +412,7 @@ const RequestLotAdjustment = () => {
                                 </Select>
                                 {isLotLoading && (
                                     <div style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
-                                        <ClipLoader color="#4A90E2" size={15} />
+                                        <ClipLoader color="var(--color-teal)" size={15} />
                                     </div>
                                 )}
                             </SelectContainer>
@@ -517,7 +517,7 @@ const RequestLotAdjustment = () => {
                     <>
                     {isLotDetailsLoading ? (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                            <ClipLoader color="#4A90E2" size={40} />
+                            <ClipLoader color="var(--color-teal)" size={40} />
                         </div>
                     ) : (
                         <>
@@ -612,7 +612,7 @@ const RequestLotAdjustment = () => {
                                                 <TableCell>{item.locationId}</TableCell>
                                                 <TableCell>{item.existingQuantity}</TableCell>
                                                 <TableCell>
-                                                <input style={{textAlign: "center", width: "50%", border: "1px solid #767676", borderRadius: "6px"}}
+                                                <input style={{textAlign: "center", width: "50%", border: "1px solid var(--color-border)", borderRadius: "6px"}}
                                                     type="number"
                                                     min="0"
                                                     step="1"
@@ -669,18 +669,18 @@ const RequestLotAdjustment = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    backgroundColor: 'var(--color-overlay)',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     zIndex: 1000
                 }}>
                     <div style={{
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--color-surface)',
                         padding: '20px',
                         borderRadius: '8px',
                         width: '300px',
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+                        boxShadow: 'var(--shadow-lg)'
                     }}>
                         <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
                         <p>Bạn có chắc chắn muốn xóa mục này không?</p>
@@ -689,9 +689,9 @@ const RequestLotAdjustment = () => {
                                 onClick={cancelDelete}
                                 style={{
                                     padding: '8px 16px',
-                                    border: '1px solid #ccc',
+                                    border: '1px solid var(--color-border)',
                                     borderRadius: '4px',
-                                    backgroundColor: '#f5f5f5',
+                                    backgroundColor: 'var(--color-surface-2)',
                                     cursor: 'pointer'
                                 }}
                             >
@@ -703,7 +703,7 @@ const RequestLotAdjustment = () => {
                                     padding: '8px 16px',
                                     border: 'none',
                                     borderRadius: '4px',
-                                    backgroundColor: '#dc3545',
+                                    backgroundColor: 'var(--status-error)',
                                     color: 'white',
                                     cursor: 'pointer'
                                 }}

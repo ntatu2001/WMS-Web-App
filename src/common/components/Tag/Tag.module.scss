@@ -11,11 +11,11 @@
 }
 
 .accent {
-    background-color: rgba(45, 212, 191, 0.16);
-    color: v.$color-teal-dark;
+    background-color: var(--color-accent-soft);
+    color: var(--control-soft-fg);
 }
 
 .neutral {
-    background-color: rgba(10, 24, 48, 0.06);
-    color: v.$color-text-muted;
+    background-color: var(--color-surface-2);
+    color: v.$color-text;
 }

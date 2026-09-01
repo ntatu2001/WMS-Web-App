@@ -1,9 +1,11 @@
 import ReactApexChart from "react-apexcharts"
 import React from "react"
+import { useResolvedTheme } from "../../hooks/useApplyTheme.js"
+import { buildChartTheme, mergeChartOptions } from "../../utils/chartTheme.js"
 
 function PieDonutChart({ height, width, name, label, unit, fontSize, dataChartLabels, dataChartValue, arrayColors }) {
-    const setUpChart = {
-        options: {
+    const resolvedTheme = useResolvedTheme()
+    const baseOptions = {
             chart: {
                 type: "donut",
             },
@@ -13,7 +15,7 @@ function PieDonutChart({ height, width, name, label, unit, fontSize, dataChartLa
                 show: false,
                 position: "right", // Vị trí của chú thích
                 formatter: function (label, series) {
-                    return `${label}: ${setUpChart.series[series.seriesIndex]}` // Hiển thị nhãn + số lượng
+                    return `${label}: ${dataChartValue[series.seriesIndex]}` // Hiển thị nhãn + số lượng
                 },
             },
             plotOptions: {
@@ -27,7 +29,7 @@ function PieDonutChart({ height, width, name, label, unit, fontSize, dataChartLa
                                 show: true,
                                 showAlways: true,
                                 fontSize: fontSize * 0.9,
-                                color: "black",
+                                color: "var(--color-text)",
                                 label: label,
                             },
                         },
@@ -60,14 +62,13 @@ function PieDonutChart({ height, width, name, label, unit, fontSize, dataChartLa
                 fontSize: fontSize,
                 fontFamily: "Arial, sans-serif",
             },
-        },
-        series: dataChartValue,
     }
+    const options = mergeChartOptions(baseOptions, buildChartTheme(resolvedTheme))
     return (
         <>
             <ReactApexChart
-                options={setUpChart.options}
-                series={setUpChart.series}
+                options={options}
+                series={dataChartValue}
                 type="donut"
                 width={width}
                 height={height}

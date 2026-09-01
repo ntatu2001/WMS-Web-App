@@ -468,7 +468,7 @@ const Storage = () => {
                 <div className={styles.page}>
                     {isLoading && (
                         <div className={styles.loadingOverlay}>
-                            <ClipLoader color="#0089D7" size={50} />
+                            <ClipLoader color="var(--color-teal)" size={50} />
                         </div>
                     )}
 
@@ -525,7 +525,7 @@ const Storage = () => {
                             Đã đầy
                         </span>
                         <span className={styles.legendItem}>
-                            <i className={styles.legendSwatch} style={{ backgroundColor: '#FFFFFF' }}></i>
+                            <i className={styles.legendSwatch} style={{ backgroundColor: 'var(--color-surface)' }}></i>
                             Trống
                         </span>
                     </div>

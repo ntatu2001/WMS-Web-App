@@ -14,7 +14,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1000;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: v.$color-surface;
     padding: 20px;
     border-radius: v.$radius-md;
     box-shadow: v.$shadow-md;
@@ -57,7 +57,7 @@
     flex-wrap: wrap;
     margin-bottom: 20px;
     padding: 10px 16px;
-    background-color: rgba(45, 212, 191, 0.08);
+    background-color: var(--color-accent-soft);
     border: 1px solid v.$color-border;
     border-radius: v.$radius-sm;
 }
@@ -65,7 +65,7 @@
 .legendKicker {
     font-size: 12px;
     font-weight: 700;
-    color: v.$color-navy;
+    color: v.$color-text;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -118,7 +118,7 @@
 .zoneTitle {
     font-size: 18px;
     font-weight: 700;
-    color: v.$color-navy;
+    color: v.$color-text;
     margin: 0;
 }
 
@@ -160,7 +160,7 @@
     font-weight: 700;
     font-size: 13px;
     padding: 6px 0;
-    color: v.$color-navy;
+    color: v.$color-text;
 }
 
 .colHeaderSpacer {
@@ -179,7 +179,7 @@
 .cell {
     height: 64px;
     box-sizing: border-box;
-    border: 1px solid v.$color-navy;
+    border: 1px solid v.$color-border;
     position: relative;
     overflow: hidden;
 }
@@ -189,7 +189,7 @@
 }
 
 .cellDropTarget {
-    outline: 2px dashed #0089D7;
+    outline: 2px dashed var(--status-info);
     outline-offset: -2px;
 }
 
@@ -233,7 +233,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--color-overlay);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -250,7 +250,7 @@
 
 .moveConfirmTitle {
     margin: 0 0 8px;
-    color: v.$color-navy;
+    color: v.$color-text;
 }
 
 .moveConfirmBody {

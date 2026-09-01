@@ -9,13 +9,14 @@ const FeatureUnavailable = () => {
       style={{
         width: '400px',
         borderRadius: '8px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#fff',
+        boxShadow: 'var(--shadow-lg)',
+        backgroundColor: 'var(--color-surface)',
+        color: 'var(--color-text)',
         padding: '32px 20px',
         textAlign: 'center',
       }}
     >
-      <p style={{ fontSize: '16px', color: '#555', margin: 0 }}>
+      <p style={{ fontSize: '16px', color: 'var(--color-text-muted)', margin: 0 }}>
         Chức năng đang tạm ngưng, sẽ hỗ trợ trong bản cập nhật tới.
       </p>
     </div>

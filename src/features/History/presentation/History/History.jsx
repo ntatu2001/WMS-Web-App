@@ -28,7 +28,7 @@ const History = () => {
                      activeTab === 'issue' ? "Lịch sử xuất kho" : "Lịch sử kiểm kê";
 
   return (
-    <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
+    <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
       <HeaderContainer>
         <HeaderItem>Lịch sử</HeaderItem>
         <Separator />

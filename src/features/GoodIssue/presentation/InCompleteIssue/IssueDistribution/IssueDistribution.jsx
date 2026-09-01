@@ -442,7 +442,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                         left: 0,
                         width: "100%",
                         height: "100%",
-                        backgroundColor: "#FFF",
+                        backgroundColor: "var(--color-surface)",
                         zIndex: 1,
                         display: "flex",
                         alignItems: "center",
@@ -490,7 +490,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                         wordBreak: "break-word",
                                         boxSizing: "border-box",
                                         padding: "0 2px",
-                                        borderRight: "1px solid #000",
+                                        borderRight: "1px solid var(--color-border)",
                                     }}
                                 >
                                     <span style={{ color: "#FFF" }}>
@@ -539,7 +539,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                                         wordBreak: "break-word",
                                         boxSizing: "border-box",
                                         padding: "0 2px",
-                                        borderRight: "1px solid #000",
+                                        borderRight: "1px solid var(--color-border)",
                                     }}
                                 >
                                     <span style={{ color: "#FFF" }}>
@@ -560,7 +560,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
         <>
             {loading ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
-                    <ClipLoader size={35} color="#0066CC" />
+                    <ClipLoader size={35} color="var(--color-teal)" />
                 </div>
             ) : (
                 <div className={styles.wrapper}>
@@ -583,7 +583,7 @@ const IssueDistribution = ({warehouseId, isActive}) => {
                         </div>
 
                         <div className={styles.legendRow}>
-                            <div className={styles.legendSwatch} style={{ backgroundColor: '#FFFFFF' }}></div>
+                            <div className={styles.legendSwatch} style={{ backgroundColor: 'var(--color-surface)' }}></div>
                             <span>Đang trống</span>
                         </div>
                     </div>

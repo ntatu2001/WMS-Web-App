@@ -11,8 +11,10 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #333;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     line-height: 1.6;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html, body {
@@ -25,7 +27,7 @@ const GlobalStyle = createGlobalStyle`
 
   a {
     text-decoration: none;
-    color: #0066cc;
+    color: var(--color-link);
   }
 
   button {

@@ -1,25 +1,22 @@
 .appContainer {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 .loginContainer {
   padding: 1.25rem;
   max-width: 42rem;
   margin: 3rem auto 0;
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .loginTitle {
   text-align: center;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 1.25rem;
   font-weight: bold;
   font-size: 1.5rem;
 }
-
-
-
-

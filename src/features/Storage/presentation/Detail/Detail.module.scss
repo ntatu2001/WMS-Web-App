@@ -32,12 +32,12 @@
     background: transparent;
     border: 1px solid v.$color-border;
     border-radius: v.$radius-sm;
-    color: v.$color-navy;
+    color: v.$color-text;
     cursor: pointer;
     font-size: 18px;
 
     &:hover {
-        background-color: rgba(45, 212, 191, 0.12);
+        background-color: var(--color-accent-soft);
         border-color: v.$color-teal;
     }
 }

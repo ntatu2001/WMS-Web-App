@@ -1,7 +1,7 @@
+// Fill levels 1..4 → color. Theme-aware via CSS custom properties (see tokens.css).
 export const storageLevel = {
-    1 : "#FF2115",
-    2 : "#FD800B",
-    3 : "#FDC30B",
-    4 : "#09E532"
+    1 : "var(--status-error)",
+    2 : "var(--status-warning)",
+    3 : "var(--status-pending)",
+    4 : "var(--status-success)"
 };
-

@@ -79,8 +79,8 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
             left: 0,
             maxHeight: '150px', // Giới hạn chiều cao của dropdown
             overflowY: 'auto', // Cho phép scroll theo chiều dọc khi cần
-            backgroundColor: '#767676',
-            border: '1px solid #000',
+            backgroundColor: 'var(--color-text-muted)',
+            border: '1px solid var(--color-border)',
             borderRadius: '4px',
             listStyle: 'none',
             padding: 0,

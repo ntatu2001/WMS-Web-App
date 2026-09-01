@@ -361,7 +361,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                             <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
                                 {loadingReceiptLot ? (
                                     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-                                        <ClipLoader size={35} color="#0066CC" />
+                                        <ClipLoader size={35} color="var(--color-teal)" />
                                     </div>
                                 ) : (
                                     receiptLots.map((item) => (
@@ -426,7 +426,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                 <div className={styles.resultTableWrapper} style={{flex: 1, overflow: "auto", minHeight: 0, marginTop: "12px"}}>
                                 {loadingScheduling ? (
                                     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
-                                        <ClipLoader size={35} color="#0066CC" />
+                                        <ClipLoader size={35} color="var(--color-teal)" />
                                     </div>
                                 ) : updatedItems.length === 0 ? (
                                     <div className={styles.emptyState}>
@@ -457,7 +457,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                                             style={{
                                                                 width: '100%',
                                                                 padding: '4px',
-                                                                border: '1px solid #ccc',
+                                                                border: '1px solid var(--color-border)',
                                                                 borderRadius: '4px',
                                                                 textAlign: 'center'
                                                             }}
@@ -475,7 +475,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                                             style={{
                                                                 width: '100%',
                                                                 padding: '4px',
-                                                                border: '1px solid #ccc',
+                                                                border: '1px solid var(--color-border)',
                                                                 borderRadius: '4px',
                                                                 textAlign: 'center'
                                                             }}
@@ -505,18 +505,18 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            backgroundColor: 'var(--color-overlay)',
                             display: 'flex',
                             justifyContent: 'center',
                             alignItems: 'center',
                             zIndex: 1000
                         }}>
                             <div style={{
-                                backgroundColor: 'white',
+                                backgroundColor: 'var(--color-surface)',
                                 padding: '20px',
                                 borderRadius: '8px',
                                 width: '300px',
-                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+                                boxShadow: 'var(--shadow-lg)'
                             }}>
                                 <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
                                 <p>Bạn có chắc chắn muốn xóa mục này không?</p>
@@ -525,9 +525,9 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                         onClick={cancelDelete}
                                         style={{
                                             padding: '8px 16px',
-                                            border: '1px solid #ccc',
+                                            border: '1px solid var(--color-border)',
                                             borderRadius: '4px',
-                                            backgroundColor: '#f5f5f5',
+                                            backgroundColor: 'var(--color-surface-2)',
                                             cursor: 'pointer'
                                         }}
                                     >
@@ -539,7 +539,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                             padding: '8px 16px',
                                             border: 'none',
                                             borderRadius: '4px',
-                                            backgroundColor: '#dc3545',
+                                            backgroundColor: 'var(--status-error)',
                                             color: 'white',
                                             cursor: 'pointer'
                                         }}

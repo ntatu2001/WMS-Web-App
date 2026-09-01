@@ -38,7 +38,7 @@ const createEmptyRow = () => ({
   importedQuantity: '',
 });
 
-const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
 
 const CreateGoodReceipt = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -402,7 +402,7 @@ const CreateGoodReceipt = () => {
     <ContentContainer style={{ display: "block" }}>
       {isLoading ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <ClipLoader color="#36D7B7" loading={isLoading} size={50} />
+          <ClipLoader color="var(--color-teal)" loading={isLoading} size={50} />
         </div>
       ) : (
         <>
@@ -437,7 +437,7 @@ const CreateGoodReceipt = () => {
 
           {importErrors && (
             <div style={{
-              border: '1px solid #f43f5e', background: '#fff1f2', color: '#b91c1c',
+              border: '1px solid var(--status-error)', background: 'var(--color-surface-2)', color: 'var(--status-error)',
               borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
             }}>
               <strong>Không thể nhập file. Chưa thay đổi dữ liệu trên form:</strong>
@@ -449,7 +449,7 @@ const CreateGoodReceipt = () => {
 
           {importNotice && (
             <div style={{
-              border: '1px solid #10b981', background: '#ecfdf5', color: '#047857',
+              border: '1px solid var(--status-success)', background: 'var(--color-surface-2)', color: 'var(--status-success)',
               borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
             }}>
               {importNotice}

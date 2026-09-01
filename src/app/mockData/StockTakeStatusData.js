@@ -1,7 +1,7 @@
-// Semantic colors for stock-take (kiểm kê) variance status — reuses the same
-// green/red/blue hexes already established for lot status elsewhere in the app.
+// Semantic colors for stock-take (kiểm kê) variance status.
+// Theme-aware via CSS custom properties (see src/common/styles/tokens.css).
 export const stockTakeStatusColor = {
-    'Khớp': '#149117',
-    'Thiếu': '#F03B28',
-    'Dư': '#1D84C9',
+    'Khớp': 'var(--status-success)',
+    'Thiếu': 'var(--status-error)',
+    'Dư': 'var(--status-info)',
 };

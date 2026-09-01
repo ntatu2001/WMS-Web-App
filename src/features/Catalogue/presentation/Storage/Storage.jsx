@@ -35,14 +35,14 @@ const Storage = () => {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", padding: "0 20px" }}>
-      <div style={{ backgroundColor: "white", padding: "20px", borderBottom: "2px solid #ccc", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
+      <div style={{ backgroundColor: "var(--color-surface)", padding: "20px", borderBottom: "2px solid var(--color-border)", boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}>
         <SectionTitle
           style={{
             fontSize: "30px",
             marginBottom: "20px",
             width: "100%",
             textAlign: "center",
-            borderBottom: "2px solid #ccc",
+            borderBottom: "2px solid var(--color-border)",
             boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
             position: "relative",
           }}
@@ -59,7 +59,7 @@ const Storage = () => {
                   name="storageName"
                   value={formData.storageName}
                   onChange={handleInputChange}
-                  style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                  style={{ width: "100%", padding: "5px", border: "1px solid var(--color-border)" }}
                 />
               </SelectContainer>
             </FormGroup>
@@ -71,7 +71,7 @@ const Storage = () => {
                   name="storageCode"
                   value={formData.storageCode}
                   onChange={handleInputChange}
-                  style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                  style={{ width: "100%", padding: "5px", border: "1px solid var(--color-border)" }}
                 />
               </SelectContainer>
             </FormGroup>
@@ -82,7 +82,7 @@ const Storage = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                  style={{ width: "100%", padding: "5px", border: "1px solid var(--color-border)" }}
                 >
                   <option value="--">--</option>
                   <option value="Khu A">Khu A</option>
@@ -99,7 +99,7 @@ const Storage = () => {
                   name="capacity"
                   value={formData.capacity}
                   onChange={handleInputChange}
-                  style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                  style={{ width: "100%", padding: "5px", border: "1px solid var(--color-border)" }}
                 />
               </SelectContainer>
             </FormGroup>
@@ -110,7 +110,7 @@ const Storage = () => {
                   name="note"
                   value={formData.note}
                   onChange={handleInputChange}
-                  style={{ width: "100%", padding: "5px", border: "1px solid #ccc" }}
+                  style={{ width: "100%", padding: "5px", border: "1px solid var(--color-border)" }}
                 />
               </SelectContainer>
             </FormGroup>
@@ -123,7 +123,7 @@ const Storage = () => {
                 marginTop: "-10px",
                 padding: "10px 20px",
                 width: "240px",
-                backgroundColor: formData.storageCode ? "#007bff" : "#ccc",
+                backgroundColor: formData.storageCode ? "var(--color-link)" : "var(--color-border)",
                 cursor: formData.storageCode ? "pointer" : "not-allowed",
               }}
             >
