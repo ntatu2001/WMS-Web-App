@@ -9,6 +9,8 @@ import PieDonutChart from "../../../common/components/Chart/PieDonutChart.jsx"
 import overViewApi from "../../../api/overView.js"
 import useOverviewRealtime from "../../../common/hooks/useOverviewRealtime.js"
 import usePolling from "../../../common/hooks/usePolling.js"
+import { useResolvedTheme } from "../../../common/hooks/useApplyTheme.js"
+import { buildChartTheme, mergeChartOptions } from "../../../common/utils/chartTheme.js"
 import {
     listTodayEnter,
     listMonthyEnter,
@@ -45,10 +47,10 @@ const fetchInventoryActivityStatsByType = async (type) => {
 
 // Nhãn + màu chấm trạng thái kết nối realtime hiển thị trên thanh tiêu đề.
 const REALTIME_STATUS_META = {
-    connected: { color: "#16a34a", label: "Trực tiếp" },
-    connecting: { color: "#f59e0b", label: "Đang kết nối…" },
-    reconnecting: { color: "#f59e0b", label: "Đang kết nối lại…" },
-    disconnected: { color: "#dc2626", label: "Ngoại tuyến" },
+    connected: { color: "var(--status-connected)", label: "Trực tiếp" },
+    connecting: { color: "var(--status-connecting)", label: "Đang kết nối…" },
+    reconnecting: { color: "var(--status-connecting)", label: "Đang kết nối lại…" },
+    disconnected: { color: "var(--status-disconnected)", label: "Ngoại tuyến" },
 }
 
 const Dashboard = () => {
@@ -76,6 +78,7 @@ const Dashboard = () => {
     const [warehouseStatsType, setWarehouseStatsType] = useState("Today")
     const chartIssueRef = useRef(null);
     const chartReceiptRef = useRef(null);
+    const resolvedTheme = useResolvedTheme();
 
     useEffect(() => {
         setFilterDataEnter(() => {
@@ -350,7 +353,10 @@ const Dashboard = () => {
                     ],
                     legend: { show: false },
                 };
-                chartIssueRef.current._apexChart = new window.ApexCharts(chartIssueRef.current, options);
+                chartIssueRef.current._apexChart = new window.ApexCharts(
+                    chartIssueRef.current,
+                    mergeChartOptions(options, buildChartTheme(resolvedTheme))
+                );
                 chartIssueRef.current._apexChart.render();
             }
             // Thống kê nhập kho theo kho hàng
@@ -429,7 +435,10 @@ const Dashboard = () => {
                     ],
                     legend: { show: false },
                 };
-                chartReceiptRef.current._apexChart = new window.ApexCharts(chartReceiptRef.current, options);
+                chartReceiptRef.current._apexChart = new window.ApexCharts(
+                    chartReceiptRef.current,
+                    mergeChartOptions(options, buildChartTheme(resolvedTheme))
+                );
                 chartReceiptRef.current._apexChart.render();
             }
         }
@@ -442,7 +451,7 @@ const Dashboard = () => {
                 chartReceiptRef.current._apexChart.destroy();
             }
         };
-    }, [warehouseStats, warehouseStatsType]);
+    }, [warehouseStats, warehouseStatsType, resolvedTheme]);
 
     return (
         <div
@@ -489,7 +498,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: overviewType === "Today" ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "Today" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setOverviewType("Today")
@@ -509,7 +518,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: overviewType === "ThisWeek" ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "ThisWeek" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setOverviewType("ThisWeek")
@@ -529,7 +538,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: overviewType === "ThisMonth" ? "#09306f" : "#4b5563",
+                        backgroundColor: overviewType === "ThisMonth" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setOverviewType("ThisMonth")
@@ -541,7 +550,7 @@ const Dashboard = () => {
             </div>
             
             <div className="w-full h-[40%] flex gap-[1%] justify-between">
-                <div className=" h-full w-[23%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center">
+                <div className=" h-full w-[23%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center">
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
@@ -580,7 +589,7 @@ const Dashboard = () => {
                         />
                     </div>
                 </div>
-                <div className=" h-full w-[23%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center">
+                <div className=" h-full w-[23%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center">
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
@@ -619,7 +628,7 @@ const Dashboard = () => {
                         />
                     </div>
                 </div>
-                <div className=" h-full w-[23%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center">
+                <div className=" h-full w-[23%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center">
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
@@ -674,7 +683,7 @@ const Dashboard = () => {
                         />
                     </div>
                 </div>
-                <div className=" h-full w-[23%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center">
+                <div className=" h-full w-[23%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center">
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
@@ -731,7 +740,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: togleButtonColumnChart[0] ? "#09306f" : "#4b5563",
+                        backgroundColor: togleButtonColumnChart[0] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([true, false, false])
@@ -751,7 +760,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: togleButtonColumnChart[1] ? "#09306f" : "#4b5563",
+                        backgroundColor: togleButtonColumnChart[1] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([false, true, false])
@@ -771,7 +780,7 @@ const Dashboard = () => {
                         marginRight: 0,
                         padding: 0,
                         fontSize: "12px",
-                        backgroundColor: togleButtonColumnChart[2] ? "#09306f" : "#4b5563",
+                        backgroundColor: togleButtonColumnChart[2] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
                         setTogleButtonColumnChart([false, false, true])
@@ -782,13 +791,13 @@ const Dashboard = () => {
                 </ActionButton>
             </div>
             <div className="w-full h-[40%] flex justify-between">
-                <div className=" h-full w-[48%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center p-[0.7%]">
+                <div className=" h-full w-[48%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center p-[0.7%]">
                     
                     <div className="h-[100%] w-full ">
                         <div ref={chartIssueRef} style={{ width: "100%", height: "100%" }} />
                     </div>
                 </div>
-                <div className=" h-full w-[48%] bg-[#f3f4f6] rounded-lg shadow-md justify-center items-center p-[0.7%]">
+                <div className=" h-full w-[48%] bg-[var(--color-surface)] rounded-lg shadow-md justify-center items-center p-[0.7%]">
                     
                     <div className="h-[100%] w-full ">
                         <div ref={chartReceiptRef} style={{ width: "100%", height: "100%" }} />

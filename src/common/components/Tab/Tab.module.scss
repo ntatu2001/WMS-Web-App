@@ -12,17 +12,18 @@
 }
 
 .tabButton_active {
-    background-color: v.$color-navy;
-    color: white;
-    border-color: v.$color-navy;
+    background-color: var(--control-solid-bg);
+    color: var(--control-solid-fg);
+    border-color: var(--control-solid-bg);
 }
 
 .tabButton_inactive {
-    background-color: white;
-    color: v.$color-text;
+    background-color: v.$color-surface;
+    color: v.$color-text-muted;
 
     &:hover {
-        background-color: rgba(45, 212, 191, 0.08);
+        background-color: var(--color-accent-soft);
+        color: v.$color-text;
     }
 }
 

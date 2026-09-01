@@ -5,7 +5,7 @@
     padding-bottom: 0.25rem;
     margin-bottom: 1.25rem;
     border-bottom-width: 1px;
-    border-color: #000;
+    border-color: var(--color-border);
     width: 35%;
 }
 
@@ -13,13 +13,13 @@
     font-size: 1.25rem;
     line-height: 1.75rem;
     font-weight: 700;
-    color: #000;
+    color: var(--color-text);
 }
 
 .separator {
     height: 1.25rem;
     width: 1px;
-    background-color: #1F2937;
+    background-color: var(--color-border);
     margin-left: 1rem;
     margin-right: 1rem;
 }

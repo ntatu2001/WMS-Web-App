@@ -20,7 +20,7 @@ import { AiOutlineDownload } from 'react-icons/ai';
 import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
 import styles from './Employees.module.scss';
 
-const errorTextStyle = { color: '#f43f5e', fontSize: '12px', marginTop: '4px' };
+const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
 
 // Employee/GetAllEmployees và Employee/SearchEmployeesByEmployeeId đều hỗ trợ phân trang thật
 // (pageNumber/itemsPerPage), nên duyệt danh sách hay tìm kiếm đều chỉ tải đúng 1 trang.
@@ -489,7 +489,7 @@ const Employees = () => {
             <div className={styles.tableWrapper}>
               {isLoading || isSearching ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "160px" }}>
-                  <ClipLoader size={40} color="#0066CC" />
+                  <ClipLoader size={40} color="var(--color-teal)" />
                 </div>
               ) : filteredData.length === 0 ? (
                 <div className={styles.emptyState}>Không tìm thấy nhân viên phù hợp.</div>

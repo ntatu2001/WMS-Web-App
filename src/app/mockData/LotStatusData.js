@@ -1,10 +1,11 @@
+// Theme-aware via CSS custom properties (see src/common/styles/tokens.css).
 export const lotStatusData = {
-    "Đang thực hiện" : "#1D84C9",
-    "Chờ xử lý" : "#DCA80D",
-    "Hoàn thành" : "#149117",
-    "Đã hủy" : "#F03B28",
-    "Tạm hoãn" : "#DC7010",
-    "Bị chặn" : "#911C0F"
+    "Đang thực hiện" : "var(--status-info)",
+    "Chờ xử lý" : "var(--status-pending)",
+    "Hoàn thành" : "var(--status-success)",
+    "Đã hủy" : "var(--status-error)",
+    "Tạm hoãn" : "var(--status-warning)",
+    "Bị chặn" : "var(--status-critical)"
 };
 
 

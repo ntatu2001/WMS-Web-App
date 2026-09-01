@@ -12,13 +12,14 @@
   align-items: center;
   cursor: pointer;
   padding: 10px;
-  background-color: #fff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 
   border-radius: 4px;
   transition: background-color 0.3s;
 
   &:hover {
-    background-color: #fff;
+    background-color: var(--color-surface-2);
   }
 
   span {
@@ -136,10 +137,11 @@
 
 .modalContent {
   position: relative;
-  background-color: #fff;
+  background-color: var(--color-surface);
+  color: var(--color-text);
   padding: 20px;
   border-radius: 0; // Set corners to square
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
   width: 400px; // Ensure modalContent has a fixed width
   z-index: 1001;
 
@@ -172,8 +174,8 @@
   font-size: 1.5rem; // Increase font size
   font-weight: bold; // Make the text bold
   margin-bottom: 10px; // Add spacing below
-  background-color: #000; // Set background to black
-  color: #fff; // Set text color to white
+  background-color: var(--color-navy);
+  color: #fff;
   padding: 10px; // Add padding for better spacing
   border-radius: 4px; // Optional: Add slight rounding to corners
   width: 100%; // Match the width of the parent container
@@ -191,10 +193,11 @@
 }
 
 .updateAccountModal {
-  background-color: #f9f9f9; // Light gray background
+  background-color: var(--color-surface);
+  color: var(--color-text);
   padding: 20px;
   border-radius: 8px; // Rounded corners
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); // Subtle shadow
+  box-shadow: var(--shadow-md); // Subtle shadow
   width: 400px; // Fixed width
   box-sizing: border-box; // Include padding in width calculation
 }
@@ -209,7 +212,7 @@
 .updateAccountBody {
   font-size: 14px;
   line-height: 1.5;
-  color: #333; // Dark text color
+  color: var(--color-text);
 }
 
 .updateAccountField {
@@ -224,9 +227,11 @@
   input, select, textarea {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ccc; // Light border
+    border: 1px solid var(--color-border);
     border-radius: 4px; // Rounded corners
     font-size: 14px;
+    background-color: var(--color-surface);
+    color: var(--color-text);
   }
 }
 
@@ -244,20 +249,20 @@
     transition: background-color 0.3s;
 
     &.save {
-      background-color: #4caf50; // Green background
+      background-color: var(--status-success);
       color: #fff;
 
       &:hover {
-        background-color: #45a049; // Darker green on hover
+        opacity: 0.9;
       }
     }
 
     &.cancel {
-      background-color: #f44336; // Red background
+      background-color: var(--status-error);
       color: #fff;
 
       &:hover {
-        background-color: #d32f2f; // Darker red on hover
+        opacity: 0.9;
       }
     }
   }
@@ -276,11 +281,12 @@
 .dropdown {
   width: 100%; // Ensure the dropdown fills the parent container
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   font-size: 14px;
+  color: var(--color-text);
   appearance: none; // Remove default dropdown arrow
-  background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 10px center; // Add custom arrow
+  background: var(--color-surface) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 10px center; // Add custom arrow
   background-size: 12px; // Adjust arrow size
   cursor: pointer;
 }

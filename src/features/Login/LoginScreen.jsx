@@ -13,7 +13,7 @@ import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 const BG = styled.div`
   min-height: 100vh;
   width: 100vw;
-  background: #14213d;
+  background: var(--login-bg);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -73,9 +73,9 @@ const StyledInput = styled.input`
   padding: 14px 16px 14px 44px;
   border: none;
   border-radius: 12px;
-  background: #f5f7fa;
+  background: var(--login-field-bg);
   font-size: 1rem;
-  color: #222;
+  color: var(--login-field-text);
   outline: none;
   box-sizing: border-box;
 `;
@@ -129,19 +129,19 @@ const StyledButton = styled(ActionButton)`
   font-size: 1.15rem;
   font-weight: bold;
   border-radius: 12px;
-  background: #2563eb;
+  background: var(--login-primary);
   color: #fff;
   margin-bottom: 24px;
   margin-top: 8px;
   border: none;
   transition: background 0.2s;
   &:hover {
-    background: #1d4ed8;
+    background: var(--login-primary-hover);
   }
 `;
 
 const ErrorMessage = styled.p`
-  color: #f87171;
+  color: var(--status-disconnected);
   text-align: center;
   margin: 12px 0 0 0;
   font-size: 1rem;

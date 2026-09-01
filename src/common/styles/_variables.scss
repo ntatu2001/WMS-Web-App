@@ -1,23 +1,26 @@
 // Shared design tokens for the app-wide UI refresh.
-// Palette matches the already-redesigned Sidebar/Settings (navy + teal),
-// applied to common components so the whole app stays visually consistent.
+// Colors now resolve to CSS custom properties defined in `src/common/styles/tokens.css`
+// so every consumer (~24 *.module.scss files) becomes theme-aware with no further edits.
+// Raw values are kept in comments for reference; the light defaults live in tokens.css.
 
-$color-navy: #0a1830;
-$color-navy-soft: #0e3a45;
-$color-navy-deep: #0c2f3a;
-$color-teal: #2dd4bf;
-$color-teal-dark: #1a6f7a;
+$color-navy: var(--color-navy); // #0a1830
+$color-navy-soft: var(--color-navy-soft); // #0e3a45
+$color-navy-deep: var(--color-navy-deep); // #0c2f3a
+$color-teal: var(--color-teal); // #2dd4bf
+$color-teal-dark: var(--color-teal-dark); // #1a6f7a
 
-$color-bg: #f5f6f8;
-$color-surface: #ffffff;
-$color-border: #e2e5ea;
-$color-text: #1d1f20;
-$color-text-muted: #6b7280;
+$color-bg: var(--color-bg); // #f5f6f8
+$color-surface: var(--color-surface); // #ffffff
+$color-surface-2: var(--color-surface-2); // #f0f2f5
+$color-border: var(--color-border); // #e2e5ea
+$color-text: var(--color-text); // #1d1f20
+$color-text-muted: var(--color-text-muted); // #6b7280
+$color-accent-soft: var(--color-accent-soft);
 
 $radius-sm: 6px;
 $radius-md: 10px;
 $radius-lg: 14px;
 
-$shadow-sm: 0 1px 3px rgba(10, 24, 48, 0.08), 0 1px 2px rgba(10, 24, 48, 0.06);
-$shadow-md: 0 4px 12px rgba(10, 24, 48, 0.1), 0 2px 4px rgba(10, 24, 48, 0.06);
-$shadow-lg: 0 10px 24px rgba(10, 24, 48, 0.14), 0 4px 8px rgba(10, 24, 48, 0.08);
+$shadow-sm: var(--shadow-sm);
+$shadow-md: var(--shadow-md);
+$shadow-lg: var(--shadow-lg);

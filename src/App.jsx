@@ -22,8 +22,10 @@ import Setting from "./features/Setting/presentation/Setting/Setting.jsx";
 import FeatureUnavailable from "./features/Setting/presentation/FeatureUnavailable/FeatureUnavailable.jsx";
 import UserManagement from "./features/Setting/presentation/UserManagement/UserManagement.jsx";
 import Account from "./features/Setting/presentation/Account/Account.jsx";
+import Appearance from "./features/Setting/presentation/Appearance/Appearance.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
+import useApplyTheme, { useResolvedTheme } from "./common/hooks/useApplyTheme.js";
 
 // Backdrop mờ, căn giữa cho các trang con của "Cài đặt" chưa tự lo vị trí hiển thị (Logout, FeatureUnavailable)
 const centeredPanelBackdropStyle = {
@@ -34,11 +36,13 @@ const centeredPanelBackdropStyle = {
   justifyContent: "center",
   padding: "24px",
   boxSizing: "border-box",
-  backgroundColor: "rgba(10, 24, 48, 0.45)",
+  backgroundColor: "var(--color-overlay)",
   zIndex: 5,
 };
 
 function App() {
+  useApplyTheme();
+  const resolvedTheme = useResolvedTheme();
   const isLoading = useSelector((state) => state.app.isLoading);
   const isLogin = useSelector((state) => state.auth.isLogin);
   const roles = useSelector((state) => state.auth.roles);
@@ -63,7 +67,7 @@ function App() {
     <div className="appContainer">
       <GlobalStyle />
       {isLoading && <LoadingPage />}
-      <ToastContainer />
+      <ToastContainer theme={resolvedTheme} />
       <Routes>
         {/* Public routes */}
         <Route
@@ -152,6 +156,12 @@ function App() {
                         <RequireRole roles={["Admin"]}>
                           <UserManagement onCancel={() => navigate(lastAccessedRoute.mainContent)} />
                         </RequireRole>
+                      }
+                    />
+                    <Route
+                      path="appearance"
+                      element={
+                        <Appearance onCancel={() => navigate(lastAccessedRoute.mainContent)} />
                       }
                     />
                   </Routes>

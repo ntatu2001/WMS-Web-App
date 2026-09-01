@@ -97,7 +97,7 @@ const InforIssueModal = ({ data, onClose, position, isLoading }) => {
               height: '200px',
               width: '100%'
             }}>
-              <ClipLoader color="#0089D7" size={40} />
+              <ClipLoader color="var(--color-teal)" size={40} />
             </div>
           ) : (
             <>

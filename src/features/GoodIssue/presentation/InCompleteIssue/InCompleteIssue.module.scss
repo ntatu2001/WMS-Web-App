@@ -9,12 +9,12 @@
     border-top: 3px solid v.$color-teal;
     padding: 14px 16px;
     box-shadow: v.$shadow-sm;
-    background-color: #FFF;
+    background-color: v.$color-surface;
 }
 
 .lotCode {
     font-weight: 700;
-    color: v.$color-navy;
+    color: v.$color-text;
 }
 
 .lotCheckbox {
@@ -26,7 +26,7 @@
     border: 1.5px solid v.$color-teal-dark;
     border-radius: 50%;
     cursor: pointer;
-    background-color: #fff;
+    background-color: v.$color-surface;
 
     &:checked {
         background-color: v.$color-teal-dark;

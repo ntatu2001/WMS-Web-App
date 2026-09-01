@@ -15,7 +15,7 @@ const History = () => {
                      activeTab === 'storelocation' ? "Vị trí lưu trữ" : "Hàng hóa";
 
   return (
-    <div style={{ padding: 0, backgroundColor: '#f5f5f5' }}>
+    <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
       <HeaderContainer>
         <HeaderItem>Danh mục</HeaderItem>
         <Separator />

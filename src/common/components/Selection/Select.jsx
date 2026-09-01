@@ -42,19 +42,44 @@ const Select = ({ children, className = "", style, value, onChange, placeholder,
     menu: (provided) => ({
       ...provided,
       marginTop: '4px', // Ensures dropdown appears below
-      zIndex: 9999
+      zIndex: 9999,
+      backgroundColor: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      backgroundColor: 'var(--color-surface)',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? 'var(--color-teal-dark)'
+        : state.isFocused
+          ? 'var(--color-accent-soft)'
+          : 'var(--color-surface)',
+      color: state.isSelected ? '#fff' : 'var(--color-text)',
+      ':active': { backgroundColor: 'var(--color-accent-soft)' },
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: 'var(--color-text)',
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: 'var(--color-text)',
     }),
     control: (provided, state) => ({
       ...provided,
       minHeight: '40px',
       borderRadius: '6px',
-      border: state.isFocused ? '1px solid #2dd4bf' : '1px solid #e2e5ea',
+      backgroundColor: 'var(--color-surface)',
+      border: state.isFocused ? '1px solid var(--color-teal)' : '1px solid var(--color-border)',
       boxShadow: state.isFocused ? '0 0 0 2px rgba(45, 212, 191, 0.25)' : 'none',
       ...(style || {}) // Apply any custom style passed as prop
     }),
     placeholder: (provided) => ({
       ...provided,
-      color: '#767676'
+      color: 'var(--color-text-muted)'
     })
   };
   

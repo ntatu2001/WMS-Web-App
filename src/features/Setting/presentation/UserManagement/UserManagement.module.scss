@@ -1,7 +1,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(10, 24, 48, 0.45);
+  background-color: var(--color-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,8 +14,9 @@
   width: 820px;
   max-width: 100%;
   max-height: 90vh;
-  background-color: #fff;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -33,13 +34,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 26px 36px;
-  border-bottom: 1px solid oklch(0.92 0.005 250);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
   font-size: 23px;
   font-weight: 800;
-  color: #0e2a3a;
+  color: var(--color-text);
 }
 
 .closeButton {
@@ -50,13 +51,13 @@
   border-radius: 9px;
   cursor: pointer;
   font-size: 20px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
-    background-color: oklch(0.94 0.005 250);
+    background-color: var(--color-accent-soft);
   }
 }
 
@@ -70,13 +71,13 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: oklch(0.965 0.02 200);
-  border: 1px solid oklch(0.9 0.03 200);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 26px;
   font-size: 13.5px;
-  color: #245a63;
+  color: var(--color-text);
   line-height: 1.5;
 }
 
@@ -89,17 +90,17 @@
 .sectionTitle {
   font-size: 15px;
   font-weight: 800;
-  color: #0e2a3a;
+  color: var(--color-text);
   margin-bottom: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid oklch(0.92 0.005 250);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .label {
   display: block;
   font-size: 13.5px;
   font-weight: 700;
-  color: #374151;
+  color: var(--color-text);
   margin-bottom: 7px;
 }
 
@@ -108,12 +109,14 @@
   box-sizing: border-box;
   padding: 12px 14px;
   border-radius: 9px;
-  border: 1.5px solid oklch(0.88 0.005 250);
+  border: 1.5px solid var(--color-border);
   font-size: 14.5px;
   margin-bottom: 18px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 
   &:focus {
-    border-color: #2dd4bf;
+    border-color: var(--color-teal);
   }
 }
 
@@ -131,22 +134,22 @@
   padding: 13px 15px;
   border-radius: 11px;
   cursor: pointer;
-  border: 1.5px solid oklch(0.9 0.005 250);
-  background: #fff;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .roleCardSelected {
-  border-color: #2dd4bf;
-  background: oklch(0.97 0.02 200);
+  border-color: var(--color-teal);
+  background: var(--color-accent-soft);
 }
 
 .roleIconTile {
   width: 38px;
   height: 38px;
   border-radius: 9px;
-  background: oklch(0.94 0.005 250);
-  color: #8a8f98;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,7 +157,7 @@
 }
 
 .roleIconTileSelected {
-  background: #2dd4bf;
+  background: var(--color-teal);
   color: #fff;
 }
 
@@ -165,12 +168,12 @@
 .roleLabel {
   font-size: 14.5px;
   font-weight: 700;
-  color: #0e2a3a;
+  color: var(--color-text);
 }
 
 .roleDesc {
   font-size: 12.5px;
-  color: #8a8f98;
+  color: var(--color-text-muted);
   margin-top: 1px;
 }
 
@@ -178,14 +181,14 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 2px solid oklch(0.85 0.005 250);
+  border: 2px solid var(--color-border);
   background: transparent;
   flex-shrink: 0;
 }
 
 .roleDotSelected {
-  border-color: #2dd4bf;
-  background: #2dd4bf;
+  border-color: var(--color-teal);
+  background: var(--color-teal);
 }
 
 .dropdownContainer {
@@ -198,15 +201,16 @@
   width: 100%;
   box-sizing: border-box;
   appearance: none;
-  background-color: #fff;
-  border: 1.5px solid oklch(0.88 0.005 250);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1.5px solid var(--color-border);
   border-radius: 9px;
   padding: 12px 30px 12px 14px;
   font-size: 14.5px;
   cursor: pointer;
 
   &:focus {
-    border-color: #2dd4bf;
+    border-color: var(--color-teal);
   }
 }
 
@@ -215,7 +219,7 @@
   right: 14px;
   pointer-events: none;
   font-size: 12px;
-  color: #333;
+  color: var(--color-text-muted);
 }
 
 .footer {
@@ -224,21 +228,21 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 36px;
-  border-top: 1px solid oklch(0.92 0.005 250);
+  border-top: 1px solid var(--color-border);
 }
 
 .cancelButton {
   padding: 11px 22px;
   border-radius: 9px;
-  background: oklch(0.94 0.005 250);
-  color: #374151;
+  background: var(--color-surface-2);
+  color: var(--color-text);
   border: none;
   font-weight: 700;
   font-size: 14.5px;
   cursor: pointer;
 
   &:hover {
-    background: oklch(0.9 0.005 250);
+    background: var(--color-border);
   }
 }
 
@@ -262,7 +266,8 @@
   }
 
   &:disabled {
-    background: oklch(0.85 0.03 200);
+    background: var(--color-border);
+    color: var(--color-text-muted);
     box-shadow: none;
     cursor: not-allowed;
   }

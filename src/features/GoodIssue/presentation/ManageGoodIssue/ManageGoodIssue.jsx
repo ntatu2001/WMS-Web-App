@@ -188,8 +188,8 @@ const ManageGoodIssue = () => {
 
   const LoadingSpinner = () => (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-      <ClipLoader color="#3498db" size={60} speedMultiplier={0.8} />
-      <div style={{ marginTop: '15px', fontSize: '20px', color: '#666', fontWeight: 'bold' }}>
+      <ClipLoader color="var(--color-teal)" size={60} speedMultiplier={0.8} />
+      <div style={{ marginTop: '15px', fontSize: '20px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
         Đang tải dữ liệu...
       </div>
     </div>
@@ -377,7 +377,7 @@ const ManageGoodIssue = () => {
                   </tbody>
                 </Table>
               ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: '#666' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--color-text-muted)' }}>
                   {warehouseFilter || appliedSearchTerm ? "Không có lô xuất kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
                 </div>
               )}

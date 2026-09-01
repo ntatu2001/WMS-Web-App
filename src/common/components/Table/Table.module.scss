@@ -13,11 +13,11 @@
     top: 0;
     z-index: 1;
     border-bottom: 2px solid v.$color-border;
-    background-color: v.$color-surface;
+    background-color: v.$color-surface-2;
     padding: 12px 8px;
     text-align: center;
     font-weight: 700;
-    color: v.$color-navy;
+    color: v.$color-text;
     font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -35,7 +35,7 @@
 }
 
 .table tbody tr:hover {
-    background-color: rgba(45, 212, 191, 0.06);
+    background-color: var(--color-accent-soft);
 }
 
 .resizeHandle {
