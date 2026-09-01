@@ -3,6 +3,8 @@ import ActionButton from '../../../../common/components/Button/ActionButton/Acti
 import clsx from 'clsx';
 import styles from './DetailModal.module.scss';
 import { ClipLoader } from 'react-spinners';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { cellStatusLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 
 const STATUS_COLORS = {
     'Đang chứa hàng': '#0089D7',
@@ -12,6 +14,7 @@ const STATUS_COLORS = {
 const getStatusColor = (status) => STATUS_COLORS[status] || 'inherit';
 
 const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
+    const { t } = useTranslation();
     // State for handling draggable functionality
     const [isDragging, setIsDragging] = useState(false);
     const [modalPosition, setModalPosition] = useState({
@@ -125,7 +128,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
             onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling to parent
         >
             <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>Vị trí {data.position}</h3>
+                <h3 className={styles.modalTitle}>{t('storage.modalPosition', { pos: data.position })}</h3>
             </div>
 
             {isLoading ? (
@@ -135,37 +138,37 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
             ) : (
                 <>
                     <div className={styles.infoGrid}>
-                        <span className={styles.infoLabel}>Thiết bị:</span>
+                        <span className={styles.infoLabel}>{t('storage.device')}</span>
                         <span className={styles.infoValue}>{details?.equipmentName}</span>
 
-                        <span className={styles.infoLabel}>Khu vực:</span>
+                        <span className={styles.infoLabel}>{t('storage.zoneLabel')}</span>
                         <span className={styles.infoValue}>{details?.warehouseId}</span>
 
-                        <span className={styles.infoLabel}>Kho hàng:</span>
+                        <span className={styles.infoLabel}>{t('storage.warehouseLabel')}</span>
                         <span className={styles.infoValue}>{details?.warehouseName}</span>
 
-                        <span className={styles.infoLabel}>Kích thước:</span>
+                        <span className={styles.infoLabel}>{t('storage.dimensionsLabel')}</span>
                         <span className={styles.infoValue}>{details?.length}m x {details?.width}m x {details?.height}m</span>
 
-                        <span className={styles.infoLabel}>Tình trạng:</span>
-                        <span className={styles.statusValue} style={{ color: getStatusColor(details?.status) }}>{details?.status}</span>
+                        <span className={styles.infoLabel}>{t('storage.conditionLabel')}</span>
+                        <span className={styles.statusValue} style={{ color: getStatusColor(details?.status) }}>{resolveLabel(cellStatusLabelKey, details?.status, t)}</span>
 
-                        <span className={styles.infoLabel}>Thể tích tối đa:</span>
+                        <span className={styles.infoLabel}>{t('storage.maxVolumeLabel')}</span>
                         <span className={styles.infoValue}>{maxVolume?.toFixed(2)}m³</span>
 
-                        <span className={styles.infoLabel}>Tỷ lệ lấp đầy:</span>
+                        <span className={styles.infoLabel}>{t('storage.fillRate')}</span>
                         <span className={styles.infoValue}>{fillRate.toFixed(2)}%</span>
                     </div>
 
                     {lotInfors.map((lot, index) => (
                         <div className={styles.infoGrid} key={`${lot.lotnumber}-${index}`}>
-                            <span className={styles.infoLabel}>Lô hàng lưu trữ:</span>
+                            <span className={styles.infoLabel}>{t('storage.storedLot')}</span>
                             <span className={styles.infoValue}>{lot.lotnumber}</span>
 
-                            <span className={styles.infoLabel}>Số lượng lưu trữ:</span>
+                            <span className={styles.infoLabel}>{t('storage.storedQty')}</span>
                             <span className={styles.infoValue}>{lot.quantity} {lot.unitOfMeasure}</span>
 
-                            <span className={styles.infoLabel}>Thể tích sử dụng:</span>
+                            <span className={styles.infoLabel}>{t('storage.usedVolume')}</span>
                             <span className={styles.infoValue}>{lot.usedVolume?.toFixed(2)}m³ ({maxVolume ? ((lot.usedVolume / maxVolume) * 100).toFixed(2) : '0.00'}%)</span>
                         </div>
                     ))}
@@ -177,7 +180,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                             onViewDetails();
                         }}
                     >
-                        Xem chi tiết
+                        {t('storage.viewDetails')}
                     </ActionButton>
 
                     <ActionButton
@@ -185,7 +188,7 @@ const DetailModal = ({ data, onClose, position, onViewDetails, isLoading }) => {
                         style={{ width: '100%', margin: '8px 0 0', padding: '14px', fontSize: '14px' }}
                         onClick={handleClose}
                     >
-                        Đóng
+                        {t('common.close')}
                     </ActionButton>
                 </>
             )}

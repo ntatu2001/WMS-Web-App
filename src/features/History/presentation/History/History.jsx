@@ -9,10 +9,12 @@ import Separator from '../../../../common/components/Header/Separator.jsx';
 import ReceiptHistory from '../ReceiptHistory/ReceiptHistory.jsx';
 import IssueHistory from '../IssueHistory/IssueHistory.jsx';
 import InventoryHistory from '../InventoryHistory/InventoryHistory.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const VALID_TABS = ['receipt', 'issue', 'inventory'];
 
 const History = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   // Đồng bộ tab đang chọn với query param ?tab= trên URL để reload trang vẫn giữ
   // đúng tab thay vì luôn quay về "Lịch sử nhập kho".
@@ -24,13 +26,13 @@ const History = () => {
     setActiveTabState(tab);
     setSearchParams({ tab }, { replace: true });
   };
-  const headerText = activeTab === 'receipt' ? "Lịch sử nhập kho" :
-                     activeTab === 'issue' ? "Lịch sử xuất kho" : "Lịch sử kiểm kê";
+  const headerText = activeTab === 'receipt' ? t('history.tabReceipt') :
+                     activeTab === 'issue' ? t('history.tabIssue') : t('history.tabInventory');
 
   return (
     <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
       <HeaderContainer>
-        <HeaderItem>Lịch sử</HeaderItem>
+        <HeaderItem>{t('history.heading')}</HeaderItem>
         <Separator />
         <HeaderItem>{headerText}</HeaderItem>
       </HeaderContainer>
@@ -40,19 +42,19 @@ const History = () => {
           active={activeTab === 'receipt'}
           onClick={() => setActiveTab('receipt')}
         >
-          Lịch sử nhập kho
+          {t('history.tabReceipt')}
         </TabButton>
         <TabButton
           active={activeTab === 'issue'}
           onClick={() => setActiveTab('issue')}
         >
-          Lịch sử xuất kho
+          {t('history.tabIssue')}
         </TabButton>
         <TabButton
           active={activeTab === 'inventory'}
           onClick={() => setActiveTab('inventory')}
         >
-          Lịch sử kiểm kê
+          {t('history.tabInventory')}
         </TabButton>
       </TabContainer>
 

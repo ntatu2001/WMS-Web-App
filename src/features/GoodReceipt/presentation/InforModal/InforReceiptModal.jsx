@@ -7,8 +7,11 @@ import styles from './InforReceiptModal.module.scss';
 import Label from "../../../../common/components/Label/Label";
 import { ClipLoader } from 'react-spinners';
 import { storageLevel } from '../../../../app/mockData/StorageLevelData.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { cellStatusLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 
 const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
+    const { t } = useTranslation();
     // State for handling draggable functionality
     const [isDragging, setIsDragging] = useState(false);
     const [modalPosition, setModalPosition] = useState({ 
@@ -80,7 +83,7 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
             onMouseDown={handleMouseDown}
         >
           <div className="flex justify-center items-center w-full">
-            <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>Vị trí {data.position}</SectionTitle>
+            <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>{t('storage.modalPosition', { pos: data.position })}</SectionTitle>
             <button 
               onClick={handleClose}
               className={clsx(styles.modalClose)}
@@ -104,27 +107,27 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
               <div style={{justifyItems: "center", marginRight: "7%", marginTop: "7%"}} >
                 <div style={{marginBottom: "5%", width: "100%"}}>
                       <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
-                                <Label>Mã lô:</Label>
+                                <Label>{t('storage.modalLot')}</Label>
                                  <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails.lotNumber}</span>
                       </div>
                       <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
-                        <Label>Số lượng:</Label>
+                        <Label>{t('storage.modalQty')}</Label>
                         <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{data.selectedDetails.quantity}</span>
                       </div>
 
                       <div style={{display: "flex", marginLeft: "7%",justifyContent: "space-between"}}>
-                                <Label>Trạng thái:</Label>
-                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%", color: data.selectedDetails?.status === "Đang chứa hàng" ? "#0089D7" : 
+                                <Label>{t('storage.modalStatus')}</Label>
+                                 <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%", color: data.selectedDetails?.status === "Đang chứa hàng" ? "#0089D7" :
                                     data.selectedDetails?.status === "Được phân bổ" ? "#FF2115" : "#00294D"
-                                 }}>{data.selectedDetails?.status}</span>
+                                 }}>{resolveLabel(cellStatusLabelKey, data.selectedDetails?.status, t)}</span>
                       </div>
                       <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
-                                <Label style={{width: "50%"}}>Tỷ lệ lưu trữ:</Label>
+                                <Label style={{width: "50%"}}>{t('storage.modalStorageRate')}</Label>
                                  <span style={{ fontSize: "14px", fontWeight: 600, marginTop : "1%"}}>{(data.selectedDetails?.storagePercentage * 100).toFixed(2)}%</span>
                       </div>
                       {data.selectedDetails?.storageLevel && (
                         <div style={{display: "flex", marginLeft: "7%", justifyContent: "space-between"}}>
-                          <Label style={{width: "60%"}}>Giới hạn tầng lưu trữ:</Label>
+                          <Label style={{width: "60%"}}>{t('storage.modalStorageLevelLimit')}</Label>
                           <span style={{
                                           backgroundColor: storageLevel[data.selectedDetails?.storageLevel],
                                           color: "white",
@@ -132,7 +135,7 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
                                           fontSize: "14px",
                                           padding: "4px 8px",
                                           borderRadius: "4px",
-                                          }}> Tầng {data.selectedDetails?.storageLevel}
+                                          }}> {t('storage.modalFloor', { n: data.selectedDetails?.storageLevel })}
                           </span>
                         </div>
                       )}

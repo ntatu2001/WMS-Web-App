@@ -21,13 +21,15 @@ import "react-toastify/dist/ReactToastify.css";
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import { AiOutlineDownload } from 'react-icons/ai';
 import { exportIssueEntriesToExcel } from '../../utils/exportIssueEntriesExcel.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { formatDate } from '../../../../common/i18n/format';
 
 const PERIOD_OPTIONS = [
-  { value: 'today', label: 'Hôm nay' },
-  { value: 'week', label: 'Tuần' },
-  { value: 'month', label: 'Tháng' },
-  { value: 'year', label: 'Năm' },
-  { value: 'all', label: 'Tất cả' },
+  { value: 'today', labelKey: 'issue.periodToday' },
+  { value: 'week', labelKey: 'issue.periodWeek' },
+  { value: 'month', labelKey: 'issue.periodMonth' },
+  { value: 'year', labelKey: 'issue.periodYear' },
+  { value: 'all', labelKey: 'issue.periodAll' },
 ];
 
 // Khoảng thời gian (fromDate -> toDate) tương ứng với lựa chọn period, gửi lên
@@ -50,6 +52,7 @@ const searchButtonStyle = { margin: 0, width: 'auto', padding: '8px 20px', fontS
 const PAGE_SIZE = 5;
 
 const ManageGoodIssue = () => {
+  const { t, lang } = useTranslation();
   const [issueEntries, setIssueEntries] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -109,24 +112,25 @@ const ManageGoodIssue = () => {
       }
 
       if (!rows.length) {
-        toast.info('Không có lô hàng nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        toast.info(t('issue.noLotToExport'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
       const p2 = (x) => String(x).padStart(2, '0');
       const n = new Date();
       const stamp = `${n.getFullYear()}${p2(n.getMonth() + 1)}${p2(n.getDate())}_${p2(n.getHours())}${p2(n.getMinutes())}`;
+      const periodOpt = PERIOD_OPTIONS.find(o => o.value === period);
       const scope = appliedSearchTerm
-        ? 'tim_kiem'
-        : (PERIOD_OPTIONS.find(o => o.value === period)?.label || period);
+        ? t('issue.exportScopeSearch')
+        : (periodOpt ? t(periodOpt.labelKey) : period);
       const whPart = warehouseFilter ? `_${warehouseFilter}` : '';
       const filename = `Lo_xuat_kho_${scope}${whPart}_${stamp}.xlsx`.replace(/\s+/g, '_');
 
-      await exportIssueEntriesToExcel(rows, filename);
-      toast.success(`Đã xuất ${rows.length} lô ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+      await exportIssueEntriesToExcel(rows, filename, lang);
+      toast.success(t('issue.exportedLots', { count: rows.length }), { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       console.error('Export excel error:', error);
-      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+      toast.error(t('issue.exportFailRetry'), { position: 'top-right', autoClose: 3000 });
     } finally {
       setExporting(false);
     }
@@ -190,7 +194,7 @@ const ManageGoodIssue = () => {
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
       <ClipLoader color="var(--color-teal)" size={60} speedMultiplier={0.8} />
       <div style={{ marginTop: '15px', fontSize: '20px', color: 'var(--color-text-muted)', fontWeight: 'bold' }}>
-        Đang tải dữ liệu...
+        {t('issue.loadingData')}
       </div>
     </div>
   );
@@ -225,7 +229,7 @@ const ManageGoodIssue = () => {
       // Backend có thể trả về false (từ chối do vi phạm điều kiện nghiệp vụ) mà không ném lỗi HTTP,
       // nên phải kiểm tra giá trị trả về trước khi coi là thành công.
       if (success === false) {
-        toast.error("Không thể cập nhật trạng thái lô này. Có thể lô chưa đủ điều kiện để hoàn thành.", {
+        toast.error(t('issue.statusUpdateRejected'), {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -250,7 +254,7 @@ const ManageGoodIssue = () => {
         }
         return entry;
       }));
-      toast.success("Cập nhật trạng thái lô thành công!", {
+      toast.success(t('issue.statusUpdateOk'), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -262,7 +266,7 @@ const ManageGoodIssue = () => {
       return true;
     } catch (error) {
       console.error("Error updating issue lot status:", error);
-      toast.error("Cập nhật trạng thái lô thất bại!", {
+      toast.error(t('issue.statusUpdateFail'), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -284,9 +288,9 @@ const ManageGoodIssue = () => {
               <Select
                 value={warehouseFilter}
                 onChange={(e) => setWarehouseFilter(e.target.value)}
-                placeholder="Tất cả kho hàng"
+                placeholder={t('issue.allWarehouses')}
               >
-                <option value="">Tất cả kho hàng</option>
+                <option value="">{t('issue.allWarehouses')}</option>
                 {uniqueWarehouseNames.map((warehouseName, index) => (
                   <option key={`filter-warehouse-${index}`} value={warehouseName}>
                     {warehouseName}
@@ -295,20 +299,20 @@ const ManageGoodIssue = () => {
               </Select>
             </SelectContainer>
             <SearchInput
-              placeholder="Tìm mã lô / tên sản phẩm"
+              placeholder={t('issue.searchLotOrProduct')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               style={{ marginBottom: 0, marginLeft: 0, flex: 1 }}
             />
             <ActionButton onClick={handleSearch} style={searchButtonStyle}>
-              Tìm kiếm
+              {t('common.search')}
             </ActionButton>
           </ListSection>
 
           <ListSection elevated>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <HeaderItem>Lô xuất kho</HeaderItem>
+              <HeaderItem>{t('issue.lotInfoTitle')}</HeaderItem>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {PERIOD_OPTIONS.map((opt) => (
@@ -319,18 +323,18 @@ const ManageGoodIssue = () => {
                       onClick={() => setPeriod(opt.value)}
                       style={periodButtonStyle}
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </ActionButton>
                   ))}
                 </div>
-                <Tag variant="accent">{totalItems} lô</Tag>
+                <Tag variant="accent">{t('issue.lotCount', { count: totalItems })}</Tag>
                 <ActionButton
                   variant="secondary"
                   onClick={handleExportExcel}
                   disabled={exporting || loading || totalItems === 0}
                   style={{ margin: 0, width: 'auto', padding: '8px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <AiOutlineDownload size={16} /> {exporting ? 'Đang xuất...' : 'Xuất file Excel'}
+                  <AiOutlineDownload size={16} /> {exporting ? t('issue.exporting') : t('issue.exportExcel')}
                 </ActionButton>
               </div>
             </div>
@@ -341,14 +345,14 @@ const ManageGoodIssue = () => {
                 <Table>
                   <thead>
                     <tr>
-                      <TableHeader style={{width: "6%"}}>STT</TableHeader>
-                      <TableHeader style={{width: "15%"}}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{width: "8%"}}>Mã sản phẩm</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{width: "8%"}}>Số lượng xuất</TableHeader>
-                      <TableHeader style={{width: "12%"}}>Ngày xuất kho</TableHeader>
-                      <TableHeader style={{width: "10%"}}>Kho hàng</TableHeader>
-                      <TableHeader style={{width: "12%"}}>Tiến độ</TableHeader>
+                      <TableHeader style={{width: "6%"}}>{t('issue.colNo')}</TableHeader>
+                      <TableHeader style={{width: "15%"}}>{t('issue.colProductName')}</TableHeader>
+                      <TableHeader style={{width: "8%"}}>{t('issue.colProductId')}</TableHeader>
+                      <TableHeader style={{width: "10%"}}>{t('issue.colLotOrPo')}</TableHeader>
+                      <TableHeader style={{width: "8%"}}>{t('issue.colIssueQtyManage')}</TableHeader>
+                      <TableHeader style={{width: "12%"}}>{t('issue.colIssueDate')}</TableHeader>
+                      <TableHeader style={{width: "10%"}}>{t('issue.colWarehouse')}</TableHeader>
+                      <TableHeader style={{width: "12%"}}>{t('issue.colProgress')}</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -359,7 +363,7 @@ const ManageGoodIssue = () => {
                         <TableCell>{item.materialId}</TableCell>
                         <TableCell>{item.lotNumber}</TableCell>
                         <TableCell>{item.issueLot?.requestedQuantity}</TableCell>
-                        <TableCell>{new Date(item.issueDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{formatDate(item.issueDate, lang)}</TableCell>
                         <TableCell>{item.warehouseName}</TableCell>
                         <TableCell style={{ textAlign: 'center' }}>
                           {item.issueLot && (
@@ -378,7 +382,7 @@ const ManageGoodIssue = () => {
                 </Table>
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--color-text-muted)' }}>
-                  {warehouseFilter || appliedSearchTerm ? "Không có lô xuất kho phù hợp." : "Không có dữ liệu trong khoảng thời gian đã chọn"}
+                  {warehouseFilter || appliedSearchTerm ? t('issue.noMatchingLot') : t('issue.noDataInPeriod')}
                 </div>
               )}
             </div>
@@ -388,7 +392,7 @@ const ManageGoodIssue = () => {
                 totalItems={totalItems}
                 pageSize={PAGE_SIZE}
                 onPageChange={setPage}
-                itemLabel="lô"
+                itemLabel={t('issue.itemLabelLot')}
               />
             )}
           </ListSection>

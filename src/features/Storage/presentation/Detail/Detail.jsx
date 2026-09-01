@@ -12,6 +12,9 @@ import Image from '../../../../assets/image.png';
 import locationApi from '../../../../api/locationApi';
 import materiaLotApi from '../../../../api/materiaLotApi.js';
 import materialApi from '../../../../api/materialApi.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { formatDate } from '../../../../common/i18n/format';
+import { cellStatusLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 import styles from './Detail.module.scss';
 
 const STATUS_COLORS = {
@@ -22,6 +25,7 @@ const STATUS_COLORS = {
 const getStatusColor = (status) => STATUS_COLORS[status] || '#98989b';
 
 const Detail = ({ data, activeTab }) => {
+    const { t, lang } = useTranslation();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedDate1, setSelectedDate1] = useState(null);
     const [stockLocationHistories, setStockLocationHistories] = useState([]);
@@ -144,23 +148,23 @@ const Detail = ({ data, activeTab }) => {
         <div className={styles.page} ref={pageRef}>
             <div className={styles.headerRow}>
                 <div className={styles.headerLeft}>
-                    <button className={styles.backButton} onClick={() => activeTab('storage')} aria-label="Quay lại">
+                    <button className={styles.backButton} onClick={() => activeTab('storage')} aria-label={t('storage.back')}>
                         <AiFillCaretLeft />
                     </button>
                     <HeaderContainer style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                        <HeaderItem>Lưu trữ</HeaderItem>
+                        <HeaderItem>{t('storage.heading')}</HeaderItem>
                         <Separator />
-                        <HeaderItem>Chi tiết vị trí lưu trữ</HeaderItem>
+                        <HeaderItem>{t('storage.detailHeading')}</HeaderItem>
                     </HeaderContainer>
                 </div>
 
                 <div className={styles.dateFilters}>
                     <div className={styles.filterField}>
-                        <span className={styles.filterLabel}>Từ ngày</span>
+                        <span className={styles.filterLabel}>{t('storage.fromDate')}</span>
                         <DateInput selectedDate={selectedDate} onChange={setSelectedDate} />
                     </div>
                     <div className={styles.filterField}>
-                        <span className={styles.filterLabel}>Đến ngày</span>
+                        <span className={styles.filterLabel}>{t('storage.toDate')}</span>
                         <DateInput selectedDate={selectedDate1} onChange={setSelectedDate1} />
                     </div>
                 </div>
@@ -168,67 +172,67 @@ const Detail = ({ data, activeTab }) => {
 
             <div className={styles.content}>
                 <div className={styles.infoCard}>
-                    <h2 className={styles.infoTitle}>Vị trí {data.position}</h2>
+                    <h2 className={styles.infoTitle}>{t('storage.modalPosition', { pos: data.position })}</h2>
 
-                    <img src={Image} alt="Thiết bị lưu trữ" className={styles.photo} />
+                    <img src={Image} alt={t('storage.storageEquipmentAlt')} className={styles.photo} />
 
                     <div className={styles.infoGrid}>
-                        <span className={styles.infoLabel}>Thiết bị:</span>
+                        <span className={styles.infoLabel}>{t('storage.device')}</span>
                         <span className={styles.infoValue}>{details?.equipmentName}</span>
 
-                        <span className={styles.infoLabel}>Khu vực:</span>
+                        <span className={styles.infoLabel}>{t('storage.zoneLabel')}</span>
                         <span className={styles.infoValue}>{details?.warehouseId}</span>
 
-                        <span className={styles.infoLabel}>Kho hàng:</span>
+                        <span className={styles.infoLabel}>{t('storage.warehouseLabel')}</span>
                         <span className={styles.infoValue}>{details?.warehouseName}</span>
 
-                        <span className={styles.infoLabel}>Kích thước:</span>
+                        <span className={styles.infoLabel}>{t('storage.dimensionsLabel')}</span>
                         <span className={styles.infoValue}>{details?.length}m x {details?.width}m x {details?.height}m</span>
 
-                        <span className={styles.infoLabel}>Tình trạng:</span>
+                        <span className={styles.infoLabel}>{t('storage.conditionLabel')}</span>
                         <span className={styles.statusTag} style={{ backgroundColor: getStatusColor(details?.status) }}>
-                            {details?.status}
+                            {resolveLabel(cellStatusLabelKey, details?.status, t)}
                         </span>
 
-                        <span className={styles.infoLabel}>Tỷ lệ lưu trữ:</span>
+                        <span className={styles.infoLabel}>{t('storage.storageRateLabel')}</span>
                         <span className={styles.infoValue}>{storageRate.toFixed(2)}%</span>
                     </div>
 
                     {hasStock && (
                         <div className={styles.infoGrid}>
-                            <span className={styles.infoLabel}>Lô hàng lưu trữ:</span>
+                            <span className={styles.infoLabel}>{t('storage.storedLot')}</span>
                             <span className={styles.infoValue}>{selectedLot?.lotnumber}</span>
 
-                            <span className={styles.infoLabel}>Số lượng lưu trữ:</span>
+                            <span className={styles.infoLabel}>{t('storage.storedQty')}</span>
                             <span className={styles.infoValue}>{selectedLot?.quantity}</span>
 
-                            <span className={styles.infoLabel}>Thể tích sử dụng:</span>
+                            <span className={styles.infoLabel}>{t('storage.usedVolume')}</span>
                             <span className={styles.infoValue}>{usableVolume >= maxVolume ? maxVolume?.toFixed(2) : usableVolume?.toFixed(2)}</span>
 
-                            <span className={styles.infoLabel}>Thể tích tối đa:</span>
+                            <span className={styles.infoLabel}>{t('storage.maxVolumeLabel')}</span>
                             <span className={styles.infoValue}>{maxVolume?.toFixed(2)}</span>
                         </div>
                     )}
                 </div>
 
                 <div className={styles.historyCard}>
-                    <h2 className={styles.historyTitle}>Lịch sử lưu trữ</h2>
+                    <h2 className={styles.historyTitle}>{t('storage.storageHistory')}</h2>
 
                     {displayedRows.length === 0 ? (
-                        <div className={styles.emptyState}>Không có lịch sử lưu trữ trong khoảng thời gian đã chọn.</div>
+                        <div className={styles.emptyState}>{t('storage.noHistory')}</div>
                     ) : (
                         <div className={styles.tableWrapper}>
                             <Table className={styles.tableInner}>
                                 <thead>
                                     <tr>
-                                        <TableHeader style={{ width: '5%' }}>STT</TableHeader>
-                                        <TableHeader style={{ width: '30%' }}>Sản phẩm</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Lô hàng</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Số lượng nhập</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Số lượng xuất</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Số lượng tồn</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Ngày nhập</TableHeader>
-                                        <TableHeader style={{ width: '10%' }}>Ngày xuất</TableHeader>
+                                        <TableHeader style={{ width: '5%' }}>{t('storage.colNo')}</TableHeader>
+                                        <TableHeader style={{ width: '30%' }}>{t('storage.colProduct')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colLot')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colInQty')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colOutQty')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colOnHandQty')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colInDate')}</TableHeader>
+                                        <TableHeader style={{ width: '10%' }}>{t('storage.colOutDate')}</TableHeader>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -240,8 +244,8 @@ const Detail = ({ data, activeTab }) => {
                                             <TableCell>{item.inboundQuantity}</TableCell>
                                             <TableCell>{item.outboundQuantity}</TableCell>
                                             <TableCell>{item.availableQuantity}</TableCell>
-                                            <TableCell>{item.receiptDate ? new Date(item.receiptDate).toLocaleDateString() : '--'}</TableCell>
-                                            <TableCell>{item.issueDate ? new Date(item.issueDate).toLocaleDateString() : '--'}</TableCell>
+                                            <TableCell>{item.receiptDate ? formatDate(item.receiptDate, lang) : '--'}</TableCell>
+                                            <TableCell>{item.issueDate ? formatDate(item.issueDate, lang) : '--'}</TableCell>
                                         </tr>
                                     ))}
                                 </tbody>

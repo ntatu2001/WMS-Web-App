@@ -4,16 +4,17 @@ import HeaderContainer from '../../../../common/components/Header/HeaderContaine
 import HeaderItem from '../../../../common/components/Header/HeaderItem.jsx';
 import Separator from '../../../../common/components/Header/Separator.jsx';
 import RequestLotAdjustment from '../AdjustmentRequest/LotAdjustmentRequest.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const LotAdjustment = () => {
-    const headerText = 'Yêu cầu kiểm kê';
+    const { t } = useTranslation();
 
     return (
         <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
             <HeaderContainer>
-                <HeaderItem>Kiểm kê</HeaderItem>
+                <HeaderItem>{t('inventory.heading')}</HeaderItem>
                 <Separator />
-                <HeaderItem>{headerText}</HeaderItem>
+                <HeaderItem>{t('inventory.requestHeading')}</HeaderItem>
             </HeaderContainer>
 
             <RequestLotAdjustment />

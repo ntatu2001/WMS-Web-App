@@ -15,6 +15,7 @@ import ManageGoodReceipt from '../ManageGoodReceipt/ManageGoodReceipt.jsx';
 import InCompleteReceipt from '../InCompleteReceipt/InCompleteReceipt.jsx';
 import ReceiptDistribution from '../InCompleteReceipt/ReceiptDistribution/ReceiptDistribution.jsx'
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const headerActionButtonStyle = {
   borderRadius: "6px",
@@ -31,6 +32,7 @@ const headerActionButtonStyle = {
 };
 
 const GoodReceipt = () => {
+  const { t } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
   const canManage = roles.includes('Manager') || roles.includes('Admin');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -53,9 +55,9 @@ const GoodReceipt = () => {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isComingFromViewResult, setIsComingFromViewResult] = useState(false);
   
-  const headerText = activeTab === 'create' ? "Tạo phiếu nhập kho" :
-                     activeTab === 'manage' ? "Quản lý nhập kho" :
-                     activeTab === 'viewResult' ? "Kết quả phân bố vị trí lưu kho" : "Nhập kho chưa hoàn thành"
+  const headerText = activeTab === 'create' ? t('receipt.tabCreate') :
+                     activeTab === 'manage' ? t('receipt.tabManage') :
+                     activeTab === 'viewResult' ? t('receipt.viewResultTitle') : t('receipt.tabIncomplete')
   
   // Reference to store the fetchReceiptDetailScheduling function
   const fetchReceiptDetailSchedulingRef = useRef(null);
@@ -123,7 +125,7 @@ const GoodReceipt = () => {
     <div style={{ backgroundColor: 'var(--color-bg)' }}>
         <div style={{display: "flex", width: "100%", alignItems: "center"}}>
             <HeaderContainer>
-                <HeaderItem>Nhập kho</HeaderItem>
+                <HeaderItem>{t('receipt.heading')}</HeaderItem>
                 <Separator />
                 <HeaderItem>{headerText}</HeaderItem>
             </HeaderContainer>
@@ -136,7 +138,7 @@ const GoodReceipt = () => {
                   onClick={handleReceiptDistributionClick}
                   style={headerActionButtonStyle}
                 >
-                  <BiCube size={18} /> Phân bố vị trí lưu kho
+                  <BiCube size={18} /> {t('receipt.btnDistribute')}
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
@@ -144,7 +146,7 @@ const GoodReceipt = () => {
                   onClick={handleViewResultClick}
                   style={headerActionButtonStyle}
                 >
-                  <AiOutlineAppstore size={18} /> Xem kết quả phân bổ
+                  <AiOutlineAppstore size={18} /> {t('receipt.btnViewResult')}
                 </ActionButton>
                 <ActionButton
                   variant="secondary"
@@ -152,7 +154,7 @@ const GoodReceipt = () => {
                   disabled={isApproving}
                   style={headerActionButtonStyle}
                 >
-                  <FaCheckCircle size={16} /> Duyệt danh sách nhập kho
+                  <FaCheckCircle size={16} /> {t('receipt.btnApprove')}
                 </ActionButton>
             </div>
           )}
@@ -165,16 +167,16 @@ const GoodReceipt = () => {
                   active={activeTab === 'create'}
                   onClick={() => setActiveTab('create')}
                 >
-                  Tạo phiếu nhập kho
+                  {t('receipt.tabCreate')}
                 </TabButton>
-                
+
                 {canManage && (
                   <>
                     <TabButton
                       active={activeTab === 'incomplete'}
                       onClick={handleIncompleteTabClick}  // Changed this line
                     >
-                      Nhập kho chưa hoàn thành
+                      {t('receipt.tabIncomplete')}
                     </TabButton>
 
 
@@ -182,7 +184,7 @@ const GoodReceipt = () => {
                       active={activeTab === 'manage'}
                       onClick={() => setActiveTab('manage')}
                     >
-                      Quản lý nhập kho
+                      {t('receipt.tabManage')}
                     </TabButton>
                   </>
                 )}

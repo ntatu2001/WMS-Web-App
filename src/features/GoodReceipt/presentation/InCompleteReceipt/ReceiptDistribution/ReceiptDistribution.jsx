@@ -6,9 +6,11 @@ import { ClipLoader } from 'react-spinners';
 import schedulingApi from '../../../../../api/schedulingApi.js';
 import InforReceiptModal from './../../InforModal/InforReceiptModal.jsx';
 import Tag from '../../../../../common/components/Tag/Tag.jsx';
+import useTranslation from '../../../../../common/hooks/useTranslation';
 import styles from './ReceiptDistribution.module.scss';
 
 const ReceiptDistribution = ({warehouseId, isActive}) => {
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [dataTable, setDataTable] = useState({});
     const [dataFetched, setDataFetched] = useState(false);
@@ -566,25 +568,25 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                 <div className={styles.wrapper}>
                     {/* Legend */}
                     <div className={styles.legend}>
-                        <span className={styles.legendKicker}>Chú giải:</span>
+                        <span className={styles.legendKicker}>{t('storage.distLegendTitle')}</span>
                         <div className={styles.legendRow}>
                             <div className={styles.legendSwatch} style={{ backgroundColor: '#0089D7' }}></div>
-                            <span>Đang chứa hàng</span>
+                            <span>{t('storage.distInUse')}</span>
                         </div>
 
                         <div className={styles.legendRow}>
                             <div className={styles.legendSwatch} style={{ backgroundColor: '#00294D' }}></div>
-                            <span>Đã đầy</span>
+                            <span>{t('storage.distFull')}</span>
                         </div>
 
                         <div className={styles.legendRow}>
                             <div className={styles.legendSwatch} style={{ backgroundColor: '#FF2115' }}></div>
-                            <span>Được phân bổ</span>
+                            <span>{t('storage.distAllocated')}</span>
                         </div>
 
                         <div className={styles.legendRow}>
                             <div className={styles.legendSwatch} style={{ backgroundColor: 'var(--color-surface)' }}></div>
-                            <span>Đang trống</span>
+                            <span>{t('storage.distEmpty')}</span>
                         </div>
                     </div>
 
@@ -609,7 +611,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
                                 return (
                                     <div key={sectionId} className={styles.zoneCard}>
                                         <div className={styles.zoneCardHeader}>
-                                            <span className={styles.zoneKicker}>Khu vực</span>
+                                            <span className={styles.zoneKicker}>{t('storage.distZone')}</span>
                                             <h2 className={styles.zoneTitle}>{parentSection}</h2>
                                         </div>
 
@@ -625,7 +627,7 @@ const ReceiptDistribution = ({warehouseId, isActive}) => {
 
                                                     return (
                                                         <div key={rackKey} className={styles.rack}>
-                                                            <Tag variant="neutral" className={styles.rackLabel}>Dãy kệ {rackNumber}</Tag>
+                                                            <Tag variant="neutral" className={styles.rackLabel}>{t('storage.distRack', { n: rackNumber })}</Tag>
 
                                                             <div className={styles.rackGrid} style={{ gridTemplateColumns: '1fr 34px' }}>
                                                                 {isFirstRack && (

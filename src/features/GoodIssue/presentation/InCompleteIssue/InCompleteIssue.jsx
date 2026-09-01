@@ -24,8 +24,10 @@ import schedulingApi from '../../../../api/schedulingApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import issueSubLotApi from '../../../../api/issueSubLotApi.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewResult, onApproveButtonClick, onUpdatingChange }) => {
+    const { t } = useTranslation();
 
     const [issueLots, setIssueLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -102,7 +104,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                 issueLotId: item.issueLotId || "",
             }));
             setUpdatedItems(initialUpdatedItems);
-            toast.success("Thực hiện giải thuật thành công!", {
+            toast.success(t('issue.algoOk'), {
                             position: "top-right",
                             autoClose: 3000,
                             hideProgressBar: false,
@@ -114,7 +116,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
         } catch {
-                       toast.error("Thực hiện giải thuật thất bại", {
+                       toast.error(t('issue.algoFail'), {
                            position: "top-right",
                            autoClose: 3000,
                            hideProgressBar: false,
@@ -287,7 +289,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                 }
             });
 
-            toast.success("Duyệt danh sách xuất kho thành công!", {
+            toast.success(t('issue.approveListOk'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -308,7 +310,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
             schedulingFetchedRef.current = {};
         } catch (error) {
             console.error("Error updating issue sublots:", error);
-            toast.error("Duyệt thất bại", {
+            toast.error(t('issue.approveFail'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -327,14 +329,14 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
             <ContentContainer style={{maxHeight: "700px"}}>
                 <FormSection style={{height: "100%", display: "flex", flexDirection: "column", flex: "0 0 380px", width: "380px"}}>
                     <FormGroup>
-                        <Label style={{fontWeight: "bold"}}>Kho hàng:</Label>
+                        <Label style={{fontWeight: "bold"}}>{t('issue.warehouse')}</Label>
                         <SelectContainer>
                             <Select
                                 value={selectedWarehouse}
                                 onChange={handleWarehouseChange}
                                 required
                             >
-                                <option value="" disabled selected>Chọn loại kho hàng</option>
+                                <option value="" disabled selected>{t('issue.selectWarehouseType')}</option>
                                 {warehouses.map((warehouse, index) => (
                                     <option key={`warehouse-${index}`} value={warehouse.warehouseId}>
                                         {getWarehouseLabel(warehouse)}
@@ -345,8 +347,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                     </FormGroup>
 
                     <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 10px"}}>
-                        <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>Danh sách lô xuất kho</SectionTitle>
-                        <Tag variant="neutral">{checkedLotIds.size}/{filteredIssueLots.length} lô</Tag>
+                        <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>{t('issue.lotListTitle')}</SectionTitle>
+                        <Tag variant="neutral">{t('issue.lotCountSel', { checked: checkedLotIds.size, total: filteredIssueLots.length })}</Tag>
                     </div>
 
                     <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
@@ -365,23 +367,23 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                                             className={styles.lotCheckbox}
                                             checked={checkedLotIds.has(item.issueLotId)}
                                             onChange={() => toggleLotChecked(item.issueLotId)}
-                                            aria-label={`Chọn lô ${item.lotNumber}`}
+                                            aria-label={t('issue.selectLotAria', { id: item.lotNumber })}
                                         />
                                         <span className={clsx(styles.lotCode)} style={{fontSize: "14px"}}>{item.lotNumber}</span>
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Sản phẩm:</LabelSmallSize>
+                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>{t('issue.incProduct')}</LabelSmallSize>
                                         <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500, textAlign: "right"}}>{item.materialName}</span>
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize>Mã sản phẩm:</LabelSmallSize>
+                                        <LabelSmallSize>{t('issue.incProductId')}</LabelSmallSize>
                                         <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialId}</span>
                                     </div>
 
                                     <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Số lượng xuất kho:</LabelSmallSize>
+                                        <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>{t('issue.incIssueQty')}</LabelSmallSize>
                                         <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.requestedQuantity}</span>
                                     </div>
                                 </div>
@@ -392,9 +394,9 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
 
                 <ListSection elevated style={{ height: "100%", display: "flex", flexDirection: "column", flex: "1 1 auto", minWidth: 0 }}>
                     <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                        <SectionTitle style={{marginBottom: 0}}>Kết quả phân bổ vị trí lấy hàng cho các lô xuất kho</SectionTitle>
+                        <SectionTitle style={{marginBottom: 0}}>{t('issue.allocResultTitle')}</SectionTitle>
                         <Tag variant="accent">
-                            Tổng SL lấy: {updatedItems.reduce((sum, item) => sum + (Number(item.requestedQuantity) || 0), 0)}
+                            {t('issue.totalPickQty', { count: updatedItems.reduce((sum, item) => sum + (Number(item.requestedQuantity) || 0), 0) })}
                         </Tag>
                     </div>
 
@@ -405,18 +407,18 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                             </div>
                         ) : updatedItems.length === 0 ? (
                             <div className={styles.emptyState}>
-                                Chưa có kết quả phân bổ. Nhấn "Phân bố vị trí lấy hàng" để bắt đầu.
+                                {t('issue.noAllocResult')}
                             </div>
                         ) : (
                             <Table style={{ minWidth: '900px' }}>
                                 <thead>
                                     <tr>
-                                        <TableHeader style={{ width: '48px' }}>STT</TableHeader>
-                                        <TableHeader style={{ width: '140px' }}>Vị trí lưu trữ</TableHeader>
-                                        <TableHeader style={{ width: '100px' }}>Mã lô</TableHeader>
-                                        <TableHeader style={{ width: '260px' }}>Tên sản phẩm</TableHeader>
-                                        <TableHeader style={{ width: '150px' }}>Mã sản phẩm</TableHeader>
-                                        <TableHeader style={{ width: '150px' }}>Số lượng lấy</TableHeader>
+                                        <TableHeader style={{ width: '48px' }}>{t('issue.colNo')}</TableHeader>
+                                        <TableHeader style={{ width: '140px' }}>{t('issue.colLocation')}</TableHeader>
+                                        <TableHeader style={{ width: '100px' }}>{t('issue.colLot')}</TableHeader>
+                                        <TableHeader style={{ width: '260px' }}>{t('issue.colProductName')}</TableHeader>
+                                        <TableHeader style={{ width: '150px' }}>{t('issue.colProductId')}</TableHeader>
+                                        <TableHeader style={{ width: '150px' }}>{t('issue.colPickQty')}</TableHeader>
                                         <TableHeader style={{ width: '50px' }}></TableHeader>
                                     </tr>
                                 </thead>
@@ -491,8 +493,8 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                         width: '300px',
                         boxShadow: 'var(--shadow-lg)'
                     }}>
-                        <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
-                        <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                        <h4 style={{marginTop: 0}}>{t('issue.confirmDeleteTitle')}</h4>
+                        <p>{t('issue.confirmDeleteBody')}</p>
                         <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
                             <button
                                 onClick={cancelDelete}
@@ -504,7 +506,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                                     cursor: 'pointer'
                                 }}
                             >
-                                Hủy
+                                {t('common.cancel')}
                             </button>
                             <button
                                 onClick={confirmDelete}
@@ -517,7 +519,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
                                     cursor: 'pointer'
                                 }}
                             >
-                                Xóa
+                                {t('common.delete')}
                             </button>
                         </div>
                     </div>

@@ -18,6 +18,7 @@ import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import { AiOutlineDownload } from 'react-icons/ai';
 import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
 import styles from './Employees.module.scss';
 
 const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
@@ -79,6 +80,7 @@ const mapEmployee = (employee) => {
 };
 
 const Employees = () => {
+  const { t } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
   const [employeeClasses, setEmployeeClasses] = useState([]);
@@ -175,9 +177,9 @@ const Employees = () => {
 
   const validateForm = () => {
     const nextFieldErrors = {};
-    if (!formData.employeeName.trim()) nextFieldErrors.employeeName = 'Vui lòng nhập tên nhân viên';
-    if (!formData.employeeId.trim()) nextFieldErrors.employeeId = 'Vui lòng nhập mã nhân viên';
-    if (!formData.employeeClassId) nextFieldErrors.employeeClassId = 'Vui lòng chọn chức vụ';
+    if (!formData.employeeName.trim()) nextFieldErrors.employeeName = t('catalogue.employees.valName');
+    if (!formData.employeeId.trim()) nextFieldErrors.employeeId = t('catalogue.employees.valCode');
+    if (!formData.employeeClassId) nextFieldErrors.employeeClassId = t('catalogue.employees.valPosition');
     setFieldErrors(nextFieldErrors);
     return Object.keys(nextFieldErrors).length === 0;
   };
@@ -185,7 +187,7 @@ const Employees = () => {
   const handleSave = async () => {
     setHasSubmitted(true);
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra các trường còn thiếu thông tin!", {
+      toast.error(t('catalogue.employees.checkMissingFields'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -218,7 +220,7 @@ const Employees = () => {
     try {
       const response = await employeeApi.createEmployee(newEmployee);
       if (response) {
-        toast.success("Nhân viên đã được tạo thành công!", {
+        toast.success(t('catalogue.employees.createOk'), {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -241,7 +243,7 @@ const Employees = () => {
       }
     } catch (error) {
       console.error("Error creating new employee:", error);
-      toast.error(getApiErrorMessage(error, "Tạo nhân viên thất bại. Vui lòng thử lại!"), {
+      toast.error(getApiErrorMessage(error, t('catalogue.employees.createFail')), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -287,7 +289,7 @@ const Employees = () => {
         all = rest.flatMap(r => r.results);
       }
       if (!all.length) {
-        toast.info('Không có nhân viên nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        toast.info(t('catalogue.employees.noEmployeesToExport'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
@@ -302,19 +304,21 @@ const Employees = () => {
       ]);
 
       await exportTableToExcel({
-        headers: ['STT', 'Tên nhân viên', 'Mã nhân viên', 'Chức vụ', 'Ngày sinh', 'Email', 'Thời gian làm việc'],
+        headers: [t('catalogue.employees.colNo'), t('catalogue.employees.colName'), t('catalogue.employees.colCode'),
+          t('catalogue.employees.colPosition'), t('catalogue.employees.colDob'), t('catalogue.employees.colEmail'),
+          t('catalogue.employees.colWorkingTime')],
         rows,
         columnMeta: [
           { width: 5, align: 'center' }, { width: 28 }, { width: 16 }, { width: 22 },
           { width: 16, align: 'center' }, { width: 28 }, { width: 20, align: 'center' },
         ],
-        sheetName: 'Nhân viên',
-        filename: `Danh_muc_Nhan_vien_${excelStamp()}.xlsx`,
+        sheetName: t('catalogue.employees.sheetName'),
+        filename: `${t('catalogue.employees.exportFilename')}_${excelStamp()}.xlsx`,
       });
-      toast.success(`Đã xuất ${rows.length} nhân viên ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+      toast.success(t('catalogue.employees.exportedCount', { count: rows.length }), { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       console.error('Export excel error:', error);
-      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+      toast.error(t('catalogue.employees.exportFailRetry'), { position: 'top-right', autoClose: 3000 });
     } finally {
       setIsExporting(false);
     }
@@ -325,19 +329,19 @@ const Employees = () => {
       {isAdmin && (
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tạo mới nhân viên</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.employees.createTitle')}</SectionTitle>
           <button
             onClick={() => setCreateSectionHidden(!isCreateSectionHidden)}
             className={styles.toggleButton}
           >
-            {isCreateSectionHidden ? "Hiện" : "Ẩn"}
+            {isCreateSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isCreateSectionHidden && (
           <div>
             <div className={styles.fieldGrid}>
               <div className={styles.field}>
-                <Label required>Tên nhân viên:</Label>
+                <Label required>{t('catalogue.employees.name')}</Label>
                 <input
                   type="text"
                   name="employeeName"
@@ -349,7 +353,7 @@ const Employees = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Mã nhân viên:</Label>
+                <Label required>{t('catalogue.employees.code')}</Label>
                 <input
                   type="text"
                   name="employeeId"
@@ -361,12 +365,12 @@ const Employees = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Chức vụ:</Label>
+                <Label required>{t('catalogue.employees.position')}</Label>
                 <SelectContainer>
                   <Select
                     value={formData.employeeClassId}
                     onChange={(e) => setFormData((prev) => ({ ...prev, employeeClassId: e.target.value }))}
-                    placeholder="Chọn chức vụ"
+                    placeholder={t('catalogue.employees.selectPosition')}
                   >
                     {employeeClasses.map((opt) => (
                       <option key={opt.employeeClassId} value={opt.employeeClassId}>{opt.employeeClassName}</option>
@@ -377,7 +381,7 @@ const Employees = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Ngày sinh:</Label>
+                <Label>{t('catalogue.employees.dob')}</Label>
                 <input
                   type="date"
                   name="DateOfBirth"
@@ -388,7 +392,7 @@ const Employees = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Email:</Label>
+                <Label>{t('catalogue.employees.email')}</Label>
                 <input
                   type="email"
                   name="Email"
@@ -399,7 +403,7 @@ const Employees = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Thời gian làm việc:</Label>
+                <Label>{t('catalogue.employees.workingTime')}</Label>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <input
                     type="time"
@@ -424,7 +428,7 @@ const Employees = () => {
                 onClick={handleSave}
                 style={{ width: "240px", padding: "14px", fontSize: "15px" }}
               >
-                Tạo mới nhân viên
+                {t('catalogue.employees.createBtn')}
               </ActionButton>
             </div>
           </div>
@@ -434,12 +438,12 @@ const Employees = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Danh sách nhân viên</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.employees.listTitle')}</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}
           >
-            {isSearchSectionHidden ? "Hiện" : "Ẩn"}
+            {isSearchSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isSearchSectionHidden && (
@@ -449,9 +453,9 @@ const Employees = () => {
                 <Select
                   value={selectedEmployeeClassFilter}
                   onChange={(e) => setSelectedEmployeeClassFilter(e.target.value)}
-                  placeholder="Tất cả chức vụ"
+                  placeholder={t('catalogue.employees.allPositions')}
                 >
-                  <option value="">Tất cả chức vụ</option>
+                  <option value="">{t('catalogue.employees.allPositions')}</option>
                   {employeeClassFilterOptions.map((item) => (
                     <option key={item.employeeClassId} value={item.employeeClassId}>
                       {item.employeeClassName}
@@ -459,13 +463,13 @@ const Employees = () => {
                   ))}
                 </Select>
               </SelectContainer>
-              <Label style={{ width: "120px", fontWeight: "bold" }}>Mã nhân viên:</Label>
+              <Label style={{ width: "120px", fontWeight: "bold" }}>{t('catalogue.employees.code')}</Label>
               <input
                 type="text"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Tìm kiếm theo Mã nhân viên"
+                placeholder={t('catalogue.employees.searchByCode')}
                 className={styles.input}
                 style={{ flex: 1 }}
               />
@@ -473,16 +477,16 @@ const Employees = () => {
                 onClick={handleSearch}
                 style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
-                Tìm kiếm
+                {t('common.search')}
               </ActionButton>
-              <Tag variant="accent">{totalItems} nhân viên</Tag>
+              <Tag variant="accent">{t('catalogue.employees.countEmployees', { count: totalItems })}</Tag>
               <ActionButton
                 variant="secondary"
                 onClick={handleExportExcel}
                 disabled={isExporting || isLoading || isSearching || totalItems === 0}
                 style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               >
-                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+                <AiOutlineDownload size={16} /> {isExporting ? t('catalogue.employees.exporting') : t('catalogue.employees.exportExcel')}
               </ActionButton>
             </div>
 
@@ -492,18 +496,18 @@ const Employees = () => {
                   <ClipLoader size={40} color="var(--color-teal)" />
                 </div>
               ) : filteredData.length === 0 ? (
-                <div className={styles.emptyState}>Không tìm thấy nhân viên phù hợp.</div>
+                <div className={styles.emptyState}>{t('catalogue.employees.notFound')}</div>
               ) : (
                 <Table style={{ minWidth: '1000px' }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "48px" }}>STT</TableHeader>
-                      <TableHeader style={{ width: "200px" }}>Tên nhân viên</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Mã nhân viên</TableHeader>
-                      <TableHeader style={{ width: "180px" }}>Chức vụ</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Ngày sinh</TableHeader>
-                      <TableHeader style={{ width: "180px" }}>Email</TableHeader>
-                      <TableHeader style={{ width: "160px" }}>Thời gian làm việc</TableHeader>
+                      <TableHeader style={{ width: "48px" }}>{t('catalogue.employees.colNo')}</TableHeader>
+                      <TableHeader style={{ width: "200px" }}>{t('catalogue.employees.colName')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.employees.colCode')}</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>{t('catalogue.employees.colPosition')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.employees.colDob')}</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>{t('catalogue.employees.colEmail')}</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>{t('catalogue.employees.colWorkingTime')}</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -528,7 +532,7 @@ const Employees = () => {
                 totalItems={totalItems}
                 pageSize={PAGE_SIZE}
                 onPageChange={setPage}
-                itemLabel="nhân viên"
+                itemLabel={t('catalogue.employees.itemLabel')}
               />
             )}
           </div>

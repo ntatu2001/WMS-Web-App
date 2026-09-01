@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import AccountApi from '../../../../api/AccountApi.js';
 import styles from './Account.module.scss';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 // ⚠️ Backend đôi khi trả propertyName kèm khoảng trắng thừa (vd: "Gender "),
 // nên so sánh sau khi trim thay vì so khớp tuyệt đối.
@@ -9,6 +10,7 @@ const findProperty = (properties, name) =>
   properties?.find((prop) => prop.propertyName?.trim() === name)?.propertyValue || '--';
 
 const Account = ({ onCancel }) => {
+  const { t } = useTranslation();
   const userName = useSelector((state) => state.auth.userName);
   const roles = useSelector((state) => state.auth.roles);
   const employeeId = useSelector((state) => state.auth.employeeId);
@@ -35,9 +37,9 @@ const Account = ({ onCancel }) => {
     <div className={styles.backdrop} onClick={onCancel}>
       <div className={styles.panel} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <div className={styles.title}>Quản lý tài khoản</div>
+          <div className={styles.title}>{t('account.manageTitle')}</div>
           {onCancel && (
-            <button className={styles.closeButton} onClick={onCancel} aria-label="Đóng">
+            <button className={styles.closeButton} onClick={onCancel} aria-label={t('common.close')}>
               ×
             </button>
           )}
@@ -45,12 +47,12 @@ const Account = ({ onCancel }) => {
 
         <div className={styles.body}>
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Thông tin tài khoản</p>
+            <p className={styles.sectionTitle}>{t('account.accountInfo')}</p>
 
-            <label className={styles.label}>Tên đăng nhập</label>
+            <label className={styles.label}>{t('account.username')}</label>
             <p className={styles.value}>{userName || '--'}</p>
 
-            <label className={styles.label}>Vai trò</label>
+            <label className={styles.label}>{t('account.role')}</label>
             <div className={styles.roleChips}>
               {roles && roles.length > 0 ? (
                 roles.map((role) => (
@@ -66,37 +68,37 @@ const Account = ({ onCancel }) => {
 
           {employeeId && (
             <div className={styles.section}>
-              <p className={styles.sectionTitle}>Thông tin nhân viên</p>
+              <p className={styles.sectionTitle}>{t('account.employeeInfo')}</p>
 
-              {isLoadingEmployee && <p className={styles.value}>Đang tải...</p>}
+              {isLoadingEmployee && <p className={styles.value}>{t('common.loading')}</p>}
 
               {!isLoadingEmployee && employeeInfo && (
                 <>
-                  <label className={styles.label}>Họ tên</label>
+                  <label className={styles.label}>{t('account.fullName')}</label>
                   <p className={styles.value}>{employeeInfo.employeeName || '--'}</p>
 
-                  <label className={styles.label}>Mã nhân viên</label>
+                  <label className={styles.label}>{t('account.employeeId')}</label>
                   <p className={styles.value}>{employeeInfo.employeeId || '--'}</p>
 
-                  <label className={styles.label}>Ngày sinh</label>
+                  <label className={styles.label}>{t('account.dateOfBirth')}</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'DateOfBirth')}</p>
 
-                  <label className={styles.label}>Thời gian làm việc</label>
+                  <label className={styles.label}>{t('account.workingTime')}</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'DailyWorkingTime')}</p>
 
-                  <label className={styles.label}>Email</label>
+                  <label className={styles.label}>{t('account.email')}</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'Email')}</p>
 
-                  <label className={styles.label}>Số điện thoại</label>
+                  <label className={styles.label}>{t('account.phone')}</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'PhoneNumber')}</p>
 
-                  <label className={styles.label}>Giới tính</label>
+                  <label className={styles.label}>{t('account.gender')}</label>
                   <p className={styles.value}>{findProperty(employeeInfo.employeePropertyDTOs, 'Gender')}</p>
                 </>
               )}
 
               {!isLoadingEmployee && !employeeInfo && (
-                <p className={styles.value}>Không tải được thông tin nhân viên.</p>
+                <p className={styles.value}>{t('account.employeeLoadError')}</p>
               )}
             </div>
           )}

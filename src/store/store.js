@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import appReducer from './slices/appSlice';
 import themeReducer from './slices/themeSlice';
+import languageReducer from './slices/languageSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     auth: authReducer,
     app: appReducer,
     theme: themeReducer,
+    language: languageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

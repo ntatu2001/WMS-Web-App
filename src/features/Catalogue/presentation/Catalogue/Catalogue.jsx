@@ -8,16 +8,18 @@ import Separator from '../../../../common/components/Header/Separator.jsx';
 import Employees from '../Employees/Employees.jsx';
 import Goods from '../Goods/Goods.jsx';
 import StoreLocation from '../StoreLocation/StoreLocation.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const History = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('goods');
-  const headerText = activeTab === 'employees' ? "Nhân viên" :
-                     activeTab === 'storelocation' ? "Vị trí lưu trữ" : "Hàng hóa";
+  const headerText = activeTab === 'employees' ? t('catalogue.tabEmployees') :
+                     activeTab === 'storelocation' ? t('catalogue.tabStoreLocation') : t('catalogue.tabGoods');
 
   return (
     <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
       <HeaderContainer>
-        <HeaderItem>Danh mục</HeaderItem>
+        <HeaderItem>{t('catalogue.heading')}</HeaderItem>
         <Separator />
         <HeaderItem>{headerText}</HeaderItem>
       </HeaderContainer>
@@ -27,19 +29,19 @@ const History = () => {
           active={activeTab === 'goods'}
           onClick={() => setActiveTab('goods')}
         >
-          Hàng hóa
+          {t('catalogue.tabGoods')}
         </TabButton>
         <TabButton
           active={activeTab === 'employees'}
           onClick={() => setActiveTab('employees')}
         >
-          Nhân viên
+          {t('catalogue.tabEmployees')}
         </TabButton>
         <TabButton
           active={activeTab === 'storelocation'}
           onClick={() => setActiveTab('storelocation')}
         >
-          Vị trí lưu trữ
+          {t('catalogue.tabStoreLocation')}
         </TabButton>
       </TabContainer>
 

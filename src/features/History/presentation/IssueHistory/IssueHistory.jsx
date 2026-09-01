@@ -19,10 +19,11 @@ import IssueApi from '../../../../api/IssueApi.js';
 import customerApi from '../../../../api/customerApi.js';
 import { ClipLoader } from 'react-spinners';
 import { WORKFLOW_STATUS, STATUS_COLOR, SPINNER_COLOR, SPINNER_ON_ACCENT } from '../../../../common/constants/statusColors.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const statusMapping = WORKFLOW_STATUS;
 
-const StatusTag = ({ status, style }) => (
+const StatusTag = ({ status, style, t }) => (
   <span
     style={{
       borderRadius: '999px',
@@ -35,11 +36,12 @@ const StatusTag = ({ status, style }) => (
       ...style,
     }}
   >
-    {statusMapping[status]?.label || "--"}
+    {statusMapping[status]?.labelKey ? t(statusMapping[status].labelKey) : "--"}
   </span>
 );
 
 const IssueHistory = () => {
+  const { t } = useTranslation();
   const [selectedDate1, setSelectedDate1] = useState(null);
   const [selectedDate2, setSelectedDate2] = useState(null);
   const [searchLotNumber, setSearchLotNumber] = useState('');
@@ -138,13 +140,13 @@ const IssueHistory = () => {
     <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "20px" }}>
       {/* Left Section - Search & lot list */}
       <FormSection style={{ flex: "0 0 380px", width: "380px" }}>
-        <SectionTitle>Truy xuất lịch sử xuất kho</SectionTitle>
+        <SectionTitle>{t('history.retrieveIssue')}</SectionTitle>
 
         <FormGroup>
-          <Label>Mã lô/ Số PO:</Label>
+          <Label>{t('history.lotOrPo')}</Label>
           <SelectContainer>
             <SearchInput
-              placeholder="Tìm kiếm theo Mã lô/ số PO"
+              placeholder={t('history.searchLotOrPo')}
               value={searchLotNumber}
               onChange={(e) => setSearchLotNumber(e.target.value)}
               style={{ width: "100%", margin: 0, boxSizing: "border-box" }}
@@ -153,14 +155,14 @@ const IssueHistory = () => {
         </FormGroup>
 
         <FormGroup>
-          <Label>Khách hàng:</Label>
+          <Label>{t('history.customer')}</Label>
           <SelectContainer>
             <Select
               value={searchCustomerName}
               onChange={(e) => setSearchCustomerName(e.target.value)}
-              placeholder="Tất cả khách hàng"
+              placeholder={t('history.allCustomers')}
             >
-              <option value="">Tất cả khách hàng</option>
+              <option value="">{t('history.allCustomers')}</option>
               {customers.map((customer, index) => (
                 <option key={`customer-${index}`} value={customer.customerName}>
                   {customer.customerName}
@@ -171,14 +173,14 @@ const IssueHistory = () => {
         </FormGroup>
 
         <FormGroup>
-          <Label>Từ ngày:</Label>
+          <Label>{t('history.fromDate')}</Label>
           <SelectContainer>
             <DateInput selectedDate={selectedDate1} onChange={(date) => setSelectedDate1(date || null)} />
           </SelectContainer>
         </FormGroup>
 
         <FormGroup>
-          <Label>Đến ngày:</Label>
+          <Label>{t('history.toDate')}</Label>
           <SelectContainer>
             <DateInput selectedDate={selectedDate2} onChange={(date) => setSelectedDate2(date || null)} />
           </SelectContainer>
@@ -189,17 +191,17 @@ const IssueHistory = () => {
           onClick={handleSearch}
           disabled={isLoading}
         >
-          {isLoading ? <ClipLoader size={20} color={SPINNER_ON_ACCENT} /> : "Tìm kiếm"}
+          {isLoading ? <ClipLoader size={20} color={SPINNER_ON_ACCENT} /> : t('common.search')}
         </ActionButton>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>Danh sách lô xuất kho</SectionTitle>
-          <Tag variant="neutral">{listIssueHistory.length} lô</Tag>
+          <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>{t('history.issueLotList')}</SectionTitle>
+          <Tag variant="neutral">{listIssueHistory.length} {t('history.lotUnit')}</Tag>
         </div>
 
         <div style={{ maxHeight: "520px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", paddingRight: "2px" }}>
           {listIssueHistory.length === 0 ? (
-            <div className={styles.emptyState}>Không có lô xuất kho phù hợp.</div>
+            <div className={styles.emptyState}>{t('history.noIssueLot')}</div>
           ) : (
             listIssueHistory.map((item, index) => (
               <div
@@ -208,21 +210,21 @@ const IssueHistory = () => {
                 onClick={() => selectLot(item)}
               >
                 <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "4px 8px", fontSize: "13px" }}>
-                  <span className={styles.mutedLabel}>Mã lô/ Số PO:</span>
+                  <span className={styles.mutedLabel}>{t('history.lotOrPo')}</span>
                   <span className={styles.lotCode} style={{ textAlign: "right" }}>{item.lotNumber}</span>
 
-                  <span className={styles.mutedLabel}>Thời gian xuất kho:</span>
+                  <span className={styles.mutedLabel}>{t('history.issueTime')}</span>
                   <span style={{ textAlign: "right" }}>{item.issueDate}</span>
 
-                  <span className={styles.mutedLabel}>Nhân viên:</span>
+                  <span className={styles.mutedLabel}>{t('history.employee')}</span>
                   <span style={{ textAlign: "right" }}>{item.personName}</span>
 
-                  <span className={styles.mutedLabel}>Khách hàng:</span>
+                  <span className={styles.mutedLabel}>{t('history.customer')}</span>
                   <span style={{ textAlign: "right" }}>{item.customerName}</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px" }}>
-                  <span className={styles.mutedLabel} style={{ fontSize: "13px" }}>Trạng thái:</span>
-                  <StatusTag status={item.lotStatus} />
+                  <span className={styles.mutedLabel} style={{ fontSize: "13px" }}>{t('history.statusLabel')}</span>
+                  <StatusTag status={item.lotStatus} t={t} />
                 </div>
               </div>
             ))
@@ -232,32 +234,32 @@ const IssueHistory = () => {
 
       {/* Right Section - Selected lot detail */}
       <ListSection elevated style={{ flex: 1, minWidth: 0 }}>
-        <SectionTitle>Thông tin xuất kho chi tiết</SectionTitle>
+        <SectionTitle>{t('history.issueDetailTitle')}</SectionTitle>
 
         {!selectedItem ? (
           <div className={styles.emptyDetail}>
-            Chọn một lô ở danh sách bên trái để xem chi tiết
+            {t('history.selectLotHint')}
           </div>
         ) : (
           <>
-            <SectionTitle style={{ fontSize: "16px", marginBottom: "12px" }}>Thông tin lô xuất kho</SectionTitle>
+            <SectionTitle style={{ fontSize: "16px", marginBottom: "12px" }}>{t('history.issueLotInfo')}</SectionTitle>
             <div className={styles.infoPanel}>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Kho hàng:</span><span>{selectedItem.warehouseName || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Mã lô/ Số PO:</span><span style={{ fontWeight: 700 }}>{selectedItem.lotNumber || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Khu vực:</span><span>{selectedItem.warehouseID || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Khách hàng:</span><span>{selectedItem.customerName || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Nhân viên xuất kho:</span><span>{selectedItem.personName || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Ngày xuất kho:</span><span>{selectedItem.issueDate || "--"}</span></div>
-              <div className={styles.infoRow}><span className={styles.mutedLabel}>Tổng sản phẩm:</span><span style={{ fontWeight: 700 }}>{totalQuantity}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.warehouse')}</span><span>{selectedItem.warehouseName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.lotOrPo')}</span><span style={{ fontWeight: 700 }}>{selectedItem.lotNumber || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.zone')}</span><span>{selectedItem.warehouseID || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.customer')}</span><span>{selectedItem.customerName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.issueEmployee')}</span><span>{selectedItem.personName || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.issueDate')}</span><span>{selectedItem.issueDate || "--"}</span></div>
+              <div className={styles.infoRow}><span className={styles.mutedLabel}>{t('history.totalProducts')}</span><span style={{ fontWeight: 700 }}>{totalQuantity}</span></div>
               <div className={styles.infoRow}>
-                <span className={styles.mutedLabel}>Trạng thái:</span>
-                <StatusTag status={selectedItem.lotStatus} />
+                <span className={styles.mutedLabel}>{t('history.statusLabel')}</span>
+                <StatusTag status={selectedItem.lotStatus} t={t} />
               </div>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "20px 0 12px" }}>
-              <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>Bảng phân bố vị trí lấy hàng</SectionTitle>
-              <Tag variant="accent">Tổng SL xuất: {totalQuantity}</Tag>
+              <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>{t('history.locationTable')}</SectionTitle>
+              <Tag variant="accent">{t('history.totalIssued', { count: totalQuantity })}</Tag>
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -269,12 +271,12 @@ const IssueHistory = () => {
                 <Table style={{ minWidth: "760px" }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "6%" }}>STT</TableHeader>
-                      <TableHeader>Tên sản phẩm</TableHeader>
-                      <TableHeader>Mã sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "8%" }}>ĐVT</TableHeader>
-                      <TableHeader>Vị trí lưu trữ</TableHeader>
-                      <TableHeader>Số lượng xuất</TableHeader>
+                      <TableHeader style={{ width: "6%" }}>{t('history.colNo')}</TableHeader>
+                      <TableHeader>{t('history.colProductName')}</TableHeader>
+                      <TableHeader>{t('history.colProductId')}</TableHeader>
+                      <TableHeader style={{ width: "8%" }}>{t('history.colUom')}</TableHeader>
+                      <TableHeader>{t('history.colLocation')}</TableHeader>
+                      <TableHeader>{t('history.colIssuedQty')}</TableHeader>
                     </tr>
                   </thead>
                   <tbody>

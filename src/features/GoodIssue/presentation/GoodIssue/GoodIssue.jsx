@@ -14,6 +14,7 @@ import ManageGoodIssue from '../ManageGoodIssue/ManageGoodIssue.jsx';
 import InCompleteIssue from '../InCompleteIssue/InCompleteIssue.jsx';
 import IssueDistribution from '../InCompleteIssue/IssueDistribution/IssueDistribution.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const headerActionButtonStyle = {
   borderRadius: "6px",
@@ -30,6 +31,7 @@ const headerActionButtonStyle = {
 };
 
 const GoodIssue = () => {
+  const { t } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
   const canManage = roles.includes('Manager') || roles.includes('Admin');
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,9 +54,9 @@ const GoodIssue = () => {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
   const [isComingFromViewResult, setIsComingFromViewResult] = useState(false);
 
-  const headerText = activeTab === 'create' ? "Tạo phiếu xuất kho" :
-                     activeTab === 'manage' ? "Quản lý xuất kho" :
-                     activeTab === 'viewResult' ? "Kết quả phân bố vị trí lấy hàng" : "Xuất kho chưa hoàn thành"
+  const headerText = activeTab === 'create' ? t('issue.tabCreate') :
+                     activeTab === 'manage' ? t('issue.tabManage') :
+                     activeTab === 'viewResult' ? t('issue.viewResultTitle') : t('issue.tabIncomplete')
 
   // Reference to store the fetchIssueDetailScheduling function
   const fetchIssueDetailSchedulingRef = useRef(null);
@@ -122,7 +124,7 @@ const GoodIssue = () => {
     <div style={{ backgroundColor: 'var(--color-bg)' }}>
         <div style={{display: "flex", width: "100%", alignItems: "center"}}>
             <HeaderContainer>
-                <HeaderItem>Xuất kho</HeaderItem>
+                <HeaderItem>{t('issue.heading')}</HeaderItem>
                 <Separator />
                 <HeaderItem>{headerText}</HeaderItem>
             </HeaderContainer>
@@ -135,7 +137,7 @@ const GoodIssue = () => {
                   onClick={handleIssueDistributionClick}
                   style={headerActionButtonStyle}
                 >
-                  <BiCube size={18} /> Phân bố vị trí lấy hàng
+                  <BiCube size={18} /> {t('issue.btnDistribute')}
                 </ActionButton>
                 <ActionButton
                   active={activeTab === 'viewResult'}
@@ -143,7 +145,7 @@ const GoodIssue = () => {
                   onClick={handleViewResultClick}
                   style={headerActionButtonStyle}
                 >
-                  <AiOutlineAppstore size={18} /> Xem kết quả phân bổ
+                  <AiOutlineAppstore size={18} /> {t('issue.btnViewResult')}
                 </ActionButton>
                 <ActionButton
                   variant="secondary"
@@ -151,7 +153,7 @@ const GoodIssue = () => {
                   disabled={isApproving}
                   style={headerActionButtonStyle}
                 >
-                  <AiFillCheckCircle size={18} /> Duyệt danh sách xuất kho
+                  <AiFillCheckCircle size={18} /> {t('issue.btnApprove')}
                 </ActionButton>
             </div>
           )}
@@ -164,7 +166,7 @@ const GoodIssue = () => {
                   active={activeTab === 'create'}
                   onClick={() => setActiveTab('create')}
                 >
-                  Tạo phiếu xuất kho
+                  {t('issue.tabCreate')}
                 </TabButton>
 
                 {canManage && (
@@ -173,7 +175,7 @@ const GoodIssue = () => {
                       active={activeTab === 'incomplete'}
                       onClick={handleIncompleteTabClick}
                     >
-                      Xuất kho chưa hoàn thành
+                      {t('issue.tabIncomplete')}
                     </TabButton>
 
 
@@ -181,7 +183,7 @@ const GoodIssue = () => {
                       active={activeTab === 'manage'}
                       onClick={() => setActiveTab('manage')}
                     >
-                      Quản lý xuất kho
+                      {t('issue.tabManage')}
                     </TabButton>
                   </>
                 )}

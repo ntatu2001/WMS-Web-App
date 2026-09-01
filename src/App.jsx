@@ -26,6 +26,7 @@ import Appearance from "./features/Setting/presentation/Appearance/Appearance.js
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
 import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
 import useApplyTheme, { useResolvedTheme } from "./common/hooks/useApplyTheme.js";
+import useApplyLanguage from "./common/hooks/useApplyLanguage.js";
 
 // Backdrop mờ, căn giữa cho các trang con của "Cài đặt" chưa tự lo vị trí hiển thị (Logout, FeatureUnavailable)
 const centeredPanelBackdropStyle = {
@@ -42,6 +43,7 @@ const centeredPanelBackdropStyle = {
 
 function App() {
   useApplyTheme();
+  useApplyLanguage();
   const resolvedTheme = useResolvedTheme();
   const isLoading = useSelector((state) => state.app.isLoading);
   const isLogin = useSelector((state) => state.auth.isLogin);

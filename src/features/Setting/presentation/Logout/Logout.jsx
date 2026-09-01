@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../../store/slices/authSlice';
 import authApi from '../../../../api/authApi';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const Logout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const refreshToken = useSelector((state) => state.auth.refreshToken);
 
   const handleLogout = async () => {
@@ -44,10 +46,10 @@ const Logout = () => {
           marginBottom: '10px',
         }}
       >
-        Đăng xuất
+        {t('account.logoutTitle')}
       </h1>
       <p style={{ marginBottom: '20px', color: 'var(--color-text-muted)' }}>
-        Bạn có chắc chắn muốn đăng xuất không?
+        {t('account.logoutConfirm')}
       </p>
       <button
         onClick={handleLogout}
@@ -70,7 +72,7 @@ const Logout = () => {
           e.target.style.transform = 'scale(1)';
         }}
       >
-        Đăng xuất
+        {t('account.logoutTitle')}
       </button>
     </div>
   );

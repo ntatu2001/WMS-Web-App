@@ -29,11 +29,13 @@ import schedulingApi from '../../../../api/schedulingApi.js';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import receiptSubLotApi from '../../../../api/receiptSubLotApi.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 // import {receiptDetailScheduling as receiptDetailSchedulingData} from '../../../../app/mockData/LocationData.js';
 
 const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewResult, onApproveButtonClick, onUpdatingChange }) => {
-    
+    const { t } = useTranslation();
+
     const [receiptLots, setReceiptLots] = useState([]);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
     const [warehouses, setWarehouses] = useState([]);
@@ -126,7 +128,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                 lotNumber: item.lotNumber || ""
             }));
             setUpdatedItems(initialUpdatedItems);
-            toast.success("Thực hiện giải thuật thành công!", {
+            toast.success(t('receipt.algoOk'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -138,7 +140,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
             // Mark this warehouse's data as fetched
             schedulingFetchedRef.current[warehouseId] = true;
         } catch {
-            toast.error("Thực hiện giải thuật thất bại", {
+            toast.error(t('receipt.algoFail'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -295,7 +297,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                 }
             });
 
-            toast.success("Duyệt danh sách nhập kho thành công!", {
+            toast.success(t('receipt.approveListOk'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -317,7 +319,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
             schedulingFetchedRef.current = {};
         }
         catch {
-            toast.error("Duyệt thất bại", {
+            toast.error(t('receipt.approveFail'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -336,14 +338,14 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                    <ContentContainer style={{maxHeight: "700px"}}>
                         <FormSection style={{height: "100%", display: "flex", flexDirection: "column", flex: "0 0 380px", width: "380px"}}>
                             <FormGroup>
-                                <Label style={{fontWeight: "bold"}}>Kho hàng:</Label>
+                                <Label style={{fontWeight: "bold"}}>{t('receipt.warehouse')}</Label>
                                 <SelectContainer>
                                         <Select 
                                             value={selectedWarehouse} 
                                             onChange={handleWarehouseChange} 
                                             required
                                         >
-                                        <option value="" disabled selected>Chọn loại kho hàng</option>
+                                        <option value="" disabled selected>{t('receipt.selectWarehouseType')}</option>
                                         {warehouses.map((warehouse, index) => (
                                             <option key = {`warehouse-${index}`} value= {warehouse.warehouseId}>
                                             {getWarehouseLabel(warehouse)}
@@ -354,8 +356,8 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                             </FormGroup>
 
                             <div style={{display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 10px"}}>
-                                <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>Danh sách lô nhập kho</SectionTitle>
-                                <Tag variant="neutral">{checkedLotIds.size}/{receiptLots.length} lô</Tag>
+                                <SectionTitle style={{fontSize: "100%", marginBottom: 0}}>{t('receipt.lotListTitle')}</SectionTitle>
+                                <Tag variant="neutral">{t('receipt.lotCountSel', { checked: checkedLotIds.size, total: receiptLots.length })}</Tag>
                             </div>
 
                             <div style={{flex: 1, overflow: "auto", minHeight: 0}}>
@@ -375,28 +377,28 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                                     className={styles.lotCheckbox}
                                                     checked={checkedLotIds.has(item.receiptLotId)}
                                                     onChange={() => toggleLotChecked(item.receiptLotId)}
-                                                    aria-label={`Chọn lô ${item.receiptLotId}`}
+                                                    aria-label={t('receipt.selectLotAria', { id: item.receiptLotId })}
                                                 />
                                                 <span className={clsx(styles.lotCode)} style={{fontSize: "14px"}}>{item.receiptLotId}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Sản phẩm:</LabelSmallSize>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>{t('receipt.incProduct')}</LabelSmallSize>
                                                 <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500, textAlign: "right"}}>{item.materialName}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize>Mã sản phẩm:</LabelSmallSize>
+                                                <LabelSmallSize>{t('receipt.incProductId')}</LabelSmallSize>
                                                 <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.materialId}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between"}}>
-                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Số lượng nhập kho:</LabelSmallSize>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>{t('receipt.incImportQty')}</LabelSmallSize>
                                                 <span style={{marginTop: "2px", fontSize: "14px", fontWeight: 500}}>{item.importedQuantity}</span>
                                             </div>
 
                                             <div style={{display: "flex", marginRight: "3%", justifyContent: "space-between", alignItems: "center"}}>
-                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>Giới hạn tầng lưu trữ:</LabelSmallSize>
+                                                <LabelSmallSize style={{width: "auto", whiteSpace: "nowrap"}}>{t('receipt.incStorageLevelLimit')}</LabelSmallSize>
                                                 <span style={{
                                                     backgroundColor: storageLevel[item.storageLevel],
                                                     color: "white",
@@ -404,7 +406,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                                     fontSize: "12px",
                                                     padding: "4px 10px",
                                                     borderRadius: "999px",
-                                                    }}> Tầng {item.storageLevel}
+                                                    }}> {t('receipt.incFloor', { n: item.storageLevel })}
                                                 </span>
                                             </div>
 
@@ -417,9 +419,9 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                         <ListSection elevated style={{ height: "100%", display: "flex", flexDirection: "column", flex: "1 1 auto", minWidth: 0 }}>
 
                                 <div style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                                    <SectionTitle style={{marginBottom: 0}}>Kết quả phân bổ vị trí lưu kho cho các lô nhập kho</SectionTitle>
+                                    <SectionTitle style={{marginBottom: 0}}>{t('receipt.allocResultTitle')}</SectionTitle>
                                     <Tag variant="accent">
-                                        Tổng SL lưu trữ: {updatedItems.reduce((sum, item) => sum + (Number(item.importedQuantity) || 0), 0)}
+                                        {t('receipt.totalStorageQty', { count: updatedItems.reduce((sum, item) => sum + (Number(item.importedQuantity) || 0), 0) })}
                                     </Tag>
                                 </div>
 
@@ -430,18 +432,18 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                     </div>
                                 ) : updatedItems.length === 0 ? (
                                     <div className={styles.emptyState}>
-                                        Chưa có kết quả phân bổ. Nhấn "Phân bố vị trí lưu kho" để bắt đầu.
+                                        {t('receipt.noAllocResult')}
                                     </div>
                                 ) : (
                                     <Table style={{ minWidth: '900px' }}>
                                         <thead>
                                             <tr>
-                                                <TableHeader style={{ width: '48px' }}>STT</TableHeader>
-                                                <TableHeader style={{ width: '140px' }}>Vị trí lưu trữ</TableHeader>
-                                                <TableHeader style={{ width: '100px' }}>Mã lô</TableHeader>
-                                                <TableHeader style={{ width: '260px' }}>Tên sản phẩm</TableHeader>
-                                                <TableHeader style={{ width: '150px' }}>Mã sản phẩm</TableHeader>
-                                                <TableHeader style={{ width: '150px' }}>Số lượng lưu trữ</TableHeader>
+                                                <TableHeader style={{ width: '48px' }}>{t('receipt.colNo')}</TableHeader>
+                                                <TableHeader style={{ width: '140px' }}>{t('receipt.colLocation')}</TableHeader>
+                                                <TableHeader style={{ width: '100px' }}>{t('receipt.colLot')}</TableHeader>
+                                                <TableHeader style={{ width: '260px' }}>{t('receipt.colProductName')}</TableHeader>
+                                                <TableHeader style={{ width: '150px' }}>{t('receipt.colProductId')}</TableHeader>
+                                                <TableHeader style={{ width: '150px' }}>{t('receipt.colStorageQty')}</TableHeader>
                                                 <TableHeader style={{ width: '50px' }}></TableHeader>
                                             </tr>
                                         </thead>
@@ -518,8 +520,8 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                 width: '300px',
                                 boxShadow: 'var(--shadow-lg)'
                             }}>
-                                <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
-                                <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                                <h4 style={{marginTop: 0}}>{t('receipt.confirmDeleteTitle')}</h4>
+                                <p>{t('receipt.confirmDeleteBody')}</p>
                                 <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
                                     <button 
                                         onClick={cancelDelete}
@@ -531,7 +533,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                             cursor: 'pointer'
                                         }}
                                     >
-                                        Hủy
+                                        {t('common.cancel')}
                                     </button>
                                     <button 
                                         onClick={confirmDelete}
@@ -544,7 +546,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
                                             cursor: 'pointer'
                                         }}
                                     >
-                                        Xóa
+                                        {t('common.delete')}
                                     </button>
                                 </div>
                             </div>

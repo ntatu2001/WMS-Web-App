@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { lotStatusData } from '../../../../app/mockData/LotStatusData';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { lotStatusLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 
 const ReceiptProgress = ({ item, handleStatusChange }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false); // State để kiểm soát hiển thị dropdown
   const [currentStatus, setCurrentStatus] = useState(item.status); // State lưu trữ trạng thái hiện tại
   const dropdownRef = useRef(null); // Ref để tham chiếu đến dropdown
@@ -67,7 +70,7 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
           margin: '0 5%',
         }}
       >
-        {currentStatus}
+        {resolveLabel(lotStatusLabelKey, currentStatus, t)}
       </div>
 
       {/* Dropdown menu - only show if not completed */}
@@ -105,7 +108,7 @@ const ReceiptProgress = ({ item, handleStatusChange }) => {
                 textAlign: 'center',
               }}
             >
-              {status}
+              {resolveLabel(lotStatusLabelKey, status, t)}
             </li>
           ))}
         </ul>
