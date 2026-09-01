@@ -777,6 +777,9 @@ export default {
     cardIssue: 'Goods issue',
     cardStockTake: 'Stock take',
     cardOverall: 'Overall',
+    // Short labels inside the "Overall" card
+    overallReceiptShort: 'Receipt',
+    overallIssueShort: 'Issue',
     total: 'Total',
     completed: 'Completed',
     rate: 'Rate',
@@ -795,6 +798,12 @@ export default {
     whRawMaterial: 'Raw materials',
     whSupplies: 'Supplies',
     whPackaging: 'Packaging',
+    // Short labels for chart x-axis (no "warehouse" prefix in EN anyway)
+    whShortFinished: 'Finished goods',
+    whShortSemiFinished: 'Semi-finished',
+    whShortRawMaterial: 'Raw materials',
+    whShortSupplies: 'Supplies',
+    whShortPackaging: 'Packaging',
   },
 
   login: {

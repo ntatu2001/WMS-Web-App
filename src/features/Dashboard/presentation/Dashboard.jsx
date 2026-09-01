@@ -318,13 +318,19 @@ const Dashboard = () => {
                     dataLabels: { enabled: false },
                     xaxis: {
                         categories: [
-                            t('dashboard.whFinished'),
-                            t('dashboard.whSemiFinished'),
-                            t('dashboard.whRawMaterial'),
-                            t('dashboard.whSupplies'),
-                            t('dashboard.whPackaging'),
+                            t('dashboard.whShortFinished'),
+                            t('dashboard.whShortSemiFinished'),
+                            t('dashboard.whShortRawMaterial'),
+                            t('dashboard.whShortSupplies'),
+                            t('dashboard.whShortPackaging'),
                         ],
                         labels: {
+                            // Nhãn kho tiếng Việt/tiếng Anh khá dài -> xoay nhẹ và tắt ẩn nhãn
+                            // trùng để không mất "Kho nguyên vật liệu" ở giữa trục hoành.
+                            rotate: -20,
+                            rotateAlways: true,
+                            hideOverlappingLabels: false,
+                            trim: false,
                             style: {
                                 fontSize: "10px"
                             }
@@ -400,13 +406,19 @@ const Dashboard = () => {
                     dataLabels: { enabled: false },
                     xaxis: {
                         categories: [
-                            t('dashboard.whFinished'),
-                            t('dashboard.whSemiFinished'),
-                            t('dashboard.whRawMaterial'),
-                            t('dashboard.whSupplies'),
-                            t('dashboard.whPackaging'),
+                            t('dashboard.whShortFinished'),
+                            t('dashboard.whShortSemiFinished'),
+                            t('dashboard.whShortRawMaterial'),
+                            t('dashboard.whShortSupplies'),
+                            t('dashboard.whShortPackaging'),
                         ],
                         labels: {
+                            // Nhãn kho tiếng Việt/tiếng Anh khá dài -> xoay nhẹ và tắt ẩn nhãn
+                            // trùng để không mất "Kho nguyên vật liệu" ở giữa trục hoành.
+                            rotate: -20,
+                            rotateAlways: true,
+                            hideOverlappingLabels: false,
+                            trim: false,
                             style: {
                                 fontSize: "10px"
                             }
@@ -720,11 +732,11 @@ const Dashboard = () => {
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[0]}`}</p>
-                            <p>{t('dashboard.cardReceipt')}</p>
+                            <p>{t('dashboard.overallReceiptShort')}</p>
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[1]}`}</p>
-                            <p>{t('dashboard.cardIssue')}</p>
+                            <p>{t('dashboard.overallIssueShort')}</p>
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[2]}`}</p>
@@ -739,7 +751,7 @@ const Dashboard = () => {
                             fontSize={"0.8rem"}
                             label={t('dashboard.total')}
                             unit={""}
-                            dataChartLabels={[t('dashboard.cardReceipt'), t('dashboard.cardIssue'), t('dashboard.cardStockTake')]}
+                            dataChartLabels={[t('dashboard.overallReceiptShort'), t('dashboard.overallIssueShort'), t('dashboard.cardStockTake')]}
                             dataChartValue={filterDataTotal}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",

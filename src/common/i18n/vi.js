@@ -779,6 +779,9 @@ export default {
     cardIssue: 'Xuất kho',
     cardStockTake: 'Kiểm kê',
     cardOverall: 'Thống kê chung',
+    // Nhãn rút gọn trong card "Thống kê chung"
+    overallReceiptShort: 'Nhập',
+    overallIssueShort: 'Xuất',
     total: 'Tổng',
     completed: 'Hoàn thành',
     rate: 'Tỉ lệ',
@@ -797,6 +800,12 @@ export default {
     whRawMaterial: 'Kho nguyên vật liệu',
     whSupplies: 'Kho vật tư',
     whPackaging: 'Kho bao bì',
+    // Nhãn ngắn cho trục hoành biểu đồ (bỏ tiền tố "Kho ")
+    whShortFinished: 'Thành phẩm',
+    whShortSemiFinished: 'Bán thành phẩm',
+    whShortRawMaterial: 'Nguyên vật liệu',
+    whShortSupplies: 'Vật tư',
+    whShortPackaging: 'Bao bì',
   },
 
   login: {
