@@ -54,8 +54,8 @@ const REALTIME_STATUS_META = {
 }
 
 const Dashboard = () => {
-    const [togleButtonPieChart, setTogleButtonPieChart] = useState([true, false, false])
-    const [togleButtonColumnChart, setTogleButtonColumnChart] = useState([true, false, false])
+    const [togleButtonPieChart, setTogleButtonPieChart] = useState([true, false, false, false])
+    const [togleButtonColumnChart, setTogleButtonColumnChart] = useState([true, false, false, false])
     const [dataEnter, setDataEnter] = useState(listTodayEnter)
     const [filterDataEnter, setFilterDataEnter] = useState([])
     const [dataExport, setDataExport] = useState(listTodayExport)
@@ -68,12 +68,14 @@ const Dashboard = () => {
         Today: null,
         ThisWeek: null,
         ThisMonth: null,
+        ThisYear: null,
     })
-    const [overviewType, setOverviewType] = useState("Today") // "Today", "ThisWeek", "ThisMonth"
+    const [overviewType, setOverviewType] = useState("Today") // "Today", "ThisWeek", "ThisMonth", "ThisYear"
     const [warehouseStats, setWarehouseStats] = useState({
         Today: null,
         ThisWeek: null,
         ThisMonth: null,
+        ThisYear: null,
     })
     const [warehouseStatsType, setWarehouseStatsType] = useState("Today")
     const chartIssueRef = useRef(null);
@@ -502,7 +504,7 @@ const Dashboard = () => {
                     }}
                     onClick={() => {
                         setOverviewType("Today")
-                        setTogleButtonPieChart([true, false, false])
+                        setTogleButtonPieChart([true, false, false, false])
                     }}
                 >
                     Hôm nay
@@ -522,10 +524,10 @@ const Dashboard = () => {
                     }}
                     onClick={() => {
                         setOverviewType("ThisWeek")
-                        setTogleButtonPieChart([false, true, false])
+                        setTogleButtonPieChart([false, true, false, false])
                     }}
                 >
-                    Tuần
+                    Tuần này
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -542,10 +544,30 @@ const Dashboard = () => {
                     }}
                     onClick={() => {
                         setOverviewType("ThisMonth")
-                        setTogleButtonPieChart([false, false, true])
+                        setTogleButtonPieChart([false, false, true, false])
                     }}
                 >
-                    Tháng
+                    Tháng này
+                </ActionButton>
+                <ActionButton
+                    className={`${styles.actionButton} ${styles.hoverEffect}`}
+                    style={{
+                        width: "10%",
+                        height: "100%",
+                        marginBottom: 0,
+                        marginTop: 0,
+                        marginLeft: 0,
+                        marginRight: 0,
+                        padding: 0,
+                        fontSize: "12px",
+                        backgroundColor: overviewType === "ThisYear" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
+                    }}
+                    onClick={() => {
+                        setOverviewType("ThisYear")
+                        setTogleButtonPieChart([false, false, false, true])
+                    }}
+                >
+                    Năm nay
                 </ActionButton>
             </div>
             
@@ -743,7 +765,7 @@ const Dashboard = () => {
                         backgroundColor: togleButtonColumnChart[0] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
-                        setTogleButtonColumnChart([true, false, false])
+                        setTogleButtonColumnChart([true, false, false, false])
                         setWarehouseStatsType("Today")
                     }}
                 >
@@ -763,11 +785,11 @@ const Dashboard = () => {
                         backgroundColor: togleButtonColumnChart[1] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
-                        setTogleButtonColumnChart([false, true, false])
+                        setTogleButtonColumnChart([false, true, false, false])
                         setWarehouseStatsType("ThisWeek")
                     }}
                 >
-                    Tuần
+                    Tuần này
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -783,11 +805,31 @@ const Dashboard = () => {
                         backgroundColor: togleButtonColumnChart[2] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
                     onClick={() => {
-                        setTogleButtonColumnChart([false, false, true])
+                        setTogleButtonColumnChart([false, false, true, false])
                         setWarehouseStatsType("ThisMonth")
                     }}
                 >
-                    Tháng
+                    Tháng này
+                </ActionButton>
+                <ActionButton
+                    className={`${styles.actionButton} ${styles.hoverEffect}`}
+                    style={{
+                        width: "10%",
+                        height: "100%",
+                        marginBottom: 0,
+                        marginTop: 0,
+                        marginLeft: 0,
+                        marginRight: 0,
+                        padding: 0,
+                        fontSize: "12px",
+                        backgroundColor: togleButtonColumnChart[3] ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
+                    }}
+                    onClick={() => {
+                        setTogleButtonColumnChart([false, false, false, true])
+                        setWarehouseStatsType("ThisYear")
+                    }}
+                >
+                    Năm nay
                 </ActionButton>
             </div>
             <div className="w-full h-[40%] flex justify-between">
