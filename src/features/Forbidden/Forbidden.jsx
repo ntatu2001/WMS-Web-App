@@ -2,9 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
+import useTranslation from '../../common/hooks/useTranslation';
 
 const Forbidden = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
 
   return (
@@ -19,9 +21,9 @@ const Forbidden = () => {
         fontFamily: 'Arial, sans-serif',
       }}
     >
-      <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--status-error)', marginBottom: '10px' }}>403</h1>
+      <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: 'var(--status-error)', marginBottom: '10px' }}>{t('forbidden.title')}</h1>
       <p style={{ fontSize: '18px', color: 'var(--color-text-muted)', marginBottom: '20px' }}>
-        Bạn không có quyền truy cập chức năng này.
+        {t('forbidden.message')}
       </p>
       <button
         onClick={() => navigate(getDefaultRouteForRoles(roles))}
@@ -35,7 +37,7 @@ const Forbidden = () => {
           fontSize: '16px',
         }}
       >
-        Về trang chủ
+        {t('forbidden.home')}
       </button>
     </div>
   );

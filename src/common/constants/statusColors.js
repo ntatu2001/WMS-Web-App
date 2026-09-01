@@ -12,14 +12,15 @@ export const STATUS_COLOR = {
   pending: 'var(--status-pending)',
 };
 
-// Receipt / issue / inventory workflow status → { label, color }
+// Receipt / issue / inventory workflow status → { labelKey, color }.
+// Resolve labelKey with useTranslation's t() at render time.
 export const WORKFLOW_STATUS = {
-  Pending: { label: 'Chờ xử lý', color: STATUS_COLOR.neutral },
-  InProgress: { label: 'Đang thực hiện', color: STATUS_COLOR.info },
-  Done: { label: 'Hoàn thành', color: STATUS_COLOR.success },
-  Cancelled: { label: 'Đã hủy', color: STATUS_COLOR.error },
-  HoldOn: { label: 'Tạm hoãn', color: STATUS_COLOR.warning },
-  IsBlocked: { label: 'Bị chặn', color: STATUS_COLOR.critical },
+  Pending: { labelKey: 'status.pending', color: STATUS_COLOR.neutral },
+  InProgress: { labelKey: 'status.inProgress', color: STATUS_COLOR.info },
+  Done: { labelKey: 'status.done', color: STATUS_COLOR.success },
+  Cancelled: { labelKey: 'status.cancelled', color: STATUS_COLOR.error },
+  HoldOn: { labelKey: 'status.holdOn', color: STATUS_COLOR.warning },
+  IsBlocked: { labelKey: 'status.blocked', color: STATUS_COLOR.critical },
 };
 
 // react-spinners <ClipLoader> accent color (resolves fine as a CSS var string).

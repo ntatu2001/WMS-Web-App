@@ -27,6 +27,7 @@ import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 let rowIdCounter = 0;
 const createEmptyRow = () => ({
@@ -43,6 +44,7 @@ const createEmptyRow = () => ({
 const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
 
 const CreateGoodIssue = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -81,7 +83,7 @@ const CreateGoodIssue = () => {
         setCustomers(customerList);
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error("Lỗi khi tải dữ liệu!");
+        toast.error(t('toast.loadError'));
       } finally {
         setIsLoading(false);
       }
@@ -215,8 +217,8 @@ const CreateGoodIssue = () => {
   const handleImportFile = async (file) => {
     if (!/\.(xlsx|xls)$/i.test(file.name)) {
       setImportNotice(null);
-      setImportErrors(['Vui lòng dùng file .xlsx theo mẫu.']);
-      toast.error('Vui lòng dùng file .xlsx theo mẫu.', { position: 'top-right', autoClose: 3000 });
+      setImportErrors([t('issue.impUseXlsx')]);
+      toast.error(t('issue.impUseXlsx'), { position: 'top-right', autoClose: 3000 });
       return;
     }
 
@@ -232,7 +234,7 @@ const CreateGoodIssue = () => {
       const { header, items } = parsed;
 
       if (!wareHouses.length || !customers.length || !people.length) {
-        toast.error('Dữ liệu chưa tải xong, vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+        toast.error(t('issue.impDataLoading'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
@@ -240,32 +242,32 @@ const CreateGoodIssue = () => {
 
       const nameMatches = wareHouses.filter(w => w.warehouseName === header.warehouseName);
       if (nameMatches.length === 0) {
-        errors.push(`Mục A: kho hàng "${header.warehouseName}" không tồn tại trong hệ thống.`);
+        errors.push(t('issue.impWarehouseNotExist', { name: header.warehouseName }));
       }
       const codeMatch = wareHouses.find(w => w.warehouseId === header.warehouseCode);
       if (!codeMatch) {
-        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không tồn tại trong hệ thống.`);
+        errors.push(t('issue.impWarehouseCodeNotExist', { code: header.warehouseCode }));
       } else if (codeMatch.warehouseName !== header.warehouseName) {
-        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không thuộc kho hàng "${header.warehouseName}".`);
+        errors.push(t('issue.impWarehouseCodeMismatch', { code: header.warehouseCode, name: header.warehouseName }));
       }
 
       const customer = customers.find(c => c.customerName === header.customerName);
       if (!customer) {
-        errors.push(`Mục A: khách hàng "${header.customerName}" không tồn tại trong hệ thống.`);
+        errors.push(t('issue.impCustomerNotExist', { name: header.customerName }));
       }
 
       const employee = people.find(p => p.employeeName === header.employeeName);
       if (!employee) {
-        errors.push(`Mục A: nhân viên "${header.employeeName}" không tồn tại trong hệ thống.`);
+        errors.push(t('issue.impEmployeeNotExist', { name: header.employeeName }));
       }
 
       const issueDate = parseDmY(header.dateText);
       if (!issueDate) {
-        errors.push(`Mục A: ngày xuất kho "${header.dateText}" không hợp lệ (định dạng dd/mm/yyyy).`);
+        errors.push(t('issue.impDateInvalid', { value: header.dateText }));
       }
 
       if (items.length === 0) {
-        errors.push('File không có dòng sản phẩm nào.');
+        errors.push(t('issue.impNoItems'));
       }
 
       // Danh sách vật tư lấy trực tiếp theo mã kho trong file (không dựa vào state hiện tại)
@@ -274,7 +276,7 @@ const CreateGoodIssue = () => {
         try {
           materialsForZone = await materialApi.getMaterialsByWarehouseIdAndMaterialLot(header.warehouseCode);
         } catch {
-          errors.push('Không tải được danh sách sản phẩm cho kho này. Vui lòng thử lại.');
+          errors.push(t('issue.impMaterialsLoadFail'));
         }
       }
 
@@ -294,34 +296,34 @@ const CreateGoodIssue = () => {
             lotListByMat[mid] = await materiaLotApi.GetLotNumbersByMaterialId(mid);
           } catch {
             lotListByMat[mid] = [];
-            errors.push('Không tải được danh sách mã lô của sản phẩm. Vui lòng thử lại.');
+            errors.push(t('issue.impLotsLoadFail'));
           }
         })
       );
 
       const resolved = [];
       for (const it of items) {
-        const prefix = `Dòng ${it.rowNumber}: `;
+        const prefix = t('issue.impRowPrefix', { row: it.rowNumber });
         const mat = materialsForZone.find(m => m.materialName === it.productName);
         if (codeMatch && !mat) {
-          errors.push(`${prefix}sản phẩm "${it.productName}" không có trong kho.`);
+          errors.push(`${prefix}${t('issue.impRowProductNotInWarehouse', { name: it.productName })}`);
         }
 
         if (!it.lotNumber) {
-          errors.push(`${prefix}thiếu Mã lô / Số PO.`);
+          errors.push(`${prefix}${t('issue.impRowMissingLot')}`);
         } else if (mat && !(lotListByMat[mat.materialId] || []).includes(it.lotNumber)) {
-          errors.push(`${prefix}mã lô "${it.lotNumber}" không thuộc sản phẩm "${it.productName}" (hoặc đã hết tồn).`);
+          errors.push(`${prefix}${t('issue.impRowLotNotForProduct', { lot: it.lotNumber, name: it.productName })}`);
         }
 
         let q = NaN;
         if (it.quantity === '') {
-          errors.push(`${prefix}thiếu SL xuất.`);
+          errors.push(`${prefix}${t('issue.impRowMissingQty')}`);
         } else {
           q = Number(it.quantity);
           if (!Number.isFinite(q)) {
-            errors.push(`${prefix}SL xuất không phải số.`);
+            errors.push(`${prefix}${t('issue.impRowQtyNotNumber')}`);
           } else if (!(q > 0)) {
-            errors.push(`${prefix}SL xuất phải lớn hơn 0.`);
+            errors.push(`${prefix}${t('issue.impRowQtyNotPositive')}`);
           }
         }
 
@@ -334,12 +336,12 @@ const CreateGoodIssue = () => {
               availByLot[it.lotNumber] = info.availableQuantity;
             } catch {
               availByLot[it.lotNumber] = null;
-              errors.push(`${prefix}không lấy được tồn kho của mã lô "${it.lotNumber}".`);
+              errors.push(`${prefix}${t('issue.impRowStockFetchFail', { lot: it.lotNumber })}`);
             }
           }
           avail = availByLot[it.lotNumber];
           if (avail !== null && avail !== undefined && q > avail) {
-            errors.push(`${prefix}SL xuất vượt quá tồn kho (${avail}).`);
+            errors.push(`${prefix}${t('issue.impRowQtyOverStock', { avail })}`);
           }
         }
 
@@ -390,7 +392,7 @@ const CreateGoodIssue = () => {
       setHasSubmitted(false);
       setImportErrors(null);
       setImportNotice(
-        `Đã nhập phiếu và ${finalRows.length} dòng sản phẩm từ "${file.name}". Vui lòng kiểm tra lại trước khi tạo phiếu.`
+        t('issue.importedRows', { count: finalRows.length, file: file.name })
       );
     } finally {
       setImporting(false);
@@ -399,21 +401,21 @@ const CreateGoodIssue = () => {
 
   const validate = () => {
     const nextFieldErrors = {};
-    if (!selectedWarehouse) nextFieldErrors.warehouse = 'Vui lòng chọn kho hàng';
-    if (!selectedZone) nextFieldErrors.zone = 'Vui lòng chọn mã kho hàng';
-    if (!selectedCustomer) nextFieldErrors.customer = 'Vui lòng chọn khách hàng';
-    if (!selectedPerson) nextFieldErrors.person = 'Vui lòng chọn nhân viên';
-    if (!selectedDate) nextFieldErrors.date = 'Vui lòng chọn ngày xuất kho';
+    if (!selectedWarehouse) nextFieldErrors.warehouse = t('validation.selectWarehouse');
+    if (!selectedZone) nextFieldErrors.zone = t('validation.selectWarehouseCode');
+    if (!selectedCustomer) nextFieldErrors.customer = t('validation.selectCustomer');
+    if (!selectedPerson) nextFieldErrors.person = t('validation.selectEmployee');
+    if (!selectedDate) nextFieldErrors.date = t('validation.selectIssueDate');
 
     const nextRowErrors = {};
     rows.forEach((row, index) => {
       const errors = {};
-      if (!row.materialName) errors.materialName = 'Chọn sản phẩm';
-      if (!row.purchaseOrderNumber) errors.purchaseOrderNumber = 'Chọn mã lô/số PO';
+      if (!row.materialName) errors.materialName = t('issue.rowSelectProduct');
+      if (!row.purchaseOrderNumber) errors.purchaseOrderNumber = t('issue.rowSelectLot');
       if (!(Number(row.requestedQuantity) > 0)) {
-        errors.requestedQuantity = 'SL > 0';
+        errors.requestedQuantity = t('issue.rowQtyGtZero');
       } else if (row.existingQuantity !== null && Number(row.requestedQuantity) > row.existingQuantity) {
-        errors.requestedQuantity = `Vượt quá tồn kho (${row.existingQuantity})`;
+        errors.requestedQuantity = t('issue.rowQtyOverStock', { avail: row.existingQuantity });
       }
       if (Object.keys(errors).length > 0) nextRowErrors[index] = errors;
     });
@@ -426,7 +428,7 @@ const CreateGoodIssue = () => {
   const createIssue = async () => {
     setHasSubmitted(true);
     if (!validate()) {
-      toast.error("Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin!", {
+      toast.error(t('toast.checkMissingRows'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -446,7 +448,7 @@ const CreateGoodIssue = () => {
         })),
       };
       await inventoryIssueApi.createIssue(newIssue);
-      toast.success("Tạo phiếu xuất kho thành công!", {
+      toast.success(t('toast.createIssueOk'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -463,7 +465,7 @@ const CreateGoodIssue = () => {
       setImportErrors(null);
       setImportNotice(null);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Tạo phiếu xuất kho thất bại!'), {
+      toast.error(getApiErrorMessage(err, t('toast.createIssueFail')), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -485,14 +487,14 @@ const CreateGoodIssue = () => {
               onClick={() => fileInputRef.current?.click()}
               style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <AiOutlineUpload size={16} /> {importing ? 'Đang đọc file...' : 'Nhập từ Excel'}
+              <AiOutlineUpload size={16} /> {importing ? t('issue.importExcelReading') : t('issue.importExcel')}
             </ActionButton>
             <ActionButton
               variant="secondary"
               onClick={downloadTemplate}
               style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <AiOutlineDownload size={16} /> Tải file Excel mẫu
+              <AiOutlineDownload size={16} /> {t('issue.downloadTemplate')}
             </ActionButton>
             <input
               ref={fileInputRef}
@@ -512,7 +514,7 @@ const CreateGoodIssue = () => {
               border: '1px solid var(--status-error)', background: 'var(--color-surface-2)', color: 'var(--status-error)',
               borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
             }}>
-              <strong>Không thể nhập file. Chưa thay đổi dữ liệu trên form:</strong>
+              <strong>{t('issue.importErrorTitle')}</strong>
               <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
                 {importErrors.map((msg, i) => <li key={i}>{msg}</li>)}
               </ul>
@@ -530,15 +532,15 @@ const CreateGoodIssue = () => {
 
           <div style={{ display: "flex" }}>
             <FormSection>
-              <SectionTitle>Phiếu xuất kho</SectionTitle>
+              <SectionTitle>{t('issue.slipTitle')}</SectionTitle>
 
               <FormGroup>
-                <Label required>Kho hàng:</Label>
+                <Label required>{t('issue.warehouse')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedWarehouse}
                     onChange={(e) => setSelectedWarehouse(e.target.value)}
-                    placeholder="Chọn loại kho hàng"
+                    placeholder={t('issue.selectWarehouseType')}
                   >
                     {uniqueWarehouseNames.map((warehouseName, index) => (
                       <option key={`warehouse-${index}`} value={warehouseName}>
@@ -551,12 +553,12 @@ const CreateGoodIssue = () => {
               {fieldErrors.warehouse && <div style={errorTextStyle}>{fieldErrors.warehouse}</div>}
 
               <FormGroup>
-                <Label required>Mã kho hàng:</Label>
+                <Label required>{t('issue.warehouseCode')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedZone}
                     onChange={(e) => setSelectedZone(e.target.value)}
-                    placeholder="Chọn mã kho hàng"
+                    placeholder={t('issue.selectWarehouseCode')}
                   >
                     {wareHouses
                       .filter((warehouse) => warehouse.warehouseName === selectedWarehouse)
@@ -571,12 +573,12 @@ const CreateGoodIssue = () => {
               {fieldErrors.zone && <div style={errorTextStyle}>{fieldErrors.zone}</div>}
 
               <FormGroup>
-                <Label required>Khách hàng:</Label>
+                <Label required>{t('issue.customer')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedCustomer}
                     onChange={(e) => setSelectedCustomer(e.target.value)}
-                    placeholder="Chọn khách hàng"
+                    placeholder={t('issue.selectCustomer')}
                   >
                     {customers.map((customer, index) => (
                       <option key={`customer-${index}`} value={customer.customerName}>
@@ -589,12 +591,12 @@ const CreateGoodIssue = () => {
               {fieldErrors.customer && <div style={errorTextStyle}>{fieldErrors.customer}</div>}
 
               <FormGroup>
-                <Label required>Nhân viên:</Label>
+                <Label required>{t('issue.employee')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedPerson}
                     onChange={(e) => setSelectedPerson(e.target.value)}
-                    placeholder="Chọn nhân viên"
+                    placeholder={t('issue.selectEmployee')}
                   >
                     {people.map((person, index) => (
                       <option key={`person-${index}`} value={person.employeeName}>
@@ -607,7 +609,7 @@ const CreateGoodIssue = () => {
               {fieldErrors.person && <div style={errorTextStyle}>{fieldErrors.person}</div>}
 
               <FormGroup>
-                <Label required>Ngày xuất kho:</Label>
+                <Label required>{t('issue.issueDate')}</Label>
                 <SelectContainer>
                   <DateInput
                     selectedDate={selectedDate}
@@ -620,16 +622,16 @@ const CreateGoodIssue = () => {
 
             <ListSection style={{ width: "50%" }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <SectionTitle style={{ marginBottom: 0 }}>Danh sách xuất kho</SectionTitle>
+                <SectionTitle style={{ marginBottom: 0 }}>{t('issue.productListTitle')}</SectionTitle>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <Tag variant="neutral">Số dòng: {rows.length}</Tag>
-                  <Tag variant="accent">Tổng SL: {totalQuantity}</Tag>
+                  <Tag variant="neutral">{t('issue.rows', { count: rows.length })}</Tag>
+                  <Tag variant="accent">{t('issue.totalQty', { count: totalQuantity })}</Tag>
                 </div>
               </div>
 
               {Object.keys(rowErrors).length > 0 && (
                 <div style={{ ...errorTextStyle, marginBottom: '8px' }}>
-                  Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin
+                  {t('issue.checkMissingRows')}
                 </div>
               )}
 
@@ -637,12 +639,12 @@ const CreateGoodIssue = () => {
                 <Table style={{ tableLayout: "fixed", width: "100%" }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                      <TableHeader style={{ width: "27%" }}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "17%" }}>Mã sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "10%" }}>ĐVT</TableHeader>
-                      <TableHeader style={{ width: "20%" }}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{ width: "17%" }}>SL xuất</TableHeader>
+                      <TableHeader style={{ width: "7%" }}>{t('issue.colNo')}</TableHeader>
+                      <TableHeader style={{ width: "27%" }}>{t('issue.colProductName')}</TableHeader>
+                      <TableHeader style={{ width: "17%" }}>{t('issue.colProductId')}</TableHeader>
+                      <TableHeader style={{ width: "10%" }}>{t('issue.colUom')}</TableHeader>
+                      <TableHeader style={{ width: "20%" }}>{t('issue.colLotOrPo')}</TableHeader>
+                      <TableHeader style={{ width: "17%" }}>{t('issue.colIssueQty')}</TableHeader>
                       <TableHeader style={{ width: "8%" }}></TableHeader>
                     </tr>
                   </thead>
@@ -655,7 +657,7 @@ const CreateGoodIssue = () => {
                             <Select
                               value={row.materialName}
                               onChange={(e) => handleMaterialNameChange(index, e.target.value)}
-                              placeholder="Tên sản phẩm"
+                              placeholder={t('issue.phProductName')}
                               style={{ fontSize: "90%" }}
                               // Danh sách mở ra vẫn hiển thị "[Lot Number] Tên sản phẩm" để dễ phân
                               // biệt, nhưng sau khi chọn xong ô đóng chỉ hiển thị tên sản phẩm cho gọn.
@@ -673,13 +675,13 @@ const CreateGoodIssue = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span style={{ color: row.materialId ? "#000" : "#767676", fontSize: "90%" }}>
-                            {row.materialId || "Mã sản phẩm"}
+                          <span style={{ color: row.materialId ? "var(--color-text)" : "var(--color-text-muted)", fontSize: "90%" }}>
+                            {row.materialId || t('issue.phProductId')}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span style={{ color: row.unit ? "#000" : "#767676", fontSize: "90%" }}>
-                            {row.unit || "ĐVT"}
+                          <span style={{ color: row.unit ? "var(--color-text)" : "var(--color-text-muted)", fontSize: "90%" }}>
+                            {row.unit || t('issue.colUom')}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -687,7 +689,7 @@ const CreateGoodIssue = () => {
                             <Select
                               value={row.purchaseOrderNumber}
                               onChange={(e) => handleLotNumberChange(index, e.target.value)}
-                              placeholder="Mã lô/Số PO"
+                              placeholder={t('issue.colLotOrPo')}
                               style={{ fontSize: "90%" }}
                             >
                               {row.lotNumberList.map((lotNumber, i) => (
@@ -707,13 +709,13 @@ const CreateGoodIssue = () => {
                             type="number"
                             min="0"
                             step="1"
-                            placeholder="SL xuất"
+                            placeholder={t('issue.phIssueQty')}
                             value={row.requestedQuantity}
                             onChange={(e) => updateRow(index, 'requestedQuantity', e.target.value)}
                           />
                           {row.existingQuantity !== null && (
                             <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
-                              Tồn kho: {row.existingQuantity}
+                              {t('issue.onHand', { qty: row.existingQuantity })}
                             </div>
                           )}
                           {rowErrors[index]?.requestedQuantity && (
@@ -732,7 +734,7 @@ const CreateGoodIssue = () => {
               </div>
 
               <ActionButton variant="secondary" onClick={addRow} style={{ width: 'auto', margin: '16px 0 0', padding: '10px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <AiOutlinePlus size={16} /> Thêm dòng sản phẩm
+                <AiOutlinePlus size={16} /> {t('issue.addRow')}
               </ActionButton>
             </ListSection>
           </div>
@@ -740,7 +742,7 @@ const CreateGoodIssue = () => {
             style={{ marginTop: '2rem', width: '35%', padding: '14px', fontSize: '14px' }}
             onClick={createIssue}
           >
-            Tạo phiếu xuất kho
+            {t('issue.submit')}
           </ActionButton>
         </>
       )}

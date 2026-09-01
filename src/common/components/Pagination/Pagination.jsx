@@ -1,6 +1,7 @@
 import ActionButton from '../Button/ActionButton/ActionButton.jsx';
 import styles from './Pagination.module.scss';
 import clsx from 'clsx';
+import useTranslation from '../../hooks/useTranslation';
 
 const pageButtonStyle = { margin: 0, width: 'auto', minWidth: '36px', padding: '8px 12px', fontSize: '14px' };
 const navButtonStyle = { margin: 0, width: 'auto', padding: '8px 16px', fontSize: '14px' };
@@ -25,18 +26,20 @@ const getPageWindow = (currentPage, totalPages, maxPageButtons) => {
     return result;
 };
 
-const Pagination = ({ currentPage, totalItems, pageSize, onPageChange, itemLabel = 'lô', maxPageButtons = 7, className, style }) => {
+const Pagination = ({ currentPage, totalItems, pageSize, onPageChange, itemLabel, maxPageButtons = 7, className, style }) => {
+    const { t } = useTranslation();
     if (!totalItems) return null;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
     const startItem = (currentPage - 1) * pageSize + 1;
     const endItem = Math.min(currentPage * pageSize, totalItems);
     const pageWindow = getPageWindow(currentPage, totalPages, maxPageButtons);
+    const unit = itemLabel || t('pagination.itemsDefault');
 
     return (
         <div className={clsx(styles.paginationBar, className)} style={style}>
             <span className={styles.rangeLabel}>
-                Hiển thị {startItem}-{endItem} trên {totalItems} {itemLabel}
+                {t('pagination.showing', { from: startItem, to: endItem, total: totalItems, unit })}
             </span>
             <div className={styles.controls}>
                 <ActionButton
@@ -45,7 +48,7 @@ const Pagination = ({ currentPage, totalItems, pageSize, onPageChange, itemLabel
                     onClick={() => onPageChange(currentPage - 1)}
                     style={navButtonStyle}
                 >
-                    Trước
+                    {t('pagination.prev')}
                 </ActionButton>
 
                 {pageWindow.map((p, index) => (
@@ -70,7 +73,7 @@ const Pagination = ({ currentPage, totalItems, pageSize, onPageChange, itemLabel
                     onClick={() => onPageChange(currentPage + 1)}
                     style={navButtonStyle}
                 >
-                    Sau
+                    {t('pagination.next')}
                 </ActionButton>
             </div>
         </div>

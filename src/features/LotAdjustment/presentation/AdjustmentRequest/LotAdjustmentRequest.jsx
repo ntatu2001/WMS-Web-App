@@ -26,6 +26,8 @@ import { adjustmentTypeMap, AdjustmentType } from '../../../../app/mockData/Adju
 import { stockTakeStatusColor } from '../../../../app/mockData/StockTakeStatusData.js';
 import materialSubLotApi from '../../../../api/materialSubLotApi.js';
 import { getApiErrorMessage } from '../../../../api/apiError.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { reasonLabelKey, adjustmentTypeLabelKey, varianceStatusLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader} from 'react-spinners';
@@ -37,6 +39,7 @@ const getVariance = (existingQuantity, realQuantity) => (Number(realQuantity) ||
 const getVarianceStatus = (variance) => (variance === 0 ? 'Khớp' : variance < 0 ? 'Thiếu' : 'Dư');
 
 const RequestLotAdjustment = () => {
+    const { t } = useTranslation();
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedWarehouse, setSelectedWarehouse] = useState(null);
     const [selectedZone, setSelectedZone] = useState(null);
@@ -84,7 +87,7 @@ const RequestLotAdjustment = () => {
                 setWareHouses(wareHouseList);
             } catch (error) {
                 console.error("Error fetching initial data:", error);
-                toast.error("Không thể tải dữ liệu ban đầu");
+                toast.error(t('inventory.initialLoadFail'));
             } finally {
                 setIsInitialLoading(false);
             }
@@ -117,7 +120,7 @@ const RequestLotAdjustment = () => {
                 setLotNumbers(lotNumberList);
             } catch (error) {
                 console.error("Error fetching material lots:", error);
-                toast.error("Không thể tải danh sách lô vật tư");
+                toast.error(t('inventory.lotListLoadFail'));
             } finally {
                 setIsLotLoading(false);
             }
@@ -152,7 +155,7 @@ const RequestLotAdjustment = () => {
                 }
             } catch (error) {
                 console.error("Error fetching material lot by ID:", error);
-                toast.error("Không thể tải thông tin chi tiết lô vật tư");
+                toast.error(t('inventory.lotDetailLoadFail'));
             } finally {
                 setIsLotDetailsLoading(false);
             }
@@ -210,13 +213,13 @@ const RequestLotAdjustment = () => {
 
       const validateRequestForm = () => {
         const nextFieldErrors = {};
-        if (!selectedWarehouse) nextFieldErrors.warehouse = 'Vui lòng chọn kho hàng';
-        if (!selectedZone) nextFieldErrors.zone = 'Vui lòng chọn mã kho hàng';
-        if (!selectedLotNumber) nextFieldErrors.lot = 'Vui lòng chọn lô kiểm kê';
-        if (!selectedLotAdjustmentType) nextFieldErrors.type = 'Vui lòng chọn loại kiểm kê';
-        if (!selectedReason) nextFieldErrors.reason = 'Vui lòng chọn lý do';
-        if (!selectedPerson) nextFieldErrors.person = 'Vui lòng chọn nhân viên';
-        if (!selectedDate) nextFieldErrors.date = 'Vui lòng chọn ngày thực hiện';
+        if (!selectedWarehouse) nextFieldErrors.warehouse = t('inventory.valWarehouse');
+        if (!selectedZone) nextFieldErrors.zone = t('inventory.valWarehouseCode');
+        if (!selectedLotNumber) nextFieldErrors.lot = t('inventory.valLot');
+        if (!selectedLotAdjustmentType) nextFieldErrors.type = t('inventory.valType');
+        if (!selectedReason) nextFieldErrors.reason = t('inventory.valReason');
+        if (!selectedPerson) nextFieldErrors.person = t('inventory.valEmployee');
+        if (!selectedDate) nextFieldErrors.date = t('inventory.valDate');
         setFieldErrors(nextFieldErrors);
         return Object.keys(nextFieldErrors).length === 0;
       };
@@ -224,7 +227,7 @@ const RequestLotAdjustment = () => {
       const createLotAdjustment = async () => {
         setHasSubmitted(true);
         if (!validateRequestForm()) {
-          toast.error("Tạo yêu cầu kiểm kê thất bại!", {
+          toast.error(t('inventory.createFail'), {
             position: "top-right",
             autoClose: 3000,
             hideProgressBar: false,
@@ -252,7 +255,7 @@ const RequestLotAdjustment = () => {
           }
           const lotAdjustmentId = await lotAdjustmentApi.createNewStockTake(newLotAdjustment);
           setLotAdjustmentId(lotAdjustmentId);
-          toast.success("Tạo yêu cầu kiểm kê thành công!", {
+          toast.success(t('inventory.createOk'), {
             position: "top-right",
             autoClose: 3000,
             hideProgressBar: false,
@@ -262,7 +265,7 @@ const RequestLotAdjustment = () => {
             progress: undefined,
           });
         } catch (err) {
-          setError(getApiErrorMessage(err, 'An error occurred while creating the receipt.'));
+          setError(getApiErrorMessage(err, t('inventory.createError')));
         } finally {
           setIsCreateLoading(false);
         }
@@ -276,7 +279,7 @@ const RequestLotAdjustment = () => {
         });
 
         if (!hasChanges) {
-            toast.info("Không có thay đổi nào để duyệt kiểm kê", {
+            toast.info(t('inventory.noChangesToApprove'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -301,7 +304,7 @@ const RequestLotAdjustment = () => {
             }
             // Call API to update the stock take with the entered real quantities
             await lotAdjustmentApi.updateStockTake(updatedMaterialLotAdjustment);
-            toast.success("Duyệt kiểm kê thành công!", {
+            toast.success(t('inventory.approveOk'), {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -331,7 +334,7 @@ const RequestLotAdjustment = () => {
             setHasSubmitted(false);
         }
         catch (err) {
-            setError(getApiErrorMessage(err, 'An error occurred while updating the material lot adjustment.'));
+            setError(getApiErrorMessage(err, t('inventory.approveError')));
         } finally {
             setIsUpdateLoading(false);
         }
@@ -343,7 +346,7 @@ const RequestLotAdjustment = () => {
         <ContentContainer>
             {/* Left Section - Request Form */}
             <FormSection style={{ flex: "0 0 380px", width: "380px" }}>
-                <SectionTitle>Yêu cầu kiểm kê</SectionTitle>
+                <SectionTitle>{t('inventory.formTitle')}</SectionTitle>
 
                 {isInitialLoading && (
                     <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
@@ -354,12 +357,12 @@ const RequestLotAdjustment = () => {
                 {!isInitialLoading && (
                     <>
                         <FormGroup>
-                            <Label required>Kho hàng:</Label>
+                            <Label required>{t('inventory.warehouse')}</Label>
                             <SelectContainer>
                             <Select
                                 value={selectedWarehouse}
                                 onChange={(e) => setSelectedWarehouse(e.target.value)}
-                                placeholder="Chọn loại kho hàng"
+                                placeholder={t('inventory.selectWarehouseType')}
                                 >
                                 {uniqueWarehouseNames.map((warehouseName, index) => (
                                     <option key = {`warehouse-${index}`} value= {warehouseName}>
@@ -372,12 +375,12 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.warehouse && <div style={errorTextStyle}>{fieldErrors.warehouse}</div>}
 
                         <FormGroup>
-                            <Label required>Mã kho hàng:</Label>
+                            <Label required>{t('inventory.warehouseCode')}</Label>
                             <SelectContainer>
                             <Select
                                 value={selectedZone}
                                 onChange={(e) => setSelectedZone(e.target.value)}
-                                placeholder="Chọn mã kho hàng"
+                                placeholder={t('inventory.selectWarehouseCode')}
                                 >
                                 {wareHouses
                                     .filter((warehouse) => warehouse.warehouseName === selectedWarehouse)
@@ -392,16 +395,16 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.zone && <div style={errorTextStyle}>{fieldErrors.zone}</div>}
 
                         <FormGroup>
-                            <Label required>Lô kiểm kê:</Label>
+                            <Label required>{t('inventory.lot')}</Label>
                             <SelectContainer>
                                 <Select
                                 value={selectedLotNumber}
                                 onChange={(e) => setSelectedLotNumber(e.target.value)}
-                                placeholder="Chọn lô hàng kiểm kê"
+                                placeholder={t('inventory.selectLot')}
                                 disabled={isLotLoading}
                                 >
                                 {isLotLoading ? (
-                                    <option>Đang tải...</option>
+                                    <option>{t('common.loading')}</option>
                                 ) : (
                                     lotNumbers.map((lotNumber, index) => (
                                         <option key = {`lotNumber-${index}`} value= {lotNumber}>
@@ -420,15 +423,15 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.lot && <div style={errorTextStyle}>{fieldErrors.lot}</div>}
 
                         <FormGroup>
-                            <Label required>Loại kiểm kê:</Label>
+                            <Label required>{t('inventory.type')}</Label>
                             <SelectContainer>
-                                <Select placeholder="Chọn loại kiểm kê"
+                                <Select placeholder={t('inventory.selectType')}
                                         value={selectedLotAdjustmentType}
                                         onChange={(e) => setSelectedLotAdjustmentType(e.target.value)}
                                 >
                                         {AdjustmentType.map((adjustmentType, index) => (
                                         <option key = {`adjustmentType-${index}`} value= {adjustmentType}>
-                                        {adjustmentType}
+                                        {resolveLabel(adjustmentTypeLabelKey, adjustmentType, t)}
                                         </option>
                                     ))}
 
@@ -438,16 +441,16 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.type && <div style={errorTextStyle}>{fieldErrors.type}</div>}
 
                         <FormGroup>
-                            <Label required>Lý do:</Label>
+                            <Label required>{t('inventory.reason')}</Label>
                             <SelectContainer>
                             <Select
                                 value={selectedReason}
                                 onChange={(e) => setSelectedReason(e.target.value)}
-                                placeholder="Chọn lý do kiểm kê"
+                                placeholder={t('inventory.selectReason')}
                                 >
                                 {reasonData.map((reason, index) => (
                                     <option key = {`reason-${index}`} value={reason}>
-                                    {reason}
+                                    {resolveLabel(reasonLabelKey, reason, t)}
                                     </option>
                                 ))}
                             </Select>
@@ -456,12 +459,12 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.reason && <div style={errorTextStyle}>{fieldErrors.reason}</div>}
 
                         <FormGroup>
-                            <Label required>Nhân viên:</Label>
+                            <Label required>{t('inventory.employee')}</Label>
                             <SelectContainer>
                             <Select
                                 value={selectedPerson}
                                 onChange={(e) => setSelectedPerson(e.target.value)}
-                                placeholder="Chọn nhân viên"
+                                placeholder={t('inventory.selectEmployee')}
                                 >
                                 {people.map((person, index) => (
                                     <option key = {`person-${index}`} value={person.employeeName}>
@@ -474,7 +477,7 @@ const RequestLotAdjustment = () => {
                         {fieldErrors.person && <div style={errorTextStyle}>{fieldErrors.person}</div>}
 
                         <FormGroup>
-                            <Label required>Ngày thực hiện:</Label>
+                            <Label required>{t('inventory.performedDate')}</Label>
                             <SelectContainer>
                                 <DateInput
                                     selectedDate={selectedDate}
@@ -494,7 +497,7 @@ const RequestLotAdjustment = () => {
                             {isCreateLoading ? (
                                 <ClipLoader color="#ffffff" size={20} />
                             ) : (
-                                "Tạo yêu cầu"
+                                t('inventory.createRequest')
                             )}
                         </ActionButton>
                     </>
@@ -504,7 +507,7 @@ const RequestLotAdjustment = () => {
             {/* Right Section - Check Detail */}
             <ListSection elevated style={{ flex: "1 1 auto", minWidth: 0 }}>
                 <div className={styles.detailHeader}>
-                    <SectionTitle style={{width: "100%", marginBottom: 0}}>Thông tin kiểm kê chi tiết</SectionTitle>
+                    <SectionTitle style={{width: "100%", marginBottom: 0}}>{t('inventory.detailTitle')}</SectionTitle>
                     <button
                         onClick={() => setIsDetailsVisible(!isDetailsVisible)}
                         className={styles.chevronButton}
@@ -526,53 +529,53 @@ const RequestLotAdjustment = () => {
                             <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
 
                                 <FormGroup style={{ position: "relative"}}>
-                                    <Label style={{ width: "35%", marginLeft: "30px" }}>Mã lô kiểm kê:</Label>
+                                    <Label style={{ width: "35%", marginLeft: "30px" }}>{t('inventory.lotCode')}</Label>
                                     <span className={styles.readOnlyField}>{selectedLotNumber || ""}</span>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label style={{ width: "35%", marginLeft: "30px" }}>Loại kiểm kê:</Label>
-                                    <span className={styles.readOnlyField}>{selectedLotAdjustmentType || ""}</span>
+                                    <Label style={{ width: "35%", marginLeft: "30px" }}>{t('inventory.type')}</Label>
+                                    <span className={styles.readOnlyField}>{selectedLotAdjustmentType ? resolveLabel(adjustmentTypeLabelKey, selectedLotAdjustmentType, t) : ""}</span>
                                 </FormGroup>
                             </div>
 
                             <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                 <FormGroup style={{ position: "relative" }}>
-                                    <Label style={{ width: "36.3%", marginLeft: "10px" }}>Tổng số lượng:</Label>
+                                    <Label style={{ width: "36.3%", marginLeft: "10px" }}>{t('inventory.totalQuantity')}</Label>
                                     <span className={styles.readOnlyField}>{subLots.length > 0 ? totalQuantity : ""}</span>
                                 </FormGroup>
 
                                 <FormGroup>
-                                    <Label style={{ width: "36.3%", marginLeft: "10px" }}>Ngày thực hiện:</Label>
+                                    <Label style={{ width: "36.3%", marginLeft: "10px" }}>{t('inventory.performedDate')}</Label>
                                     <span className={styles.readOnlyField}>{selectedDate ? new Date(selectedDate).toLocaleString() : ""}</span>
                                 </FormGroup>
                             </div>
                         </div>
 
-                        <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>Thông tin sản phẩm</SectionTitle>
+                        <SectionTitle style={{ textAlign: 'left', margin: "0px 30px" }}>{t('inventory.productInfo')}</SectionTitle>
 
                         <FormSection className={styles.accentPanel} style={{ margin: "0px 10px 10px", height: "120px", padding: "10px", boxShadow: "none" }}>
                             <div style={{ marginBottom: 0, display: "flex" }}>
                                 <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                     <FormGroup style={{ marginLeft: "10px" }}>
-                                        <Label style={{ width: "38%" }}>Sản phẩm:</Label>
+                                        <Label style={{ width: "38%" }}>{t('inventory.product')}</Label>
                                         <span className={styles.readOnlyField} style={{ width: "55%", height: "40px", textAlign: "left" }}>{material?.materialName || ""}</span>
                                     </FormGroup>
 
                                     <FormGroup style={{ marginLeft: "10px" }}>
-                                        <Label style={{ width: "38%" }}>Đơn vị tính:</Label>
+                                        <Label style={{ width: "38%" }}>{t('inventory.uom')}</Label>
                                         <span className={styles.readOnlyField} style={{ width: "55%", fontSize: "11px" }}>{unit || ""}</span>
                                     </FormGroup>
                                 </div>
 
                                 <div style={{ display: "flex", flexDirection: "column", width: "50%" }}>
                                     <FormGroup style={{ marginLeft: "10px" }}>
-                                        <Label style={{ width: "39%" }}>Mã sản phẩm:</Label>
+                                        <Label style={{ width: "39%" }}>{t('inventory.productCode')}</Label>
                                         <span className={styles.readOnlyField} style={{ width: "55%", height: "38px", fontSize: "11px" }}>{material?.materialId || ""}</span>
                                     </FormGroup>
 
                                     <FormGroup style={{ position: "relative" }}>
-                                        <Label style={{ width: "37.6%", marginLeft: "10px" }}>Ghi chú:</Label>
+                                        <Label style={{ width: "37.6%", marginLeft: "10px" }}>{t('inventory.note')}</Label>
                                         <span className={styles.readOnlyField} style={{ width: "55%", height: "38px", fontSize: "11px" }}>{note === "None" ? "--" : note}</span>
                                     </FormGroup>
                                 </div>
@@ -580,24 +583,24 @@ const RequestLotAdjustment = () => {
                         </FormSection>
 
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0px 30px" }}>
-                            <SectionTitle style={{ textAlign: 'left', marginBottom: 0 }}>Kiểm kê tại vị trí lưu trữ</SectionTitle>
-                            <Tag variant="neutral">{subLots.length} vị trí</Tag>
+                            <SectionTitle style={{ textAlign: 'left', marginBottom: 0 }}>{t('inventory.checkAtLocation')}</SectionTitle>
+                            <Tag variant="neutral">{t('inventory.locationsCount', { count: subLots.length })}</Tag>
                         </div>
 
                         <ListSection style={{ padding: 0, margin: "1.5%", boxShadow: "none", border: "none" }}>
                             <div style={{ overflowY: 'auto', height: "300px" }}>
                                 {subLots.length === 0 ? (
-                                    <div className={styles.emptyState}>Không còn vị trí nào để kiểm kê.</div>
+                                    <div className={styles.emptyState}>{t('inventory.noLocations')}</div>
                                 ) : (
                                 <Table>
                                     <thead>
                                         <tr>
-                                            <TableHeader style={{ width: "48px" }}>STT</TableHeader>
-                                            <TableHeader style={{width: "20%"}}>Vị trí lưu trữ</TableHeader>
-                                            <TableHeader>Tồn kho</TableHeader>
-                                            <TableHeader style={{width: "20%"}}>Thực tế</TableHeader>
-                                            <TableHeader>Chênh lệch</TableHeader>
-                                            <TableHeader>Ghi chú</TableHeader>
+                                            <TableHeader style={{ width: "48px" }}>{t('inventory.colNo')}</TableHeader>
+                                            <TableHeader style={{width: "20%"}}>{t('inventory.colLocation')}</TableHeader>
+                                            <TableHeader>{t('inventory.colOnHand')}</TableHeader>
+                                            <TableHeader style={{width: "20%"}}>{t('inventory.colActual')}</TableHeader>
+                                            <TableHeader>{t('inventory.colDiff')}</TableHeader>
+                                            <TableHeader>{t('inventory.colNote')}</TableHeader>
                                             <TableHeader style={{ width: "50px" }}></TableHeader>
                                         </tr>
                                     </thead>
@@ -627,7 +630,7 @@ const RequestLotAdjustment = () => {
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className={styles.statusPill} style={{ backgroundColor: stockTakeStatusColor[status] }}>
-                                                        {status}
+                                                        {resolveLabel(varianceStatusLabelKey, status, t)}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>
@@ -652,7 +655,7 @@ const RequestLotAdjustment = () => {
                             {isUpdateLoading ? (
                                 <ClipLoader color="#ffffff" size={20} />
                             ) : (
-                                "Duyệt kiểm kê"
+                                t('inventory.approve')
                             )}
                         </ActionButton>
                         </>
@@ -682,8 +685,8 @@ const RequestLotAdjustment = () => {
                         width: '300px',
                         boxShadow: 'var(--shadow-lg)'
                     }}>
-                        <h4 style={{marginTop: 0}}>Xác nhận xóa</h4>
-                        <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                        <h4 style={{marginTop: 0}}>{t('inventory.confirmDeleteTitle')}</h4>
+                        <p>{t('inventory.confirmDeleteBody')}</p>
                         <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px'}}>
                             <button
                                 onClick={cancelDelete}
@@ -695,7 +698,7 @@ const RequestLotAdjustment = () => {
                                     cursor: 'pointer'
                                 }}
                             >
-                                Hủy
+                                {t('inventory.cancel')}
                             </button>
                             <button
                                 onClick={confirmDelete}
@@ -708,7 +711,7 @@ const RequestLotAdjustment = () => {
                                     cursor: 'pointer'
                                 }}
                             >
-                                Xóa
+                                {t('inventory.delete')}
                             </button>
                         </div>
                     </div>

@@ -10,6 +10,7 @@ import overViewApi from "../../../api/overView.js"
 import useOverviewRealtime from "../../../common/hooks/useOverviewRealtime.js"
 import usePolling from "../../../common/hooks/usePolling.js"
 import { useResolvedTheme } from "../../../common/hooks/useApplyTheme.js"
+import useTranslation from "../../../common/hooks/useTranslation.js"
 import { buildChartTheme, mergeChartOptions } from "../../../common/utils/chartTheme.js"
 import {
     listTodayEnter,
@@ -47,10 +48,10 @@ const fetchInventoryActivityStatsByType = async (type) => {
 
 // Nhãn + màu chấm trạng thái kết nối realtime hiển thị trên thanh tiêu đề.
 const REALTIME_STATUS_META = {
-    connected: { color: "var(--status-connected)", label: "Trực tiếp" },
-    connecting: { color: "var(--status-connecting)", label: "Đang kết nối…" },
-    reconnecting: { color: "var(--status-connecting)", label: "Đang kết nối lại…" },
-    disconnected: { color: "var(--status-disconnected)", label: "Ngoại tuyến" },
+    connected: { color: "var(--status-connected)", labelKey: "dashboard.rtLive" },
+    connecting: { color: "var(--status-connecting)", labelKey: "dashboard.rtConnecting" },
+    reconnecting: { color: "var(--status-connecting)", labelKey: "dashboard.rtReconnecting" },
+    disconnected: { color: "var(--status-disconnected)", labelKey: "dashboard.rtOffline" },
 }
 
 const Dashboard = () => {
@@ -81,6 +82,7 @@ const Dashboard = () => {
     const chartIssueRef = useRef(null);
     const chartReceiptRef = useRef(null);
     const resolvedTheme = useResolvedTheme();
+    const { t, lang } = useTranslation();
 
     useEffect(() => {
         setFilterDataEnter(() => {
@@ -301,7 +303,7 @@ const Dashboard = () => {
                         toolbar: { show: false },
                     },
                     title: {
-                        text: "Thống kê xuất kho theo kho hàng",
+                        text: t('dashboard.chartIssueByWarehouse'),
                         align: "center",
                         style: { fontSize: "18px", fontWeight: "bold" }
                     },
@@ -316,11 +318,11 @@ const Dashboard = () => {
                     dataLabels: { enabled: false },
                     xaxis: {
                         categories: [
-                            "Kho thành phẩm",
-                            "Kho bán thành phẩm",
-                            "Kho nguyên vật liệu",
-                            "Kho vật tư",
-                            "Kho bao bì",
+                            t('dashboard.whFinished'),
+                            t('dashboard.whSemiFinished'),
+                            t('dashboard.whRawMaterial'),
+                            t('dashboard.whSupplies'),
+                            t('dashboard.whPackaging'),
                         ],
                         labels: {
                             style: {
@@ -330,7 +332,7 @@ const Dashboard = () => {
                     },
                     yaxis: {
                         min: 0,
-                        title: { text: "Sản lượng" },
+                        title: { text: t('dashboard.axisOutput') },
                         labels: {
                             style: {
                                 fontSize: "14px"
@@ -349,7 +351,7 @@ const Dashboard = () => {
                     ],
                     series: [
                         {
-                            name: "Sản lượng",
+                            name: t('dashboard.axisOutput'),
                             data: data,
                         },
                     ],
@@ -383,7 +385,7 @@ const Dashboard = () => {
                         toolbar: { show: false },
                     },
                     title: {
-                        text: "Thống kê nhập kho theo kho hàng",
+                        text: t('dashboard.chartReceiptByWarehouse'),
                         align: "center",
                         style: { fontSize: "18px", fontWeight: "bold" }
                     },
@@ -398,11 +400,11 @@ const Dashboard = () => {
                     dataLabels: { enabled: false },
                     xaxis: {
                         categories: [
-                            "Kho thành phẩm",
-                            "Kho bán thành phẩm",
-                            "Kho nguyên vật liệu",
-                            "Kho vật tư",
-                            "Kho bao bì",
+                            t('dashboard.whFinished'),
+                            t('dashboard.whSemiFinished'),
+                            t('dashboard.whRawMaterial'),
+                            t('dashboard.whSupplies'),
+                            t('dashboard.whPackaging'),
                         ],
                         labels: {
                             style: {
@@ -412,7 +414,7 @@ const Dashboard = () => {
                     },
                     yaxis: {
                         min: 0,
-                        title: { text: "Sản lượng" },
+                        title: { text: t('dashboard.axisOutput') },
                         labels: {
                             style: {
                                 fontSize: "14px"
@@ -431,7 +433,7 @@ const Dashboard = () => {
                     ],
                     series: [
                         {
-                            name: "Sản lượng",
+                            name: t('dashboard.axisOutput'),
                             data: data,
                         },
                     ],
@@ -453,7 +455,7 @@ const Dashboard = () => {
                 chartReceiptRef.current._apexChart.destroy();
             }
         };
-    }, [warehouseStats, warehouseStatsType, resolvedTheme]);
+    }, [warehouseStats, warehouseStatsType, resolvedTheme, t]);
 
     return (
         <div
@@ -467,7 +469,7 @@ const Dashboard = () => {
             }}
         >
             <HeaderContainer style={{ height: "5%", padding: "0", margin: "0" }}>
-                <HeaderItem>Tổng quan</HeaderItem>
+                <HeaderItem>{t('dashboard.title')}</HeaderItem>
             </HeaderContainer>
             <div className="w-full h-[5%] flex justify-end items-center gap-[1%]  ">
                 {/* Trạng thái kết nối realtime + thời điểm cập nhật gần nhất */}
@@ -482,10 +484,10 @@ const Dashboard = () => {
                                 display: "inline-block",
                             }}
                         />
-                        {realtimeMeta.label}
+                        {t(realtimeMeta.labelKey)}
                     </span>
                     {lastUpdatedAt && (
-                        <span>· Cập nhật {lastUpdatedAt.toLocaleTimeString("vi-VN")}</span>
+                        <span>{t('dashboard.updatedAt', { time: lastUpdatedAt.toLocaleTimeString(lang === 'en' ? 'en-US' : 'vi-VN') })}</span>
                     )}
                 </div>
                 {/* ActionButton cho biểu đồ Pie (tổng quan) */}
@@ -507,7 +509,7 @@ const Dashboard = () => {
                         setTogleButtonPieChart([true, false, false, false])
                     }}
                 >
-                    Hôm nay
+                    {t('dashboard.today')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -527,7 +529,7 @@ const Dashboard = () => {
                         setTogleButtonPieChart([false, true, false, false])
                     }}
                 >
-                    Tuần này
+                    {t('dashboard.thisWeek')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -547,7 +549,7 @@ const Dashboard = () => {
                         setTogleButtonPieChart([false, false, true, false])
                     }}
                 >
-                    Tháng này
+                    {t('dashboard.thisMonth')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -567,7 +569,7 @@ const Dashboard = () => {
                         setTogleButtonPieChart([false, false, false, true])
                     }}
                 >
-                    Năm nay
+                    {t('dashboard.thisYear')}
                 </ActionButton>
             </div>
             
@@ -576,20 +578,20 @@ const Dashboard = () => {
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
-                        <HeaderItem>Nhập kho</HeaderItem>
+                        <HeaderItem>{t('dashboard.cardReceipt')}</HeaderItem>
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${dataEnter.length}`}</p>
-                            <p>Tổng</p>
+                            <p>{t('dashboard.total')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataEnter[1]}`}</p>
-                            <p>Hoàn thành</p>
+                            <p>{t('dashboard.completed')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${((filterDataEnter[1] / dataEnter.length) * 100).toFixed(0)}%`}</p>
-                            <p>Tỉ lệ</p>
+                            <p>{t('dashboard.rate')}</p>
                         </div>
                     </div>
                     <div className="h-[60%] w-[100%] ">
@@ -598,9 +600,9 @@ const Dashboard = () => {
                             width={"100%"}
                             name={""}
                             fontSize={"0.8rem"}
-                            label={"Tổng"}
+                            label={t('dashboard.total')}
                             unit={""}
-                            dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
+                            dataChartLabels={[t('dashboard.notCompleted'), t('dashboard.completed')]}
                             dataChartValue={filterDataEnter}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",
@@ -615,20 +617,20 @@ const Dashboard = () => {
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
-                        <HeaderItem>Xuất kho</HeaderItem>
+                        <HeaderItem>{t('dashboard.cardIssue')}</HeaderItem>
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${dataExport.length}`}</p>
-                            <p>Tổng</p>
+                            <p>{t('dashboard.total')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataExport[1]}`}</p>
-                            <p>Hoàn thành</p>
+                            <p>{t('dashboard.completed')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             <p className="font-bold">{`${((filterDataExport[1] / dataExport.length) * 100).toFixed(0)}%`}</p>
-                            <p>Tỉ lệ</p>
+                            <p>{t('dashboard.rate')}</p>
                         </div>
                     </div>
                     <div className="h-[60%] w-[100%] ">
@@ -637,9 +639,9 @@ const Dashboard = () => {
                             width={"100%"}
                             name={""}
                             fontSize={"0.8rem"}
-                            label={"Tổng"}
+                            label={t('dashboard.total')}
                             unit={""}
-                            dataChartLabels={["Chưa hoàn thành", "Hoàn thành"]}
+                            dataChartLabels={[t('dashboard.notCompleted'), t('dashboard.completed')]}
                             dataChartValue={filterDataExport}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",
@@ -654,18 +656,18 @@ const Dashboard = () => {
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
-                        <HeaderItem>Kiểm kê</HeaderItem>
+                        <HeaderItem>{t('dashboard.cardStockTake')}</HeaderItem>
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             {/* Hiển thị tổng số kiểm kê từ stockTakeOverview.totalStockTakes */}
                             <p className="font-bold">{`${overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 0}`}</p>
-                            <p>Tổng</p>
+                            <p>{t('dashboard.total')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             {/* Hiển thị số kiểm kê định kỳ từ stockTakeOverview.periodicStockTakes */}
                             <p className="font-bold">{`${overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0}`}</p>
-                            <p>Định kỳ</p>
+                            <p>{t('dashboard.periodic')}</p>
                         </div>
                         <div className="flex-col justify-around w-[30%] h-full items-center text-center">
                             {/* Tính toán tỷ lệ đúng */}
@@ -678,7 +680,7 @@ const Dashboard = () => {
                                     ).toFixed(0)}%`
                                     : "0%"}
                             </p>
-                            <p>Tỉ lệ</p>
+                            <p>{t('dashboard.rate')}</p>
                         </div>
                     </div>
                     <div className="h-[60%] w-[100%] ">
@@ -687,10 +689,10 @@ const Dashboard = () => {
                             width={"100%"}
                             name={""}
                             fontSize={"0.8rem"}
-                            label={"Tổng"}
+                            label={t('dashboard.total')}
                             unit={""}
                             // Đảm bảo nhãn đúng với dữ liệu
-                            dataChartLabels={["Khác", "Định kỳ"]}
+                            dataChartLabels={[t('dashboard.other'), t('dashboard.periodic')]}
                             dataChartValue={[
                                 (overviewData[overviewType]?.stockTakeOverview?.totalStockTakes || 0) -
                                 (overviewData[overviewType]?.stockTakeOverview?.periodicStockTakes || 0),
@@ -709,24 +711,24 @@ const Dashboard = () => {
                     <HeaderContainer
                         style={{ height: "15%", justifyContent: "center", padding: "0", margin: "0", width: "100%" }}
                     >
-                        <HeaderItem>Thống kê chung</HeaderItem>
+                        <HeaderItem>{t('dashboard.cardOverall')}</HeaderItem>
                     </HeaderContainer>
                     <div className="h-[20%] w-full flex justify-around">
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[0] + filterDataTotal[1] + filterDataTotal[2]}`}</p>
-                            <p>Tổng</p>
+                            <p>{t('dashboard.total')}</p>
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[0]}`}</p>
-                            <p>Nhập kho</p>
+                            <p>{t('dashboard.cardReceipt')}</p>
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[1]}`}</p>
-                            <p>Xuất kho</p>
+                            <p>{t('dashboard.cardIssue')}</p>
                         </div>
                         <div className="flex-col justify-around w-[24%] h-full items-center text-center">
                             <p className="font-bold">{`${filterDataTotal[2]}`}</p>
-                            <p>Kiểm kê</p>
+                            <p>{t('dashboard.cardStockTake')}</p>
                         </div>
                     </div>
                     <div className="h-[60%] w-[100%] ">
@@ -735,9 +737,9 @@ const Dashboard = () => {
                             width={"100%"}
                             name={""}
                             fontSize={"0.8rem"}
-                            label={"Tổng"}
+                            label={t('dashboard.total')}
                             unit={""}
-                            dataChartLabels={["Nhập kho", "Xuất kho", "Kiểm kê"]}
+                            dataChartLabels={[t('dashboard.cardReceipt'), t('dashboard.cardIssue'), t('dashboard.cardStockTake')]}
                             dataChartValue={filterDataTotal}
                             // arrayColors={[
                             //     "rgba(233,34,34,0.85)",
@@ -769,7 +771,7 @@ const Dashboard = () => {
                         setWarehouseStatsType("Today")
                     }}
                 >
-                    Hôm nay
+                    {t('dashboard.today')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -789,7 +791,7 @@ const Dashboard = () => {
                         setWarehouseStatsType("ThisWeek")
                     }}
                 >
-                    Tuần này
+                    {t('dashboard.thisWeek')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -809,7 +811,7 @@ const Dashboard = () => {
                         setWarehouseStatsType("ThisMonth")
                     }}
                 >
-                    Tháng này
+                    {t('dashboard.thisMonth')}
                 </ActionButton>
                 <ActionButton
                     className={`${styles.actionButton} ${styles.hoverEffect}`}
@@ -829,7 +831,7 @@ const Dashboard = () => {
                         setWarehouseStatsType("ThisYear")
                     }}
                 >
-                    Năm nay
+                    {t('dashboard.thisYear')}
                 </ActionButton>
             </div>
             <div className="w-full h-[40%] flex justify-between">

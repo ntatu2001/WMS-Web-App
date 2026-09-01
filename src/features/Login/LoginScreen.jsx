@@ -7,6 +7,7 @@ import ActionButton from '../../common/components/Button/ActionButton/ActionButt
 import authApi, { decodeRoles, decodeEmployeeId } from '../../api/authApi';
 import { getApiErrorMessage } from '../../api/apiError';
 import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
+import useTranslation from '../../common/hooks/useTranslation';
 import bkLogo from '../../assets/bk_logo.png';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -156,6 +157,7 @@ const Footer = styled.div`
 `;
 
 const LoginScreen = () => {
+  const { t } = useTranslation();
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -182,7 +184,7 @@ const LoginScreen = () => {
       }));
       navigate(getDefaultRouteForRoles(roles));
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Tên đăng nhập hoặc mật khẩu không đúng'));
+      setError(getApiErrorMessage(err, t('login.error')));
     } finally {
       setLoading(false);
     }
@@ -193,12 +195,12 @@ const LoginScreen = () => {
       <LoginForm onSubmit={handleSubmit}>
         <LogoBox>
           <LogoImg style={{height: "100px"}} src={bkLogo} alt="BK Logo" />
-          <MainTitle>Warehouse Management System</MainTitle>
-          
+          <MainTitle>{t('login.systemName')}</MainTitle>
+
         </LogoBox>
         <div style={{ width: '100%', marginBottom: 18 }}>
           <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.35rem', textAlign: 'center', letterSpacing: 1, marginBottom: 18 }}>
-            ĐĂNG NHẬP HỆ THỐNG
+            {t('login.title')}
           </div>
           <InputGroup>
             <InputIcon>
@@ -206,7 +208,7 @@ const LoginScreen = () => {
             </InputIcon>
             <StyledInput
               type="text"
-              placeholder="Tên đăng nhập"
+              placeholder={t('login.username')}
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               required
@@ -219,7 +221,7 @@ const LoginScreen = () => {
             </InputIcon>
             <StyledInput
               type={showPassword ? 'text' : 'password'}
-              placeholder="Mật khẩu"
+              placeholder={t('login.password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -228,7 +230,7 @@ const LoginScreen = () => {
             <PasswordToggleIcon
               onClick={() => setShowPassword((prev) => !prev)}
               role="button"
-              aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </PasswordToggleIcon>
@@ -240,15 +242,15 @@ const LoginScreen = () => {
               checked={remember}
               onChange={() => setRemember(!remember)}
             />
-            <CheckboxLabel htmlFor="remember">Ghi nhớ đăng nhập</CheckboxLabel>
+            <CheckboxLabel htmlFor="remember">{t('login.remember')}</CheckboxLabel>
           </CheckboxRow>
           {error && <ErrorMessage>{error}</ErrorMessage>}
           <StyledButton type="submit" disabled={loading}>
-            {loading ? 'Đang đăng nhập...' : 'ĐĂNG NHẬP'}
+            {loading ? t('login.submitting') : t('login.submit')}
           </StyledButton>
         </div>
       </LoginForm>
-      <Footer>© 2025 WMS-Web-App</Footer>
+      <Footer>{t('login.footer')}</Footer>
     </BG>
   );
 };

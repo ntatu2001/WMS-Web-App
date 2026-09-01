@@ -1,11 +1,15 @@
 // Xuất danh sách lô hàng nhập kho (đã lọc, KHÔNG phân trang) ra file .xlsx có định dạng.
 // Dùng xlsx-js-style (fork của SheetJS có hỗ trợ style) nạp động để không gộp vào bundle chính.
-import { lotStatusChangeData, lotStatusData } from '../../../app/mockData/LotStatusData.js';
+import { lotStatusChangeData } from '../../../app/mockData/LotStatusData.js';
+import { DEFAULT_LANG, lookup } from '../../../common/i18n/index.js';
+import { lotStatusLabelKey } from '../../../common/i18n/labels.js';
+import { formatDate } from '../../../common/i18n/format.js';
 
-const HEADER = [
-  'STT', 'Tên sản phẩm', 'Mã sản phẩm', 'Mã lô/Số PO', 'Số lượng nhập',
-  'Ngày nhập kho', 'Kho hàng', 'Tiến độ',
-];
+const buildHeader = (lang) => {
+  const g = (k) => lookup(lang, `receipt.${k}`);
+  return [g('colNo'), g('colProductName'), g('colProductId'), g('colLotOrPo'),
+    g('colReceiptQtyManage'), g('colReceiptDate'), g('colWarehouse'), g('colProgress')];
+};
 
 const COLOR = {
   headerFill: '1F4E79', // xanh navy - đồng bộ nút chính của app
@@ -21,32 +25,35 @@ const ALL_BORDERS = { top: THIN, bottom: THIN, left: THIN, right: THIN };
 const CENTER_COLS = new Set([0, 3, 5, 7]); // STT, Mã lô, Ngày, Tiến độ
 const RIGHT_COLS = new Set([4]);           // Số lượng nhập
 
-const fmtDate = (s) => {
-  if (!s) return '';
-  const d = new Date(s);
-  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('vi-VN');
+const statusLabel = (rawStatus, lang) => {
+  if (!rawStatus) return '';
+  const key = lotStatusLabelKey[rawStatus];
+  return key ? lookup(lang, key) : rawStatus;
 };
 
 /**
  * @param {Array} entries - mảng InventoryReceiptEntryDTO đã gộp/dedupe.
  * @param {string} filename - tên file .xlsx sẽ tải về.
+ * @param {'vi'|'en'} lang - ngôn ngữ hiển thị tiêu đề / nội dung.
  */
-export async function exportReceiptEntriesToExcel(entries, filename = 'Lo_hang_nhap_kho.xlsx') {
+export async function exportReceiptEntriesToExcel(entries, filename = 'Lo_hang_nhap_kho.xlsx', lang = DEFAULT_LANG) {
   const XLSX = await import('xlsx-js-style');
 
+  const HEADER = buildHeader(lang);
   const aoa = [
     HEADER,
     ...entries.map((it, i) => {
       const qty = it.receiptLot?.importedQuantity;
+      const rawStatus = lotStatusChangeData[it.receiptLot?.receiptLotStatus] ?? it.receiptLot?.receiptLotStatus ?? '';
       return [
         i + 1,
         it.materialName ?? '',
         it.materialId ?? '',
         it.lotNumber ?? '',
         typeof qty === 'number' ? qty : (qty ?? ''),
-        fmtDate(it.receiptDate),
+        formatDate(it.receiptDate, lang),
         it.warehouseName ?? '',
-        lotStatusChangeData[it.receiptLot?.receiptLotStatus] ?? it.receiptLot?.receiptLotStatus ?? '',
+        statusLabel(rawStatus, lang),
       ];
     }),
   ];
@@ -87,15 +94,11 @@ export async function exportReceiptEntriesToExcel(entries, filename = 'Lo_hang_n
       };
       if (stripe) style.fill = { fgColor: { rgb: COLOR.stripe } };
       if (c === 4 && typeof ws[addr].v === 'number') style.numFmt = '#,##0';
-      if (c === 7) {
-        const hex = lotStatusData[ws[addr].v];
-        if (hex) style.font = { bold: true, color: { rgb: hex.replace('#', '').toUpperCase() } };
-      }
       ws[addr].s = style;
     }
   }
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Lô hàng nhập kho');
+  XLSX.utils.book_append_sheet(wb, ws, lookup(lang, 'receipt.lotInfoTitle'));
   XLSX.writeFile(wb, filename);
 }

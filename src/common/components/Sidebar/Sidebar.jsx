@@ -7,8 +7,10 @@ import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
 import BKlogo from '../../../assets/bk_logo.png';
 import { menuItems, isMenuItemVisible } from '../../config/menuConfig.js';
+import useTranslation from '../../hooks/useTranslation';
 
 const Sidebar = () => {
+  const { t } = useTranslation();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true');
   const roles = useSelector((state) => state.auth.roles);
@@ -45,7 +47,7 @@ const Sidebar = () => {
         type="button"
         className={clsx(styles.collapseToggle)}
         onClick={handleToggleCollapse}
-        aria-label={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+        aria-label={collapsed ? t('menu.expandSidebar') : t('menu.collapseSidebar')}
         aria-expanded={!collapsed}
       >
         <AiOutlineLeft className={clsx(styles.collapseIcon, collapsed && styles.collapseIconRotated)} />
@@ -56,16 +58,16 @@ const Sidebar = () => {
         <div className={clsx(styles.sidebarLogo)}>
           <img src={BKlogo} alt="BK Logo" className={clsx(styles.sidebarImg)} />
         </div>
-        <h1 className={clsx(styles.sidebarTitle)}>WMS Portal</h1>
+        <h1 className={clsx(styles.sidebarTitle)}>{t('menu.portal')}</h1>
       </div>
 
       {/* Menu Items */}
       <nav className={clsx(styles.sidebarNav)}>
         <div className={clsx(styles.sidebarNavScroll)}>
           {navItems.map((item) => (
-            <MenuItem key={item.id} to={item.path} collapsed={collapsed} tooltip={item.title}>
+            <MenuItem key={item.id} to={item.path} collapsed={collapsed} tooltip={t(item.titleKey)}>
               <span className={clsx(styles.sidebarIcon)}><item.icon /></span>
-              <span>{item.title}</span>
+              <span>{t(item.titleKey)}</span>
             </MenuItem>
           ))}
         </div>
@@ -77,14 +79,14 @@ const Sidebar = () => {
               onClick={() => setSettingsOpen((open) => !open)}
             >
               <span className={clsx(styles.sidebarIcon)}><settingsItem.icon /></span>
-              <span className={clsx(styles.settingsLabel)}>{settingsItem.title}</span>
+              <span className={clsx(styles.settingsLabel)}>{t(settingsItem.titleKey)}</span>
               <AiOutlineRight className={clsx(styles.chevron, settingsOpen && styles.chevronOpen)} />
             </div>
 
             {settingsOpen && (
               <div className={clsx(styles.flyout)}>
                 <div className={clsx(styles.flyoutTail)} />
-                <div className={clsx(styles.flyoutSectionLabel)}>Tài khoản</div>
+                <div className={clsx(styles.flyoutSectionLabel)}>{t('menu.accountSection')}</div>
                 {settingsItem.subItems.filter(isVisible).map((subItem) => (
                   <Link
                     key={subItem.id}
@@ -93,7 +95,7 @@ const Sidebar = () => {
                     onClick={() => setSettingsOpen(false)}
                   >
                     <subItem.icon className={clsx(styles.flyoutItemIcon)} />
-                    {subItem.title}
+                    {t(subItem.titleKey)}
                   </Link>
                 ))}
               </div>

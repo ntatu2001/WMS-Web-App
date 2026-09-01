@@ -4,14 +4,16 @@ import DatePicker from 'react-datepicker';
 // import 'react-datepicker/dist/react-datepicker.css';
 import clsx from 'clsx';
 import styles from './DateInput.module.scss'
+import useTranslation from '../../hooks/useTranslation';
 
-const DateInput = ({ 
-  selectedDate, 
-  onChange = () => {}, 
-  placeholder = "Chọn ngày", 
-  className = "", 
+const DateInput = ({
+  selectedDate,
+  onChange = () => {},
+  placeholder,
+  className = "",
   style
 }) => {
+  const { t } = useTranslation();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
   // Toggle calendar visibility
@@ -42,7 +44,7 @@ const DateInput = ({
     <div className={clsx(styles.dateInput, className)} style={style}>
       <input
         type="datetime-local"
-        placeholder={placeholder}
+        placeholder={placeholder || t('common.selectDate')}
         value={formatDateForInput(selectedDate)}
         onChange={(e) => handleDateChange(new Date(e.target.value))}
         className={clsx(styles.input)}

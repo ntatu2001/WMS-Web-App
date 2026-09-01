@@ -21,6 +21,8 @@ import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import { AiOutlineDownload } from 'react-icons/ai';
 import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { formatNumber } from '../../../../common/i18n/format';
 import styles from './Goods.module.scss';
 
 const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
@@ -69,7 +71,7 @@ const fetchMaterialClassNameId = async () => {
   }
 };
 
-const formatCurrency = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
+const formatCurrency = (value, lang, t) => `${formatNumber(value, lang)} ${t('common.currencySuffix')}`;
 
 const emptyFormData = {
   goodName: "",
@@ -84,6 +86,7 @@ const emptyFormData = {
 };
 
 const Goods = () => {
+  const { t, lang } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
   const [formData, setFormData] = useState(emptyFormData);
@@ -176,14 +179,14 @@ const Goods = () => {
 
   const validateForm = () => {
     const nextFieldErrors = {};
-    if (!formData.goodName.trim()) nextFieldErrors.goodName = 'Vui lòng nhập tên sản phẩm';
-    if (!formData.goodCode.trim()) nextFieldErrors.goodCode = 'Vui lòng nhập mã sản phẩm';
-    if (!formData.unit) nextFieldErrors.unit = 'Vui lòng chọn đơn vị tính';
-    if (!formData.goodType) nextFieldErrors.goodType = 'Vui lòng chọn loại sản phẩm';
-    if (formData.minimumStock === '' || Number(formData.minimumStock) < 0) nextFieldErrors.minimumStock = 'Tồn kho tối thiểu phải lớn hơn hoặc bằng 0';
-    if (!formData.price || Number(formData.price) <= 0) nextFieldErrors.price = 'Đơn giá phải lớn hơn 0';
+    if (!formData.goodName.trim()) nextFieldErrors.goodName = t('catalogue.goods.valName');
+    if (!formData.goodCode.trim()) nextFieldErrors.goodCode = t('catalogue.goods.valCode');
+    if (!formData.unit) nextFieldErrors.unit = t('catalogue.goods.valUom');
+    if (!formData.goodType) nextFieldErrors.goodType = t('catalogue.goods.valType');
+    if (formData.minimumStock === '' || Number(formData.minimumStock) < 0) nextFieldErrors.minimumStock = t('catalogue.goods.valMinStock');
+    if (!formData.price || Number(formData.price) <= 0) nextFieldErrors.price = t('catalogue.goods.valPrice');
     const level = Number(formData.StorageLevel);
-    if (!formData.StorageLevel || level < 1 || level > 4) nextFieldErrors.storageLevel = 'Giới hạn tầng phải từ 1 đến 4';
+    if (!formData.StorageLevel || level < 1 || level > 4) nextFieldErrors.storageLevel = t('catalogue.goods.valStorageLevel');
     setFieldErrors(nextFieldErrors);
     return Object.keys(nextFieldErrors).length === 0;
   };
@@ -191,7 +194,7 @@ const Goods = () => {
   const handleSave = async () => {
     setHasSubmitted(true);
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra các trường còn thiếu thông tin!", {
+      toast.error(t('catalogue.goods.checkMissingFields'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -273,7 +276,7 @@ const Goods = () => {
 
       const response = await materialApi.createMaterial(newProduct);
       if (response) {
-        toast.success("Sản phẩm đã được tạo thành công!", {
+        toast.success(t('catalogue.goods.createOk'), {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -296,7 +299,7 @@ const Goods = () => {
       setHasSubmitted(false);
     } catch (error) {
       console.error("Error creating new product:", error);
-      toast.error(getApiErrorMessage(error, "Tạo sản phẩm thất bại. Vui lòng thử lại!"), {
+      toast.error(getApiErrorMessage(error, t('catalogue.goods.createFail')), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -331,7 +334,7 @@ const Goods = () => {
         all = rest.flatMap(r => r.results);
       }
       if (!all.length) {
-        toast.info('Không có sản phẩm nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        toast.info(t('catalogue.goods.noProductsToExport'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
@@ -353,13 +356,15 @@ const Goods = () => {
           prop(item, 'MinimumStockLevel') ?? '0',
           prop(item, 'DefaultStockLevel') ?? '0',
           dimensions,
-          level >= 1 && level <= 4 ? `Tầng ${level}` : '--',
+          level >= 1 && level <= 4 ? t('catalogue.goods.floor', { n: level }) : '--',
         ];
       });
 
       await exportTableToExcel({
-        headers: ['STT', 'Tên sản phẩm', 'Mã sản phẩm', 'Loại sản phẩm', 'ĐVT', 'Đơn giá (đ)',
-          'Tồn kho tối thiểu', 'Định mức tồn kho', 'Kích thước', 'Giới hạn tầng lưu trữ'],
+        headers: [t('catalogue.goods.colNo'), t('catalogue.goods.colName'), t('catalogue.goods.colCode'),
+          t('catalogue.goods.colType'), t('catalogue.goods.colUom'), t('catalogue.goods.colPriceUnit'),
+          t('catalogue.goods.colMinStock'), t('catalogue.goods.colStandardRate'), t('catalogue.goods.colDimensions'),
+          t('catalogue.goods.colStorageLevel')],
         rows,
         columnMeta: [
           { width: 5, align: 'center' }, { width: 34 }, { width: 16 }, { width: 20 },
@@ -367,13 +372,13 @@ const Goods = () => {
           { width: 16, align: 'center' }, { width: 16, align: 'center' },
           { width: 20 }, { width: 18, align: 'center' },
         ],
-        sheetName: 'Sản phẩm',
-        filename: `Danh_muc_San_pham_${excelStamp()}.xlsx`,
+        sheetName: t('catalogue.goods.sheetName'),
+        filename: `${t('catalogue.goods.exportFilename')}_${excelStamp()}.xlsx`,
       });
-      toast.success(`Đã xuất ${rows.length} sản phẩm ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+      toast.success(t('catalogue.goods.exportedCount', { count: rows.length }), { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       console.error('Export excel error:', error);
-      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+      toast.error(t('catalogue.goods.exportFailRetry'), { position: 'top-right', autoClose: 3000 });
     } finally {
       setIsExporting(false);
     }
@@ -384,19 +389,19 @@ const Goods = () => {
       {isAdmin && (
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tạo mới sản phẩm</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.goods.createTitle')}</SectionTitle>
           <button
             onClick={() => setCreateSectionHidden(!isCreateSectionHidden)}
             className={styles.toggleButton}
           >
-            {isCreateSectionHidden ? "Hiện" : "Ẩn"}
+            {isCreateSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isCreateSectionHidden && (
           <div>
             <div className={styles.fieldGrid}>
               <div className={styles.field}>
-                <Label required>Tên sản phẩm:</Label>
+                <Label required>{t('catalogue.goods.productName')}</Label>
                 <input
                   type="text"
                   name="goodName"
@@ -408,7 +413,7 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Mã sản phẩm:</Label>
+                <Label required>{t('catalogue.goods.productCode')}</Label>
                 <input
                   type="text"
                   name="goodCode"
@@ -420,12 +425,12 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Đơn vị tính:</Label>
+                <Label required>{t('catalogue.goods.uom')}</Label>
                 <SelectContainer>
                   <Select
                     value={formData.unit}
                     onChange={(e) => setFormData((prev) => ({ ...prev, unit: e.target.value }))}
-                    placeholder="Chọn đơn vị tính"
+                    placeholder={t('catalogue.goods.selectUom')}
                   >
                     {listUnitOfMeasures.map((unitOption, index) => (
                       <option key={`unit-${index}`} value={unitOption}>
@@ -438,12 +443,12 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Loại sản phẩm:</Label>
+                <Label required>{t('catalogue.goods.productType')}</Label>
                 <SelectContainer>
                   <Select
                     value={formData.goodType}
                     onChange={(e) => setFormData((prev) => ({ ...prev, goodType: e.target.value }))}
-                    placeholder="Chọn loại sản phẩm"
+                    placeholder={t('catalogue.goods.selectProductType')}
                   >
                     {materialClasses.map((materialClass) => (
                       <option key={materialClass.materialClassId} value={materialClass.materialClassId}>
@@ -456,7 +461,7 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Tồn kho tối thiểu:</Label>
+                <Label required>{t('catalogue.goods.minStock')}</Label>
                 <input
                   type="number"
                   name="minimumStock"
@@ -469,7 +474,7 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Định mức:</Label>
+                <Label>{t('catalogue.goods.standardRate')}</Label>
                 <input
                   type="number"
                   name="standardRate"
@@ -481,11 +486,11 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Kích thước (m):</Label>
+                <Label>{t('catalogue.goods.dimensions')}</Label>
                 <input
                   type="text"
                   name="dimensions"
-                  placeholder="Dài x Rộng x Cao"
+                  placeholder={t('catalogue.goods.dimensionsPlaceholder')}
                   value={formData.dimensions}
                   onChange={handleInputChange}
                   className={styles.input}
@@ -493,7 +498,7 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Đơn giá (đ):</Label>
+                <Label required>{t('catalogue.goods.price')}</Label>
                 <input
                   type="number"
                   name="price"
@@ -506,7 +511,7 @@ const Goods = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Giới hạn tầng lưu trữ (1-4):</Label>
+                <Label required>{t('catalogue.goods.storageLevelLimit')}</Label>
                 <input
                   type="number"
                   name="StorageLevel"
@@ -524,7 +529,7 @@ const Goods = () => {
                 onClick={handleSave}
                 style={{ width: "240px", padding: "14px", fontSize: "15px" }}
               >
-                Tạo mới sản phẩm
+                {t('catalogue.goods.createBtn')}
               </ActionButton>
             </div>
           </div>
@@ -534,12 +539,12 @@ const Goods = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Danh sách sản phẩm</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.goods.listTitle')}</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}
           >
-            {isSearchSectionHidden ? "Hiện" : "Ẩn"}
+            {isSearchSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isSearchSectionHidden && (
@@ -549,9 +554,9 @@ const Goods = () => {
                 <Select
                   value={selectedMaterialClassFilter}
                   onChange={(e) => setSelectedMaterialClassFilter(e.target.value)}
-                  placeholder="Tất cả loại sản phẩm"
+                  placeholder={t('catalogue.goods.allProductTypes')}
                 >
-                  <option value="">Tất cả loại sản phẩm</option>
+                  <option value="">{t('catalogue.goods.allProductTypes')}</option>
                   {materialClassFilterOptions.map((item) => (
                     <option key={item.materialClassId} value={item.materialClassId}>
                       {item.materialClassName}
@@ -559,13 +564,13 @@ const Goods = () => {
                   ))}
                 </Select>
               </SelectContainer>
-              <Label style={{ width: "120px", fontWeight: "bold" }}>Mã sản phẩm:</Label>
+              <Label style={{ width: "120px", fontWeight: "bold" }}>{t('catalogue.goods.productCode')}</Label>
               <input
                 type="text"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Tìm kiếm theo Mã sản phẩm"
+                placeholder={t('catalogue.goods.searchByCode')}
                 className={styles.input}
                 style={{ flex: 1 }}
               />
@@ -574,16 +579,16 @@ const Goods = () => {
                 disabled={isSearching}
                 style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
-                {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
+                {isSearching ? <ClipLoader size={18} color="#fff" /> : t('common.search')}
               </ActionButton>
-              <Tag variant="accent">{totalItems} sản phẩm</Tag>
+              <Tag variant="accent">{t('catalogue.goods.countProducts', { count: totalItems })}</Tag>
               <ActionButton
                 variant="secondary"
                 onClick={handleExportExcel}
                 disabled={isExporting || isLoading || isSearching || totalItems === 0}
                 style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               >
-                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+                <AiOutlineDownload size={16} /> {isExporting ? t('catalogue.goods.exporting') : t('catalogue.goods.exportExcel')}
               </ActionButton>
             </div>
 
@@ -593,21 +598,21 @@ const Goods = () => {
                   <ClipLoader size={40} color="var(--color-teal)" />
                 </div>
               ) : filteredData.length === 0 ? (
-                <div className={styles.emptyState}>Không tìm thấy sản phẩm phù hợp.</div>
+                <div className={styles.emptyState}>{t('catalogue.goods.notFound')}</div>
               ) : (
                 <Table style={{ minWidth: '1200px' }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "48px" }}>STT</TableHeader>
-                      <TableHeader style={{ width: "220px" }}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Mã sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Loại sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "80px" }}>ĐVT</TableHeader>
-                      <TableHeader style={{ width: "120px" }}>Đơn giá</TableHeader>
-                      <TableHeader style={{ width: "120px" }}>Tồn kho tối thiểu</TableHeader>
-                      <TableHeader style={{ width: "120px" }}>Định mức tồn kho</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Kích thước</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Giới hạn tầng lưu trữ</TableHeader>
+                      <TableHeader style={{ width: "48px" }}>{t('catalogue.goods.colNo')}</TableHeader>
+                      <TableHeader style={{ width: "220px" }}>{t('catalogue.goods.colName')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.goods.colCode')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.goods.colType')}</TableHeader>
+                      <TableHeader style={{ width: "80px" }}>{t('catalogue.goods.colUom')}</TableHeader>
+                      <TableHeader style={{ width: "120px" }}>{t('catalogue.goods.colPrice')}</TableHeader>
+                      <TableHeader style={{ width: "120px" }}>{t('catalogue.goods.colMinStock')}</TableHeader>
+                      <TableHeader style={{ width: "120px" }}>{t('catalogue.goods.colStandardRate')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.goods.colDimensions')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.goods.colStorageLevel')}</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -637,14 +642,14 @@ const Goods = () => {
                           <TableCell>{item.materialId}</TableCell>
                           <TableCell>{item.materialClassName || item.materialClassId}</TableCell>
                           <TableCell>{unitProperty ? unitProperty.propertyValue : "--"}</TableCell>
-                          <TableCell>{formatCurrency(priceProperty?.propertyValue)}</TableCell>
+                          <TableCell>{formatCurrency(priceProperty?.propertyValue, lang, t)}</TableCell>
                           <TableCell>{minimumStockLevelProperty ? minimumStockLevelProperty.propertyValue : "0"}</TableCell>
                           <TableCell>{defaultStockLevelProperty ? defaultStockLevelProperty.propertyValue : "0"}</TableCell>
                           <TableCell>{dimensions}</TableCell>
                           <TableCell>
                             {hasStorageLevel ? (
                               <span className={clsx(styles.storagePill)} style={{ backgroundColor: storageLevel[storageLevelValue] }}>
-                                Tầng {storageLevelValue}
+                                {t('catalogue.goods.floor', { n: storageLevelValue })}
                               </span>
                             ) : "--"}
                           </TableCell>
@@ -661,7 +666,7 @@ const Goods = () => {
                 totalItems={totalItems}
                 pageSize={PAGE_SIZE}
                 onPageChange={setPage}
-                itemLabel="sản phẩm"
+                itemLabel={t('catalogue.goods.itemLabel')}
               />
             )}
           </div>

@@ -18,6 +18,8 @@ import { ClipLoader } from 'react-spinners';
 import Pagination from '../../../../common/components/Pagination/Pagination.jsx';
 import { AiOutlineDownload } from 'react-icons/ai';
 import { exportTableToExcel, excelStamp } from '../../../../common/utils/exportTableToExcel.js';
+import useTranslation from '../../../../common/hooks/useTranslation';
+import { warehouseTypeLabelKey, resolveLabel } from '../../../../common/i18n/labels';
 import styles from './StoreLocation.module.scss';
 
 const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
@@ -75,6 +77,7 @@ const searchLocations = async (locationId, warehouseId, { pageNumber = 1, itemsP
 };
 
 const StoreLocation = () => {
+  const { t } = useTranslation();
   const roles = useSelector((state) => state.auth.roles);
   const isAdmin = roles.includes('Admin');
   const [searchCode, setSearchCode] = useState("");
@@ -153,9 +156,9 @@ const StoreLocation = () => {
 
   const validateForm = () => {
     const nextFieldErrors = {};
-    if (!formData.equipmentName.trim()) nextFieldErrors.equipmentName = 'Vui lòng nhập tên thiết bị';
-    if (!formData.locationId.trim()) nextFieldErrors.locationId = 'Vui lòng nhập mã vị trí';
-    if (!formData.warehouseName) nextFieldErrors.warehouseName = 'Vui lòng chọn kho hàng';
+    if (!formData.equipmentName.trim()) nextFieldErrors.equipmentName = t('catalogue.storeLocation.valEquipmentName');
+    if (!formData.locationId.trim()) nextFieldErrors.locationId = t('catalogue.storeLocation.valLocationCode');
+    if (!formData.warehouseName) nextFieldErrors.warehouseName = t('catalogue.storeLocation.valWarehouse');
     setFieldErrors(nextFieldErrors);
     return Object.keys(nextFieldErrors).length === 0;
   };
@@ -163,7 +166,7 @@ const StoreLocation = () => {
   const handleSave = async () => {
     setHasSubmitted(true);
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra các trường còn thiếu thông tin!", {
+      toast.error(t('catalogue.storeLocation.checkMissingFields'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -204,7 +207,7 @@ const StoreLocation = () => {
     try {
       const response = await locationApi.createLocation(newLocation);
       if (response) {
-        toast.success("Vị trí lưu trữ đã được tạo thành công!", {
+        toast.success(t('catalogue.storeLocation.createOk'), {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -227,7 +230,7 @@ const StoreLocation = () => {
       }
     } catch (error) {
       console.error("Error creating new location:", error);
-      toast.error(getApiErrorMessage(error, "Tạo vị trí lưu trữ thất bại. Vui lòng thử lại!"), {
+      toast.error(getApiErrorMessage(error, t('catalogue.storeLocation.createFail')), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -262,7 +265,7 @@ const StoreLocation = () => {
         all = rest.flatMap(r => r.results);
       }
       if (!all.length) {
-        toast.info('Không có vị trí nào để xuất.', { position: 'top-right', autoClose: 3000 });
+        toast.info(t('catalogue.storeLocation.noLocationsToExport'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
@@ -276,19 +279,20 @@ const StoreLocation = () => {
       ]);
 
       await exportTableToExcel({
-        headers: ['STT', 'Tên thiết bị', 'Mã vị trí', 'Kho hàng', 'Khu vực', 'Kích thước'],
+        headers: [t('catalogue.storeLocation.colNo'), t('catalogue.storeLocation.colEquipmentName'), t('catalogue.storeLocation.colCode'),
+          t('catalogue.storeLocation.colWarehouse'), t('catalogue.storeLocation.colZone'), t('catalogue.storeLocation.colDimensions')],
         rows,
         columnMeta: [
           { width: 5, align: 'center' }, { width: 24 }, { width: 18 },
           { width: 22 }, { width: 14, align: 'center' }, { width: 22 },
         ],
-        sheetName: 'Vị trí lưu trữ',
-        filename: `Danh_muc_Vi_tri_luu_tru_${excelStamp()}.xlsx`,
+        sheetName: t('catalogue.storeLocation.sheetName'),
+        filename: `${t('catalogue.storeLocation.exportFilename')}_${excelStamp()}.xlsx`,
       });
-      toast.success(`Đã xuất ${rows.length} vị trí ra file Excel.`, { position: 'top-right', autoClose: 3000 });
+      toast.success(t('catalogue.storeLocation.exportedCount', { count: rows.length }), { position: 'top-right', autoClose: 3000 });
     } catch (error) {
       console.error('Export excel error:', error);
-      toast.error('Xuất file Excel thất bại. Vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+      toast.error(t('catalogue.storeLocation.exportFailRetry'), { position: 'top-right', autoClose: 3000 });
     } finally {
       setIsExporting(false);
     }
@@ -299,19 +303,19 @@ const StoreLocation = () => {
       {isAdmin && (
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Tạo mới vị trí lưu trữ</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.storeLocation.createTitle')}</SectionTitle>
           <button
             onClick={() => setCreateSectionHidden(!isCreateSectionHidden)}
             className={styles.toggleButton}
           >
-            {isCreateSectionHidden ? "Hiện" : "Ẩn"}
+            {isCreateSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isCreateSectionHidden && (
           <div>
             <div className={styles.fieldGrid}>
               <div className={styles.field}>
-                <Label required>Tên thiết bị:</Label>
+                <Label required>{t('catalogue.storeLocation.equipmentName')}</Label>
                 <input
                   type="text"
                   name="equipmentName"
@@ -323,7 +327,7 @@ const StoreLocation = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Mã vị trí:</Label>
+                <Label required>{t('catalogue.storeLocation.locationCode')}</Label>
                 <input
                   type="text"
                   name="locationId"
@@ -335,7 +339,7 @@ const StoreLocation = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Mô tả:</Label>
+                <Label>{t('catalogue.storeLocation.description')}</Label>
                 <input
                   type="text"
                   name="status"
@@ -346,15 +350,15 @@ const StoreLocation = () => {
               </div>
 
               <div className={styles.field}>
-                <Label required>Kho hàng:</Label>
+                <Label required>{t('catalogue.storeLocation.warehouse')}</Label>
                 <SelectContainer>
                   <Select
                     value={formData.warehouseName}
                     onChange={(e) => setFormData((prev) => ({ ...prev, warehouseName: e.target.value }))}
-                    placeholder="Chọn kho hàng"
+                    placeholder={t('catalogue.storeLocation.selectWarehouse')}
                   >
                     {warehouseOptions.map((name) => (
-                      <option key={name} value={name}>{name}</option>
+                      <option key={name} value={name}>{resolveLabel(warehouseTypeLabelKey, name, t)}</option>
                     ))}
                   </Select>
                 </SelectContainer>
@@ -362,7 +366,7 @@ const StoreLocation = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Khu vực:</Label>
+                <Label>{t('catalogue.storeLocation.zone')}</Label>
                 <input
                   type="text"
                   name="warehouseId"
@@ -373,11 +377,11 @@ const StoreLocation = () => {
               </div>
 
               <div className={styles.field}>
-                <Label>Kích thước (m):</Label>
+                <Label>{t('catalogue.storeLocation.dimensions')}</Label>
                 <input
                   type="text"
                   name="dimensions"
-                  placeholder="Dài x Rộng x Cao"
+                  placeholder={t('catalogue.storeLocation.dimensionsPlaceholder')}
                   value={formData.dimensions}
                   onChange={handleInputChange}
                   className={styles.input}
@@ -389,7 +393,7 @@ const StoreLocation = () => {
                 onClick={handleSave}
                 style={{ width: "240px", padding: "14px", fontSize: "15px" }}
               >
-                Tạo mới vị trí
+                {t('catalogue.storeLocation.createBtn')}
               </ActionButton>
             </div>
           </div>
@@ -399,12 +403,12 @@ const StoreLocation = () => {
 
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <SectionTitle className={styles.cardTitle}>Danh sách vị trí lưu trữ</SectionTitle>
+          <SectionTitle className={styles.cardTitle}>{t('catalogue.storeLocation.listTitle')}</SectionTitle>
           <button
             onClick={() => setSearchSectionHidden(!isSearchSectionHidden)}
             className={styles.toggleButton}
           >
-            {isSearchSectionHidden ? "Hiện" : "Ẩn"}
+            {isSearchSectionHidden ? t('catalogue.show') : t('catalogue.hide')}
           </button>
         </div>
         {!isSearchSectionHidden && (
@@ -414,9 +418,9 @@ const StoreLocation = () => {
                 <Select
                   value={selectedWarehouseFilter}
                   onChange={(e) => setSelectedWarehouseFilter(e.target.value)}
-                  placeholder="Tất cả kho hàng"
+                  placeholder={t('catalogue.storeLocation.allWarehouses')}
                 >
-                  <option value="">Tất cả kho hàng</option>
+                  <option value="">{t('catalogue.storeLocation.allWarehouses')}</option>
                   {warehouseFilterOptions.map((item) => (
                     <option key={item.warehouseId} value={item.warehouseId}>
                       {item.warehouseName} ({item.warehouseId})
@@ -424,13 +428,13 @@ const StoreLocation = () => {
                   ))}
                 </Select>
               </SelectContainer>
-              <Label style={{ width: "120px", fontWeight: "bold" }}>Mã vị trí:</Label>
+              <Label style={{ width: "120px", fontWeight: "bold" }}>{t('catalogue.storeLocation.locationCode')}</Label>
               <input
                 type="text"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Tìm kiếm theo Mã vị trí"
+                placeholder={t('catalogue.storeLocation.searchByCode')}
                 className={styles.input}
                 style={{ flex: 1 }}
               />
@@ -439,16 +443,16 @@ const StoreLocation = () => {
                 disabled={isSearching}
                 style={{ width: "130px", padding: "10px", fontSize: "14px", margin: 0 }}
               >
-                {isSearching ? <ClipLoader size={18} color="#fff" /> : "Tìm kiếm"}
+                {isSearching ? <ClipLoader size={18} color="#fff" /> : t('common.search')}
               </ActionButton>
-              <Tag variant="accent">{totalItems} vị trí</Tag>
+              <Tag variant="accent">{t('catalogue.storeLocation.countLocations', { count: totalItems })}</Tag>
               <ActionButton
                 variant="secondary"
                 onClick={handleExportExcel}
                 disabled={isExporting || isLoading || isSearching || totalItems === 0}
                 style={{ margin: 0, width: 'auto', padding: '10px 14px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               >
-                <AiOutlineDownload size={16} /> {isExporting ? 'Đang xuất...' : 'Xuất file Excel'}
+                <AiOutlineDownload size={16} /> {isExporting ? t('catalogue.storeLocation.exporting') : t('catalogue.storeLocation.exportExcel')}
               </ActionButton>
             </div>
 
@@ -458,17 +462,17 @@ const StoreLocation = () => {
                   <ClipLoader size={40} color="var(--color-teal)" />
                 </div>
               ) : filteredData.length === 0 ? (
-                <div className={styles.emptyState}>Không tìm thấy vị trí phù hợp.</div>
+                <div className={styles.emptyState}>{t('catalogue.storeLocation.notFound')}</div>
               ) : (
                 <Table style={{ minWidth: '1000px' }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "48px" }}>STT</TableHeader>
-                      <TableHeader style={{ width: "160px" }}>Tên thiết bị</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Mã vị trí</TableHeader>
-                      <TableHeader style={{ width: "180px" }}>Kho hàng</TableHeader>
-                      <TableHeader style={{ width: "140px" }}>Khu vực</TableHeader>
-                      <TableHeader style={{ width: "160px" }}>Kích thước</TableHeader>
+                      <TableHeader style={{ width: "48px" }}>{t('catalogue.storeLocation.colNo')}</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>{t('catalogue.storeLocation.colEquipmentName')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.storeLocation.colCode')}</TableHeader>
+                      <TableHeader style={{ width: "180px" }}>{t('catalogue.storeLocation.colWarehouse')}</TableHeader>
+                      <TableHeader style={{ width: "140px" }}>{t('catalogue.storeLocation.colZone')}</TableHeader>
+                      <TableHeader style={{ width: "160px" }}>{t('catalogue.storeLocation.colDimensions')}</TableHeader>
                     </tr>
                   </thead>
                   <tbody>
@@ -492,7 +496,7 @@ const StoreLocation = () => {
                 totalItems={totalItems}
                 pageSize={PAGE_SIZE}
                 onPageChange={setPage}
-                itemLabel="vị trí"
+                itemLabel={t('catalogue.storeLocation.itemLabel')}
               />
             )}
           </div>

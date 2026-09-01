@@ -27,6 +27,7 @@ import { getApiErrorMessage } from '../../../../api/apiError.js';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 let rowIdCounter = 0;
 const createEmptyRow = () => ({
@@ -41,6 +42,7 @@ const createEmptyRow = () => ({
 const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginTop: '4px' };
 
 const CreateGoodReceipt = () => {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -82,7 +84,7 @@ const CreateGoodReceipt = () => {
         setReceiptLotIdList(receiptLotIdList);
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error("Lỗi khi tải dữ liệu!");
+        toast.error(t('toast.loadError'));
       } finally {
         setIsLoading(false);
       }
@@ -182,8 +184,8 @@ const CreateGoodReceipt = () => {
   const handleImportFile = async (file) => {
     if (!/\.(xlsx|xls)$/i.test(file.name)) {
       setImportNotice(null);
-      setImportErrors(['Vui lòng dùng file .xlsx theo mẫu.']);
-      toast.error('Vui lòng dùng file .xlsx theo mẫu.', { position: 'top-right', autoClose: 3000 });
+      setImportErrors([t('receipt.impUseXlsx')]);
+      toast.error(t('receipt.impUseXlsx'), { position: 'top-right', autoClose: 3000 });
       return;
     }
 
@@ -199,7 +201,7 @@ const CreateGoodReceipt = () => {
       const { header, items } = parsed;
 
       if (!wareHouses.length || !suppliers.length || !people.length) {
-        toast.error('Dữ liệu chưa tải xong, vui lòng thử lại.', { position: 'top-right', autoClose: 3000 });
+        toast.error(t('receipt.impDataLoading'), { position: 'top-right', autoClose: 3000 });
         return;
       }
 
@@ -207,32 +209,32 @@ const CreateGoodReceipt = () => {
 
       const nameMatches = wareHouses.filter(w => w.warehouseName === header.warehouseName);
       if (nameMatches.length === 0) {
-        errors.push(`Mục A: kho hàng "${header.warehouseName}" không tồn tại trong hệ thống.`);
+        errors.push(t('receipt.impWarehouseNotExist', { name: header.warehouseName }));
       }
       const codeMatch = wareHouses.find(w => w.warehouseId === header.warehouseCode);
       if (!codeMatch) {
-        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không tồn tại trong hệ thống.`);
+        errors.push(t('receipt.impWarehouseCodeNotExist', { code: header.warehouseCode }));
       } else if (codeMatch.warehouseName !== header.warehouseName) {
-        errors.push(`Mục A: mã kho hàng "${header.warehouseCode}" không thuộc kho hàng "${header.warehouseName}".`);
+        errors.push(t('receipt.impWarehouseCodeMismatch', { code: header.warehouseCode, name: header.warehouseName }));
       }
 
       const supplier = suppliers.find(s => s.supplierName === header.supplierName);
       if (!supplier) {
-        errors.push(`Mục A: nhà cung cấp "${header.supplierName}" không tồn tại trong hệ thống.`);
+        errors.push(t('receipt.impSupplierNotExist', { name: header.supplierName }));
       }
 
       const employee = people.find(p => p.employeeName === header.employeeName);
       if (!employee) {
-        errors.push(`Mục A: nhân viên "${header.employeeName}" không tồn tại trong hệ thống.`);
+        errors.push(t('receipt.impEmployeeNotExist', { name: header.employeeName }));
       }
 
       const receiptDate = parseDmY(header.dateText);
       if (!receiptDate) {
-        errors.push(`Mục A: ngày nhập kho "${header.dateText}" không hợp lệ (định dạng dd/mm/yyyy).`);
+        errors.push(t('receipt.impDateInvalid', { value: header.dateText }));
       }
 
       if (items.length === 0) {
-        errors.push('File không có dòng sản phẩm nào.');
+        errors.push(t('receipt.impNoItems'));
       }
 
       // Danh sách vật tư lấy trực tiếp theo mã kho trong file (không dựa vào state hiện tại)
@@ -241,37 +243,37 @@ const CreateGoodReceipt = () => {
         try {
           materialsForZone = await materialApi.getMaterialsByWarehouseId(header.warehouseCode);
         } catch {
-          errors.push('Không tải được danh sách sản phẩm cho kho này. Vui lòng thử lại.');
+          errors.push(t('receipt.impMaterialsLoadFail'));
         }
       }
 
       const resolved = [];
       const seenLots = new Set();
       items.forEach((it) => {
-        const prefix = `Dòng ${it.rowNumber}: `;
+        const prefix = t('receipt.impRowPrefix', { row: it.rowNumber });
         const mat = materialsForZone.find(m => m.materialName === it.productName);
         if (codeMatch && !mat) {
-          errors.push(`${prefix}sản phẩm "${it.productName}" không có trong kho.`);
+          errors.push(`${prefix}${t('receipt.impRowProductNotInWarehouse', { name: it.productName })}`);
         }
 
         let q = NaN;
         if (it.quantity === '') {
-          errors.push(`${prefix}thiếu SL nhập.`);
+          errors.push(`${prefix}${t('receipt.impRowMissingQty')}`);
         } else {
           q = Number(it.quantity);
           if (!Number.isFinite(q)) {
-            errors.push(`${prefix}SL nhập không phải số.`);
+            errors.push(`${prefix}${t('receipt.impRowQtyNotNumber')}`);
           } else if (!(q > 0)) {
-            errors.push(`${prefix}SL nhập phải lớn hơn 0.`);
+            errors.push(`${prefix}${t('receipt.impRowQtyNotPositive')}`);
           }
         }
 
         if (it.lotNumber && receiptLotIdList.includes(it.lotNumber)) {
-          errors.push(`${prefix}mã lô "${it.lotNumber}" đã tồn tại trong hệ thống.`);
+          errors.push(`${prefix}${t('receipt.impRowLotExists', { lot: it.lotNumber })}`);
         }
         if (it.lotNumber) {
           if (seenLots.has(it.lotNumber)) {
-            errors.push(`${prefix}mã lô "${it.lotNumber}" bị trùng trong file.`);
+            errors.push(`${prefix}${t('receipt.impRowLotDup', { lot: it.lotNumber })}`);
           } else {
             seenLots.add(it.lotNumber);
           }
@@ -322,7 +324,7 @@ const CreateGoodReceipt = () => {
       setHasSubmitted(false);
       setImportErrors(null);
       setImportNotice(
-        `Đã nhập phiếu và ${finalRows.length} dòng sản phẩm từ "${file.name}". Vui lòng kiểm tra lại trước khi tạo phiếu.`
+        t('receipt.importedRows', { count: finalRows.length, file: file.name })
       );
     } finally {
       setImporting(false);
@@ -331,18 +333,18 @@ const CreateGoodReceipt = () => {
 
   const validate = () => {
     const nextFieldErrors = {};
-    if (!selectedWarehouse) nextFieldErrors.warehouse = 'Vui lòng chọn kho hàng';
-    if (!selectedZone) nextFieldErrors.zone = 'Vui lòng chọn mã kho hàng';
-    if (!selectedSupplier) nextFieldErrors.supplier = 'Vui lòng chọn nhà cung cấp';
-    if (!selectedPerson) nextFieldErrors.person = 'Vui lòng chọn nhân viên';
-    if (!selectedDate) nextFieldErrors.date = 'Vui lòng chọn ngày nhập kho';
+    if (!selectedWarehouse) nextFieldErrors.warehouse = t('validation.selectWarehouse');
+    if (!selectedZone) nextFieldErrors.zone = t('validation.selectWarehouseCode');
+    if (!selectedSupplier) nextFieldErrors.supplier = t('validation.selectSupplier');
+    if (!selectedPerson) nextFieldErrors.person = t('validation.selectEmployee');
+    if (!selectedDate) nextFieldErrors.date = t('validation.selectReceiptDate');
 
     const nextRowErrors = {};
     rows.forEach((row, index) => {
       const errors = {};
-      if (!row.materialName) errors.materialName = 'Chọn sản phẩm';
-      if (row.lotNumber && receiptLotIdList.includes(row.lotNumber)) errors.lotNumber = 'Mã lô này đã tồn tại!';
-      if (!(Number(row.importedQuantity) > 0)) errors.importedQuantity = 'SL > 0';
+      if (!row.materialName) errors.materialName = t('receipt.rowSelectProduct');
+      if (row.lotNumber && receiptLotIdList.includes(row.lotNumber)) errors.lotNumber = t('receipt.rowLotExists');
+      if (!(Number(row.importedQuantity) > 0)) errors.importedQuantity = t('receipt.rowQtyGtZero');
       if (Object.keys(errors).length > 0) nextRowErrors[index] = errors;
     });
 
@@ -354,7 +356,7 @@ const CreateGoodReceipt = () => {
   const createReceipt = async () => {
     setHasSubmitted(true);
     if (!validate()) {
-      toast.error("Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin!", {
+      toast.error(t('toast.checkMissingRows'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -374,7 +376,7 @@ const CreateGoodReceipt = () => {
         })),
       };
       await inventoryReceiptApi.createReceipt(newReceipt);
-      toast.success("Tạo phiếu nhập kho thành công!", {
+      toast.success(t('toast.createReceiptOk'), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -391,7 +393,7 @@ const CreateGoodReceipt = () => {
       setImportErrors(null);
       setImportNotice(null);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Tạo phiếu nhập kho thất bại!'), {
+      toast.error(getApiErrorMessage(err, t('toast.createReceiptFail')), {
         position: "top-right",
         autoClose: 3000,
       });
@@ -413,14 +415,14 @@ const CreateGoodReceipt = () => {
               onClick={() => fileInputRef.current?.click()}
               style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <AiOutlineUpload size={16} /> {importing ? 'Đang đọc file...' : 'Nhập từ Excel'}
+              <AiOutlineUpload size={16} /> {importing ? t('receipt.importExcelReading') : t('receipt.importExcel')}
             </ActionButton>
             <ActionButton
               variant="secondary"
               onClick={downloadTemplate}
               style={{ width: 'auto', margin: 0, padding: '10px 16px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <AiOutlineDownload size={16} /> Tải file Excel mẫu
+              <AiOutlineDownload size={16} /> {t('receipt.downloadTemplate')}
             </ActionButton>
             <input
               ref={fileInputRef}
@@ -440,7 +442,7 @@ const CreateGoodReceipt = () => {
               border: '1px solid var(--status-error)', background: 'var(--color-surface-2)', color: 'var(--status-error)',
               borderRadius: 8, padding: '12px 16px', marginBottom: 16, fontSize: 13,
             }}>
-              <strong>Không thể nhập file. Chưa thay đổi dữ liệu trên form:</strong>
+              <strong>{t('receipt.importErrorTitle')}</strong>
               <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
                 {importErrors.map((msg, i) => <li key={i}>{msg}</li>)}
               </ul>
@@ -458,15 +460,15 @@ const CreateGoodReceipt = () => {
 
           <div style={{ display: "flex" }}>
             <FormSection>
-              <SectionTitle>Phiếu nhập kho</SectionTitle>
+              <SectionTitle>{t('receipt.slipTitle')}</SectionTitle>
 
               <FormGroup>
-                <Label required>Kho hàng:</Label>
+                <Label required>{t('receipt.warehouse')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedWarehouse}
                     onChange={(e) => setSelectedWarehouse(e.target.value)}
-                    placeholder="Chọn loại kho hàng"
+                    placeholder={t('receipt.selectWarehouseType')}
                   >
                     {uniqueWarehouseNames.map((warehouseName, index) => (
                       <option key={`warehouse-${index}`} value={warehouseName}>
@@ -479,12 +481,12 @@ const CreateGoodReceipt = () => {
               {fieldErrors.warehouse && <div style={errorTextStyle}>{fieldErrors.warehouse}</div>}
 
               <FormGroup>
-                <Label required>Mã kho hàng:</Label>
+                <Label required>{t('receipt.warehouseCode')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedZone}
                     onChange={(e) => setSelectedZone(e.target.value)}
-                    placeholder="Chọn mã kho hàng"
+                    placeholder={t('receipt.selectWarehouseCode')}
                   >
                     {wareHouses
                       .filter((warehouse) => warehouse.warehouseName === selectedWarehouse)
@@ -499,12 +501,12 @@ const CreateGoodReceipt = () => {
               {fieldErrors.zone && <div style={errorTextStyle}>{fieldErrors.zone}</div>}
 
               <FormGroup>
-                <Label required>Nhà cung cấp:</Label>
+                <Label required>{t('receipt.supplier')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedSupplier}
                     onChange={(e) => setSelectedSupplier(e.target.value)}
-                    placeholder="Chọn nhà cung cấp"
+                    placeholder={t('receipt.selectSupplier')}
                   >
                     {suppliers.map((supplier, index) => (
                       <option key={`supplier-${index}`} value={supplier.supplierName}>
@@ -517,12 +519,12 @@ const CreateGoodReceipt = () => {
               {fieldErrors.supplier && <div style={errorTextStyle}>{fieldErrors.supplier}</div>}
 
               <FormGroup>
-                <Label required>Nhân viên:</Label>
+                <Label required>{t('receipt.employee')}</Label>
                 <SelectContainer>
                   <Select
                     value={selectedPerson}
                     onChange={(e) => setSelectedPerson(e.target.value)}
-                    placeholder="Chọn nhân viên"
+                    placeholder={t('receipt.selectEmployee')}
                   >
                     {people.map((person, index) => (
                       <option key={`person-${index}`} value={person.employeeName}>
@@ -535,7 +537,7 @@ const CreateGoodReceipt = () => {
               {fieldErrors.person && <div style={errorTextStyle}>{fieldErrors.person}</div>}
 
               <FormGroup>
-                <Label required>Ngày nhập kho:</Label>
+                <Label required>{t('receipt.receiptDate')}</Label>
                 <SelectContainer>
                   <DateInput
                     selectedDate={selectedDate}
@@ -548,16 +550,16 @@ const CreateGoodReceipt = () => {
 
             <ListSection style={{ width: "50%" }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <SectionTitle style={{ marginBottom: 0 }}>Danh sách sản phẩm nhập kho</SectionTitle>
+                <SectionTitle style={{ marginBottom: 0 }}>{t('receipt.productListTitle')}</SectionTitle>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <Tag variant="neutral">Số dòng: {rows.length}</Tag>
-                  <Tag variant="accent">Tổng SL: {totalQuantity}</Tag>
+                  <Tag variant="neutral">{t('receipt.rows', { count: rows.length })}</Tag>
+                  <Tag variant="accent">{t('receipt.totalQty', { count: totalQuantity })}</Tag>
                 </div>
               </div>
 
               {Object.keys(rowErrors).length > 0 && (
                 <div style={{ ...errorTextStyle, marginBottom: '8px' }}>
-                  Vui lòng kiểm tra các dòng sản phẩm còn thiếu thông tin
+                  {t('receipt.checkMissingRows')}
                 </div>
               )}
 
@@ -565,12 +567,12 @@ const CreateGoodReceipt = () => {
                 <Table style={{ tableLayout: "fixed", width: "100%" }}>
                   <thead>
                     <tr>
-                      <TableHeader style={{ width: "7%" }}>STT</TableHeader>
-                      <TableHeader style={{ width: "28%" }}>Tên sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "18%" }}>Mã sản phẩm</TableHeader>
-                      <TableHeader style={{ width: "12%" }}>ĐVT</TableHeader>
-                      <TableHeader style={{ width: "18%" }}>Mã lô/Số PO</TableHeader>
-                      <TableHeader style={{ width: "17%" }}>SL nhập</TableHeader>
+                      <TableHeader style={{ width: "7%" }}>{t('receipt.colNo')}</TableHeader>
+                      <TableHeader style={{ width: "28%" }}>{t('receipt.colProductName')}</TableHeader>
+                      <TableHeader style={{ width: "18%" }}>{t('receipt.colProductId')}</TableHeader>
+                      <TableHeader style={{ width: "12%" }}>{t('receipt.colUom')}</TableHeader>
+                      <TableHeader style={{ width: "18%" }}>{t('receipt.colLotOrPo')}</TableHeader>
+                      <TableHeader style={{ width: "17%" }}>{t('receipt.colReceiptQty')}</TableHeader>
                       <TableHeader style={{ width: "8%" }}></TableHeader>
                     </tr>
                   </thead>
@@ -583,7 +585,7 @@ const CreateGoodReceipt = () => {
                             <Select
                               value={row.materialName}
                               onChange={(e) => handleMaterialNameChange(index, e.target.value)}
-                              placeholder="Tên sản phẩm"
+                              placeholder={t('receipt.phProductName')}
                               style={{ fontSize: "90%" }}
                             >
                               {materialOptionNames.map((name, i) => (
@@ -598,20 +600,20 @@ const CreateGoodReceipt = () => {
                           )}
                         </TableCell>
                         <TableCell>
-                          <span style={{ color: row.materialId ? "#000" : "#767676", fontSize: "90%" }}>
-                            {row.materialId || "Mã sản phẩm"}
+                          <span style={{ color: row.materialId ? "var(--color-text)" : "var(--color-text-muted)", fontSize: "90%" }}>
+                            {row.materialId || t('receipt.phProductId')}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span style={{ color: row.unit ? "#000" : "#767676", fontSize: "90%" }}>
-                            {row.unit || "ĐVT"}
+                          <span style={{ color: row.unit ? "var(--color-text)" : "var(--color-text-muted)", fontSize: "90%" }}>
+                            {row.unit || t('receipt.colUom')}
                           </span>
                         </TableCell>
                         <TableCell>
                           <input
                             style={{ textAlign: "center", width: "100%", fontSize: "90%" }}
                             type="text"
-                            placeholder="Mã lô/Số PO"
+                            placeholder={t('receipt.phLotOrPo')}
                             value={row.lotNumber}
                             onChange={(e) => handleLotNumberChange(index, e.target.value)}
                           />
@@ -625,7 +627,7 @@ const CreateGoodReceipt = () => {
                             type="number"
                             min="0"
                             step="1"
-                            placeholder="SL nhập"
+                            placeholder={t('receipt.phReceiptQty')}
                             value={row.importedQuantity}
                             onChange={(e) => updateRow(index, 'importedQuantity', e.target.value)}
                           />
@@ -645,7 +647,7 @@ const CreateGoodReceipt = () => {
               </div>
 
               <ActionButton variant="secondary" onClick={addRow} style={{ width: 'auto', margin: '16px 0 0', padding: '10px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <AiOutlinePlus size={16} /> Thêm dòng sản phẩm
+                <AiOutlinePlus size={16} /> {t('receipt.addRow')}
               </ActionButton>
             </ListSection>
           </div>
@@ -653,7 +655,7 @@ const CreateGoodReceipt = () => {
             style={{ marginTop: '2rem', width: '35%', padding: '14px', fontSize: '14px' }}
             onClick={createReceipt}
           >
-            Tạo phiếu nhập kho
+            {t('receipt.submit')}
           </ActionButton>
         </>
       )}

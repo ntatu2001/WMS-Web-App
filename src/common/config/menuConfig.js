@@ -15,25 +15,26 @@ import {
 
 // Nguồn dữ liệu menu dùng chung cho Sidebar và cho việc tính route mặc định theo role.
 // Mục không có `roles` nghĩa là mở cho mọi role đã đăng nhập.
+// `titleKey` được Sidebar resolve qua i18n (useTranslation) — routing chỉ dùng `path`.
 export const menuItems = [
-  { id: 1, title: 'Tổng quan', icon: AiOutlineHome, path: '/dashboard', roles: ['Admin'] },
-  { id: 2, title: 'Lưu trữ', icon: AiOutlineDatabase, path: '/storage', roles: ['Manager', 'Admin'] },
-  { id: 3, title: 'Nhập kho', icon: AiOutlineImport, path: '/goodreceipt' },
-  { id: 4, title: 'Xuất kho', icon: AiOutlineExport, path: '/goodissue' },
-  { id: 5, title: 'Kiểm kê', icon: AiOutlineCheckSquare, path: '/inventory' },
-  { id: 6, title: 'Lịch sử', icon: AiOutlineHistory, path: '/history', roles: ['Manager', 'Admin'] },
-  { id: 7, title: 'Danh mục', icon: AiOutlineUnorderedList, path: '/catalogue', roles: ['Manager', 'Admin'] },
+  { id: 1, titleKey: 'menu.overview', icon: AiOutlineHome, path: '/dashboard', roles: ['Admin'] },
+  { id: 2, titleKey: 'menu.storage', icon: AiOutlineDatabase, path: '/storage', roles: ['Manager', 'Admin'] },
+  { id: 3, titleKey: 'menu.receipt', icon: AiOutlineImport, path: '/goodreceipt' },
+  { id: 4, titleKey: 'menu.issue', icon: AiOutlineExport, path: '/goodissue' },
+  { id: 5, titleKey: 'menu.inventory', icon: AiOutlineCheckSquare, path: '/inventory' },
+  { id: 6, titleKey: 'menu.history', icon: AiOutlineHistory, path: '/history', roles: ['Manager', 'Admin'] },
+  { id: 7, titleKey: 'menu.catalogue', icon: AiOutlineUnorderedList, path: '/catalogue', roles: ['Manager', 'Admin'] },
   {
     id: 8,
-    title: 'Cài đặt',
+    titleKey: 'menu.settings',
     icon: AiOutlineSetting,
     path: '/setting',
     isParent: true,
     subItems: [
-      { id: 8.1, title: 'Tạo tài khoản mới', icon: AiOutlineUserAdd, path: '/setting/users', roles: ['Admin'] },
-      { id: 8.2, title: 'Quản lý tài khoản', icon: AiOutlineUser, path: '/setting/account' },
-      { id: 8.4, title: 'Giao diện', icon: AiOutlineBgColors, path: '/setting/appearance' },
-      { id: 8.3, title: 'Đăng xuất', icon: AiOutlineLogout, path: '/setting/logout', danger: true },
+      { id: 8.1, titleKey: 'menu.createUser', icon: AiOutlineUserAdd, path: '/setting/users', roles: ['Admin'] },
+      { id: 8.2, titleKey: 'menu.account', icon: AiOutlineUser, path: '/setting/account' },
+      { id: 8.4, titleKey: 'menu.appearanceLanguage', icon: AiOutlineBgColors, path: '/setting/appearance' },
+      { id: 8.3, titleKey: 'menu.logout', icon: AiOutlineLogout, path: '/setting/logout', danger: true },
     ],
   },
 ];

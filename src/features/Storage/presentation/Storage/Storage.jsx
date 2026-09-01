@@ -26,6 +26,7 @@ import wareHouseApi from '../../../../api/wareHouseApi.js';
 import materialSubLotApi from '../../../../api/materialSubLotApi.js';
 import { ClipLoader } from 'react-spinners';
 import styles from './Storage.module.scss';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const STATUS_COLORS = {
     'Đang chứa hàng': '#0089D7',
@@ -48,23 +49,29 @@ const parseDragId = (dragId) => {
 };
 
 // Diễn giải lỗi trả về từ API MoveMaterialSubLot (xem UserGuide/MoveMaterialSubLot_API.md mục 4-5).
-const getMoveErrorMessage = (error) => {
+const getMoveErrorMessage = (error, t) => {
     const data = error?.response?.data;
-    if (!data) return 'Di chuyển lô phụ thất bại. Vui lòng thử lại.';
+    if (!data) return t('storage.moveSubLotFail');
 
-    if (data.code === 'NotFound.MaterialSubLot') return 'Lô phụ không tồn tại.';
-    if (data.code === 'NotFound.Location') return 'Vị trí đích không tồn tại.';
+    if (data.code === 'NotFound.MaterialSubLot') return t('storage.subLotNotFound');
+    if (data.code === 'NotFound.Location') return t('storage.destNotFound');
     if (data.code === 'LocationCapacityExceeded') {
         const d = data.detail || {};
         const fmt = (n) => (typeof n === 'number' ? n.toFixed(2) : n);
-        return `Vị trí ${d.locationId} hiện dùng ${fmt(d.currentUsedVolume)}/${fmt(d.maxVolume)} m³, thêm lô này (${fmt(d.incomingVolume)} m³) sẽ thành ${fmt(d.resultingRate)}% — vượt quá sức chứa cho phép (100%).`;
+        return t('storage.capacityExceeded', {
+            loc: d.locationId,
+            used: fmt(d.currentUsedVolume),
+            max: fmt(d.maxVolume),
+            incoming: fmt(d.incomingVolume),
+            rate: fmt(d.resultingRate),
+        });
     }
 
     const message = data.message || '';
-    if (message.includes('different warehouses')) return 'Không thể di chuyển sang kho khác.';
-    if (message.includes('pending StockTake')) return 'Lô hàng đang có đợt kiểm kê chưa hoàn tất, không thể di chuyển.';
+    if (message.includes('different warehouses')) return t('storage.diffWarehouse');
+    if (message.includes('pending StockTake')) return t('storage.pendingStockTake');
 
-    return message || 'Di chuyển lô phụ thất bại. Vui lòng thử lại.';
+    return message || t('storage.moveSubLotFail');
 };
 
 // Panel của 1 lô phụ trong ô — kéo được (trừ khi ô đang mở popup chi tiết).
@@ -157,6 +164,7 @@ const Cell = ({ cell, cellIndex, rowIndex, rackId, rowsCount, onCellClick, showM
 };
 
 const Storage = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('storage'); // Trạng thái tab hiện tại
     const [selectedDetails, setSelectedDetails] = useState(null);
     const [showModal, setShowModal] = useState(false);
@@ -357,7 +365,7 @@ const Storage = () => {
                     locationId: location.locationId,
                     lotInfors: lotInfors,
                     warehouseId: location.warehouseId || "",
-                    equipmentName: "Ô kệ chứa hàng"
+                    equipmentName: t('storage.slotEquipmentName')
                 }
             };
 
@@ -439,7 +447,7 @@ const Storage = () => {
                 : null;
 
             if (!matchedSubLot) {
-                toast.error('Không tìm thấy lô phụ tại vị trí hiện tại.');
+                toast.error(t('storage.subLotNotAtLocation'));
                 return;
             }
 
@@ -448,12 +456,12 @@ const Storage = () => {
                 toLocationId: pendingMove.newLocationId
             });
 
-            toast.success(`Đã di chuyển lô phụ ${pendingMove.lotNumber} sang vị trí ${pendingMove.newLocationId}`);
+            toast.success(t('storage.moved', { lot: pendingMove.lotNumber, loc: pendingMove.newLocationId }));
             setPendingMove(null);
             await fetchLocations();
         } catch (error) {
             console.error("Error moving material sub lot:", error);
-            toast.error(getMoveErrorMessage(error));
+            toast.error(getMoveErrorMessage(error, t));
         } finally {
             setIsMoving(false);
         }
@@ -474,14 +482,14 @@ const Storage = () => {
 
                     <div className={styles.headerRow}>
                         <HeaderContainer style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                            <HeaderItem>Lưu trữ</HeaderItem>
+                            <HeaderItem>{t('storage.heading')}</HeaderItem>
                             <Separator />
-                            <HeaderItem>Sơ đồ kho</HeaderItem>
+                            <HeaderItem>{t('storage.map')}</HeaderItem>
                         </HeaderContainer>
 
                         <div className={styles.filters}>
                             <div className={styles.filterField}>
-                                <span className={styles.filterLabel}>Kho hàng</span>
+                                <span className={styles.filterLabel}>{t('storage.warehouse')}</span>
                                 <SelectContainer>
                                     <Select
                                         onChange={(e) => setSelectedWareHouse(e.target.value)}
@@ -497,7 +505,7 @@ const Storage = () => {
                             </div>
 
                             <div className={styles.filterField}>
-                                <span className={styles.filterLabel}>Mã kho hàng</span>
+                                <span className={styles.filterLabel}>{t('storage.warehouseCode')}</span>
                                 <SelectContainer>
                                     <Select
                                         onChange={(e) => setSelectedZone(e.target.value)}
@@ -515,18 +523,18 @@ const Storage = () => {
                     </div>
 
                     <div className={styles.legend}>
-                        <span className={styles.legendKicker}>Chú giải:</span>
+                        <span className={styles.legendKicker}>{t('storage.legend')}</span>
                         <span className={styles.legendItem}>
                             <i className={styles.legendSwatch} style={{ backgroundColor: STATUS_COLORS['Đang chứa hàng'] }}></i>
-                            Đang chứa hàng
+                            {t('storage.statusInUse')}
                         </span>
                         <span className={styles.legendItem}>
                             <i className={styles.legendSwatch} style={{ backgroundColor: STATUS_COLORS['Đã đầy'] }}></i>
-                            Đã đầy
+                            {t('storage.statusFull')}
                         </span>
                         <span className={styles.legendItem}>
                             <i className={styles.legendSwatch} style={{ backgroundColor: 'var(--color-surface)' }}></i>
-                            Trống
+                            {t('storage.statusEmpty')}
                         </span>
                     </div>
 
@@ -550,7 +558,7 @@ const Storage = () => {
                                     return (
                                         <div key={sectionId} className={styles.zoneCard}>
                                             <div className={styles.zoneCardHeader}>
-                                                <span className={styles.zoneKicker}>Khu vực</span>
+                                                <span className={styles.zoneKicker}>{t('storage.zone')}</span>
                                                 <h2 className={styles.zoneTitle}>{parentSection}</h2>
                                             </div>
 
@@ -565,7 +573,7 @@ const Storage = () => {
 
                                                         return (
                                                             <div key={rackKey} className={styles.rack}>
-                                                                <Tag variant="neutral" className={styles.rackLabel}>Dãy kệ {rack.rackNumber}</Tag>
+                                                                <Tag variant="neutral" className={styles.rackLabel}>{t('storage.rack', { n: rack.rackNumber })}</Tag>
 
                                                                 <div className={styles.rackGrid} style={{ gridTemplateColumns: '1fr 34px' }}>
                                                                     {isFirstRack && (
@@ -638,9 +646,13 @@ const Storage = () => {
                     {pendingMove && (
                         <div className={styles.moveConfirmOverlay}>
                             <div className={styles.moveConfirmCard}>
-                                <h4 className={styles.moveConfirmTitle}>Xác nhận di chuyển</h4>
+                                <h4 className={styles.moveConfirmTitle}>{t('storage.moveConfirmTitle')}</h4>
                                 <p className={styles.moveConfirmBody}>
-                                    Di chuyển lô phụ <strong>{pendingMove.lotNumber}</strong> từ vị trí <strong>{pendingMove.oldLocationId}</strong> sang vị trí <strong>{pendingMove.newLocationId}</strong>?
+                                    {t('storage.moveConfirmBody', {
+                                        lot: pendingMove.lotNumber,
+                                        from: pendingMove.oldLocationId,
+                                        to: pendingMove.newLocationId,
+                                    })}
                                 </p>
                                 <div className={styles.moveConfirmActions}>
                                     <ActionButton
@@ -649,14 +661,14 @@ const Storage = () => {
                                         onClick={handleCancelMove}
                                         disabled={isMoving}
                                     >
-                                        Huỷ bỏ
+                                        {t('storage.cancel')}
                                     </ActionButton>
                                     <ActionButton
                                         style={{ width: 'auto', margin: 0, padding: '10px 18px', fontSize: '14px' }}
                                         onClick={handleConfirmMove}
                                         disabled={isMoving}
                                     >
-                                        {isMoving ? 'Đang xử lý...' : 'Xác nhận'}
+                                        {isMoving ? t('storage.processing') : t('storage.confirm')}
                                     </ActionButton>
                                 </div>
                             </div>

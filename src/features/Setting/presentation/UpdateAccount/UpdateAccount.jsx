@@ -6,9 +6,11 @@ import UpdateAccountApi from '../../../../api/UpdateAccountApi';
 import { getApiErrorMessage } from '../../../../api/apiError';
 import { toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const UpdateAccount = ({ onCancel }) => {
   const navigate = useNavigate(); // Initialize useNavigate
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     displayName: '',
@@ -69,14 +71,14 @@ const UpdateAccount = ({ onCancel }) => {
 
     // Validation: Ensure no field is empty
     if (!displayName || !gender || !day || !month || !year || !email) {
-      alert('Vui lòng điền đầy đủ thông tin trước khi cập nhật.');
+      alert(t('account.uaValRequired'));
       return;
     }
 
     const employeeId = localStorage.getItem('employeeId'); // Retrieve employeeId from localStorage
     console.log('Retrieved employeeId:', employeeId); // Debug log to check employeeId
     if (!employeeId) {
-      alert('Không tìm thấy thông tin người dùng.');
+      alert(t('account.uaNoUser'));
       return;
     }
 
@@ -96,7 +98,7 @@ const UpdateAccount = ({ onCancel }) => {
       await UpdateAccountApi.updateAccountById(params); // Call API
 
       // Show success notification
-      toast.success("Cập nhật thông tin thành công", {
+      toast.success(t('account.uaUpdateOk'), {
         position: "top-center",
         autoClose: 3000,
         hideProgressBar: true,
@@ -116,7 +118,7 @@ const UpdateAccount = ({ onCancel }) => {
       navigate('/setting'); // Navigate back to the "Setting" sidebar
     } catch (error) {
       console.error('Error updating account:', error);
-      alert(getApiErrorMessage(error, 'Đã xảy ra lỗi khi cập nhật thông tin.'));
+      alert(getApiErrorMessage(error, t('account.uaUpdateErr')));
     } finally {
       setIsSubmitting(false); // Stop loading
     }
@@ -152,19 +154,19 @@ const UpdateAccount = ({ onCancel }) => {
       >
         ×
       </button>
-      <label htmlFor="displayName" style={{ fontWeight: 'bold' }}>Tên hiển thị</label>
+      <label htmlFor="displayName" style={{ fontWeight: 'bold' }}>{t('account.uaDisplayName')}</label>
       <input
         type="text"
         id="displayName"
         name="displayName"
-        placeholder="Nhập tên hiển thị"
+        placeholder={t('account.uaDisplayNamePh')}
         className={styles.inputField}
         value={formData.displayName}
         onChange={handleInputChange}
         style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
       />
       <div className={styles.section}>
-        <p className={styles.sectionTitle}>Giới tính</p>
+        <p className={styles.sectionTitle}>{t('account.uaGender')}</p>
         <div className={styles.genderSelection}>
           <label>
             <input
@@ -173,7 +175,7 @@ const UpdateAccount = ({ onCancel }) => {
               value="Nam"
               checked={formData.gender === 'Nam'}
               onChange={handleInputChange}
-            /> Nam
+            /> {t('account.uaMale')}
           </label>
           <label>
             <input
@@ -182,17 +184,17 @@ const UpdateAccount = ({ onCancel }) => {
               value="Nữ"
               checked={formData.gender === 'Nữ'}
               onChange={handleInputChange}
-            /> Nữ
+            /> {t('account.uaFemale')}
           </label>
         </div>
         {/* New Email Update Section */}
       <div className={styles.section}>
-        <label htmlFor="email" className={styles.label} style={{ fontWeight: 'bold', fontSize:"16px" }}>Email</label>
+        <label htmlFor="email" className={styles.label} style={{ fontWeight: 'bold', fontSize:"16px" }}>{t('account.uaEmail')}</label>
         <input
           type="email"
           id="email"
           name="email"
-          placeholder="Nhập email"
+          placeholder={t('account.uaEmailPh')}
           className={styles.inputField}
           value={formData.email || ''} // Add email to formData
           onChange={handleInputChange}
@@ -200,7 +202,7 @@ const UpdateAccount = ({ onCancel }) => {
         />
       </div>
         <div className={styles.birthDate}>
-          <p className={styles.sectionTitle}>Ngày sinh</p>
+          <p className={styles.sectionTitle}>{t('account.uaDob')}</p>
           <div className={styles.dateSelection}>
             <div className={styles.dropdownContainer}>
               <select
@@ -211,7 +213,7 @@ const UpdateAccount = ({ onCancel }) => {
                 onChange={handleInputChange}
                 style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
-                <option value="">Ngày</option>
+                <option value="">{t('account.uaDay')}</option>
                 {[...Array(31)].map((_, i) => (
                   <option key={i + 1} value={i + 1}>{i + 1}</option>
                 ))}
@@ -227,7 +229,7 @@ const UpdateAccount = ({ onCancel }) => {
                 onChange={handleInputChange}
                 style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
-                <option value="">Tháng</option>
+                <option value="">{t('account.uaMonth')}</option>
                 {[...Array(12)].map((_, i) => (
                   <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
                     {String(i + 1).padStart(2, '0')}
@@ -245,7 +247,7 @@ const UpdateAccount = ({ onCancel }) => {
                 onChange={handleInputChange}
                 style={{ outline: 'none', boxShadow: 'none', backgroundColor: 'transparent' }} // Remove background effect
               >
-                <option value="">Năm</option>
+                <option value="">{t('account.uaYear')}</option>
                 {[...Array(100)].map((_, i) => {
                   const year = new Date().getFullYear() - i;
                   return <option key={year} value={year}>{year}</option>;
@@ -260,7 +262,7 @@ const UpdateAccount = ({ onCancel }) => {
       
 
       <div className={styles.actions}>
-        <button className={styles.cancelButton} onClick={onCancel}>Hủy</button>
+        <button className={styles.cancelButton} onClick={onCancel}>{t('account.uaCancel')}</button>
         <button
           className={styles.updateButton}
           onClick={handleSubmit}
@@ -272,11 +274,11 @@ const UpdateAccount = ({ onCancel }) => {
         >
           {isSubmitting ? (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>Đang cập nhật</span>
+              <span>{t('account.uaUpdating')}</span>
               <div className={styles.spinner}></div> {/* Add spinner */}
             </div>
           ) : (
-            "Cập nhật"
+            t('account.uaUpdate')
           )}
         </button>
       </div>

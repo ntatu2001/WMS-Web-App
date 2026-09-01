@@ -4,8 +4,10 @@ import FormGroup from '../../../../common/components/FormGroup/FormGroup.jsx';
 import SelectContainer from '../../../../common/components/Selection/SelectContainer.jsx';
 import ActionButton from '../../../../common/components/Button/ActionButton/ActionButton.jsx';
 import Label from '../../../../common/components/Label/Label.jsx';
+import useTranslation from '../../../../common/hooks/useTranslation';
 
 const Storage = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     storageName: "",
     storageCode: "",
@@ -47,12 +49,12 @@ const Storage = () => {
             position: "relative",
           }}
         >
-          Tạo mới vị trí lưu trữ
+          {t('catalogue.storeLocation.createTitle')}
         </SectionTitle>
         <div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
             <FormGroup>
-              <Label>Tên vị trí lưu trữ:</Label>
+              <Label>{t('catalogue.storeLocation.legacyName')}</Label>
               <SelectContainer>
                 <input
                   type="text"
@@ -64,7 +66,7 @@ const Storage = () => {
               </SelectContainer>
             </FormGroup>
             <FormGroup>
-              <Label>Mã vị trí lưu trữ:</Label>
+              <Label>{t('catalogue.storeLocation.legacyCode')}</Label>
               <SelectContainer>
                 <input
                   type="text"
@@ -76,7 +78,7 @@ const Storage = () => {
               </SelectContainer>
             </FormGroup>
             <FormGroup>
-              <Label>Vị trí:</Label>
+              <Label>{t('catalogue.storeLocation.position')}</Label>
               <SelectContainer>
                 <select
                   name="location"
@@ -92,7 +94,7 @@ const Storage = () => {
               </SelectContainer>
             </FormGroup>
             <FormGroup>
-              <Label>Sức chứa:</Label>
+              <Label>{t('catalogue.storeLocation.capacity')}</Label>
               <SelectContainer>
                 <input
                   type="number"
@@ -104,7 +106,7 @@ const Storage = () => {
               </SelectContainer>
             </FormGroup>
             <FormGroup>
-              <Label>Ghi chú:</Label>
+              <Label>{t('catalogue.storeLocation.note')}</Label>
               <SelectContainer>
                 <textarea
                   name="note"
@@ -127,7 +129,7 @@ const Storage = () => {
                 cursor: formData.storageCode ? "pointer" : "not-allowed",
               }}
             >
-              Tạo mới vị trí lưu trữ
+              {t('catalogue.storeLocation.createTitle')}
             </ActionButton>
           </div>
         </div>
