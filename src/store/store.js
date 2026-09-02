@@ -5,6 +5,7 @@ import authReducer from './slices/authSlice';
 import appReducer from './slices/appSlice';
 import themeReducer from './slices/themeSlice';
 import languageReducer from './slices/languageSlice';
+import uiReducer from './slices/uiSlice';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     app: appReducer,
     theme: themeReducer,
     language: languageReducer,
+    ui: uiReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

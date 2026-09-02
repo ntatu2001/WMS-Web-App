@@ -1,6 +1,14 @@
+@use '../../styles/breakpoints' as bp;
+
 .div {
     display: flex;
     height: 100vh;
+
+    @include bp.down(bp.$bp-tablet) {
+        // Sidebar becomes a fixed off-canvas overlay on mobile (removed from
+        // flow), so this column only ever lays out the top bar + main.
+        flex-direction: column;
+    }
 }
 
 .main {
@@ -10,4 +18,48 @@
     color: var(--color-text);
     min-height: 100vh;
     overflow-y: auto;
+    min-width: 0; // allow flex child to shrink below its content's intrinsic width
+
+    @include bp.down(bp.$bp-tablet) {
+        padding: 1rem;
+        min-height: 0;
+    }
+}
+
+.mobileTopBar {
+    display: none;
+
+    @include bp.down(bp.$bp-tablet) {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        height: 52px;
+        padding: 0 12px;
+        background-color: var(--sidebar-bg);
+    }
+}
+
+.mobileMenuButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--sidebar-text);
+    font-size: 22px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--sidebar-item-hover);
+    }
+}
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 40;
 }

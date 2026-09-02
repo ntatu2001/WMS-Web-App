@@ -1,8 +1,11 @@
 .modal {
-    width: 10%;
-    // max-width: 70%;
-    min-width: 20%;
+    // Was 10%/min-width 20% viewport-relative (a fixed-position element sizes
+    // % against the viewport) — effectively 20% and unreadably narrow on
+    // mobile. min() keeps roughly the old desktop size, never exceeds the viewport.
+    width: min(320px, 92vw);
     height: 27%;
+    min-height: 200px;
+    max-height: 90vh;
     overflow-y: auto;
     left: 0;
     top: 0;

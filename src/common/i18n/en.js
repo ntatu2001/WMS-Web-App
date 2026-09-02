@@ -57,6 +57,8 @@ export default {
     accountSection: 'Account',
     expandSidebar: 'Expand sidebar',
     collapseSidebar: 'Collapse sidebar',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
 
   setting: {

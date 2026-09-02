@@ -1,9 +1,15 @@
 @use '../../styles/variables' as v;
+@use '../../styles/breakpoints' as bp;
 
 .label {
     width: 40%;
     font-weight: 600;
     color: v.$color-text;
+
+    @include bp.down(bp.$bp-sm) {
+        width: 100%;
+        margin-bottom: 4px;
+    }
 }
 
 .required::after {
@@ -18,4 +24,9 @@
     margin-left: 2%;
     font-weight: 500;
     color: v.$color-text-muted;
+
+    @include bp.down(bp.$bp-sm) {
+        width: 100%;
+        margin-left: 0;
+    }
 }

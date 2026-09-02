@@ -147,6 +147,7 @@
 .tableWrapper {
     overflow-x: auto;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     max-height: 520px;
 }
 

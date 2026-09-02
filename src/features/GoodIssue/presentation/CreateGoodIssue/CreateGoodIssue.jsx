@@ -28,6 +28,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ClipLoader } from 'react-spinners';
 import useTranslation from '../../../../common/hooks/useTranslation';
+import useMediaQuery from '../../../../common/hooks/useMediaQuery';
 
 let rowIdCounter = 0;
 const createEmptyRow = () => ({
@@ -45,6 +46,9 @@ const errorTextStyle = { color: 'var(--status-error)', fontSize: '12px', marginT
 
 const CreateGoodIssue = () => {
   const { t } = useTranslation();
+  // Stack the form + product-list columns vertically on tablet/mobile
+  // (includes iPad Pro portrait at 1024px).
+  const stackSections = useMediaQuery('(max-width: 1024px)');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedWarehouse, setSelectedWarehouse] = useState(null);
@@ -530,8 +534,8 @@ const CreateGoodIssue = () => {
             </div>
           )}
 
-          <div style={{ display: "flex" }}>
-            <FormSection>
+          <div style={{ display: "flex", flexDirection: stackSections ? "column" : "row", gap: stackSections ? 20 : 0 }}>
+            <FormSection style={stackSections ? { width: "100%", marginRight: 0 } : undefined}>
               <SectionTitle>{t('issue.slipTitle')}</SectionTitle>
 
               <FormGroup>
@@ -620,7 +624,7 @@ const CreateGoodIssue = () => {
               {fieldErrors.date && <div style={errorTextStyle}>{fieldErrors.date}</div>}
             </FormSection>
 
-            <ListSection style={{ width: "50%" }}>
+            <ListSection style={{ width: stackSections ? "100%" : "50%" }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <SectionTitle style={{ marginBottom: 0 }}>{t('issue.productListTitle')}</SectionTitle>
                 <div style={{ display: 'flex', gap: '8px' }}>

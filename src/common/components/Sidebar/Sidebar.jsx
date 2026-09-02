@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { AiOutlineRight, AiOutlineLeft } from 'react-icons/ai';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
@@ -8,22 +8,23 @@ import styles from './Sidebar.module.scss';
 import BKlogo from '../../../assets/bk_logo.png';
 import { menuItems, isMenuItemVisible } from '../../config/menuConfig.js';
 import useTranslation from '../../hooks/useTranslation';
+import { toggleSidebarCollapsed } from '../../../store/slices/uiSlice';
 
-const Sidebar = () => {
+const Sidebar = ({ isMobile = false, isMobileNavOpen = false }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebarCollapsed') === 'true');
+  const storedCollapsed = useSelector((state) => state.ui.sidebarCollapsed);
+  // On mobile the drawer always shows full labels — icon-only collapse is a
+  // desktop/tablet-only affordance.
+  const collapsed = !isMobile && storedCollapsed;
   const roles = useSelector((state) => state.auth.roles);
   const settingsRef = useRef(null);
 
   const isVisible = (item) => isMenuItemVisible(item, roles);
 
   const handleToggleCollapse = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem('sidebarCollapsed', String(next));
-      return next;
-    });
+    dispatch(toggleSidebarCollapsed());
   };
 
   useEffect(() => {
@@ -42,16 +43,25 @@ const Sidebar = () => {
   const settingsItem = visibleItems.find((item) => item.isParent);
 
   return (
-    <div className={clsx(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-      <button
-        type="button"
-        className={clsx(styles.collapseToggle)}
-        onClick={handleToggleCollapse}
-        aria-label={collapsed ? t('menu.expandSidebar') : t('menu.collapseSidebar')}
-        aria-expanded={!collapsed}
-      >
-        <AiOutlineLeft className={clsx(styles.collapseIcon, collapsed && styles.collapseIconRotated)} />
-      </button>
+    <div
+      className={clsx(
+        styles.sidebar,
+        collapsed && styles.sidebarCollapsed,
+        isMobile && styles.sidebarMobile,
+        isMobile && isMobileNavOpen && styles.sidebarMobileOpen
+      )}
+    >
+      {!isMobile && (
+        <button
+          type="button"
+          className={clsx(styles.collapseToggle)}
+          onClick={handleToggleCollapse}
+          aria-label={collapsed ? t('menu.expandSidebar') : t('menu.collapseSidebar')}
+          aria-expanded={!collapsed}
+        >
+          <AiOutlineLeft className={clsx(styles.collapseIcon, collapsed && styles.collapseIconRotated)} />
+        </button>
+      )}
 
       {/* Logo and Title */}
       <div className={clsx(styles.sidebarHeader)}>

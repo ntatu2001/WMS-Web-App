@@ -27,6 +27,20 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
         onClose();
     };
 
+    // Keeps the modal from being dragged (or initially positioned) off-screen —
+    // matters far more now that the modal can be nearly the full viewport width on mobile.
+    const clampPosition = (top, left) => {
+        const rect = modalRef.current?.getBoundingClientRect();
+        const width = rect?.width ?? 0;
+        const height = rect?.height ?? 0;
+        const maxLeft = Math.max(0, window.innerWidth - width);
+        const maxTop = Math.max(0, window.innerHeight - height);
+        return {
+            top: Math.min(Math.max(0, top), maxTop),
+            left: Math.min(Math.max(0, left), maxLeft),
+        };
+    };
+
     // Start dragging
     const handleMouseDown = (e) => {
         if (modalRef.current && !e.target.closest('button')) {
@@ -42,10 +56,7 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
     // Handle mouse movement while dragging
     const handleMouseMove = (e) => {
         if (isDragging) {
-            setModalPosition({
-                top: e.clientY - dragOffset.y,
-                left: e.clientX - dragOffset.x
-            });
+            setModalPosition(clampPosition(e.clientY - dragOffset.y, e.clientX - dragOffset.x));
         }
     };
 
@@ -69,6 +80,53 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isDragging]);
+
+    // Touch parity for tablet — same drag math as the mouse handlers above.
+    const handleTouchStart = (e) => {
+        const touch = e.touches[0];
+        if (modalRef.current && touch && !e.target.closest('button')) {
+            const rect = modalRef.current.getBoundingClientRect();
+            setIsDragging(true);
+            setDragOffset({
+                x: touch.clientX - rect.left,
+                y: touch.clientY - rect.top
+            });
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        const touch = e.touches[0];
+        if (isDragging && touch) {
+            setModalPosition(clampPosition(touch.clientY - dragOffset.y, touch.clientX - dragOffset.x));
+        }
+    };
+
+    const handleTouchEnd = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+        } else {
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        }
+
+        return () => {
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleTouchEnd);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDragging]);
+
+    // Clamp the initial position once the modal has real dimensions, so a
+    // popup opened near a viewport edge doesn't render partially off-screen.
+    useEffect(() => {
+        setModalPosition((prev) => clampPosition(prev.top, prev.left));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
   
     return (
         <div 
@@ -81,6 +139,7 @@ const InforReceiptModal = ({ data, onClose, position, isLoading }) => {
                 zIndex: 999
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
         >
           <div className="flex justify-center items-center w-full">
             <SectionTitle style={{margin: "0px", textAlign: "center", width: "100%", flex: 1}}>{t('storage.modalPosition', { pos: data.position })}</SectionTitle>

@@ -58,6 +58,8 @@ export default {
     accountSection: 'Tài khoản',
     expandSidebar: 'Mở rộng sidebar',
     collapseSidebar: 'Thu gọn sidebar',
+    openMenu: 'Mở menu',
+    closeMenu: 'Đóng menu',
   },
 
   setting: {

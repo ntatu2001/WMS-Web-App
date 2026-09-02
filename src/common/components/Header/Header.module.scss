@@ -1,3 +1,5 @@
+@use '../../styles/breakpoints' as bp;
+
 .headerContainer {
     margin-left: 1.25rem;
     display: flex;
@@ -7,6 +9,11 @@
     border-bottom-width: 1px;
     border-color: var(--color-border);
     width: 35%;
+
+    @include bp.down(bp.$bp-tablet) {
+        width: 100%;
+        margin-left: 0;
+    }
 }
 
 .headerItem {
