@@ -1,0 +1,31 @@
+// Responsive breakpoint mixins for the app-wide UI. Mirrored as plain JS
+// constants in `breakpoints.js` for use in components/hooks — keep both in sync.
+//
+// Usage: @use '../../styles/breakpoints' as bp; (adjust relative depth)
+//        .foo { @include bp.down(bp.$bp-tablet) { ... } }
+
+$bp-mobile: 375px; // min supported width
+$bp-sm: 640px; // mobile landscape / small tablet
+$bp-tablet: 768px; // primary tablet target
+$bp-desktop: 1024px; // desktop / permanent sidebar
+
+// Applies content below (not including) $bp.
+@mixin down($bp) {
+    @media (max-width: $bp - 1px) {
+        @content;
+    }
+}
+
+// Applies content at or above $bp.
+@mixin up($bp) {
+    @media (min-width: $bp) {
+        @content;
+    }
+}
+
+// Applies content between $from (inclusive) and $to (exclusive).
+@mixin between($from, $to) {
+    @media (min-width: $from) and (max-width: $to - 1px) {
+        @content;
+    }
+}
