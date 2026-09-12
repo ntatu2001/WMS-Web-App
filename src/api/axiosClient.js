@@ -2,7 +2,7 @@ import axios from 'axios';
 import store from '../store/store';
 import { tokensRefreshed, logout } from '../store/slices/authSlice';
 
-const BASE_URL = 'http://localhost:5037/WarehouseAPI/';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const axiosClient = axios.create ({
     baseURL: BASE_URL,

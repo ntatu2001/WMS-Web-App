@@ -5,10 +5,9 @@ import {
 } from "@microsoft/signalr";
 import store from "../store/store";
 
-// Cùng origin với axiosClient (http://localhost:5037/WarehouseAPI/). Hub được backend map tại
+// Cùng origin với axiosClient (VITE_API_BASE_URL). Hub được backend map tại
 // "/WarehouseAPI/hubs/overview" — xem UserGuide/Realtime_Overview_SignalR_Guide.md mục 3.3.
-const API_BASE_URL = "http://localhost:5037/WarehouseAPI/";
-export const OVERVIEW_HUB_URL = `${API_BASE_URL}hubs/overview`;
+export const OVERVIEW_HUB_URL = `${import.meta.env.VITE_API_BASE_URL}hubs/overview`;
 
 // Tên event server -> client (một chiều). FE nhận được thì refetch 2 REST endpoint của Tổng quan.
 export const OVERVIEW_CHANGED_EVENT = "overviewChanged";
