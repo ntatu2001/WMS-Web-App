@@ -35,7 +35,7 @@
       height: 40px;
     }
 
-    .sidebarTitle {
+    .sidebarTitleGroup {
       opacity: 0;
       width: 0;
       height: 0;
@@ -142,12 +142,30 @@
   object-fit: contain;
 }
 
+.sidebarTitleGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
 .sidebarTitle {
   color: var(--sidebar-text);
   font-weight: 800;
   font-size: 28.5px;
   letter-spacing: 0.2px;
   margin: 0;
+}
+
+.sidebarSubtitle {
+  color: var(--sidebar-text);
+  opacity: 0.65;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-align: center;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .sidebarNav {

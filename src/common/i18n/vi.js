@@ -263,6 +263,38 @@ export default {
     colOnHand: 'Tồn kho',
     colActual: 'Thực tế',
     colDiff: 'SL lệch',
+
+    // Modal nhập bổ sung dữ liệu trước khi xuất PDF (đơn giá, TK kế toán, chữ ký...) —
+    // nội dung IN RA trên chính file PDF (tiêu đề mẫu, tên cột, khối chữ ký...) luôn cố
+    // định bằng tiếng Việt theo đúng mẫu kế toán, không qua i18n.
+    exportPdf: 'Xuất PDF',
+    exportingPdf: 'Đang xuất...',
+    pdfModalTitleReceipt: 'Bổ sung thông tin trước khi xuất Phiếu nhập kho (PDF)',
+    pdfModalTitleIssue: 'Bổ sung thông tin trước khi xuất Phiếu xuất kho (PDF)',
+    pdfModalTitleStockTake: 'Bổ sung thông tin trước khi xuất Biên bản kiểm kê (PDF)',
+    pdfModalHint: 'Các thông tin dưới đây chỉ dùng để in phiếu, không được lưu vào hệ thống.',
+    pdfDebitAccount: 'TK Nợ',
+    pdfCreditAccount: 'TK Có',
+    pdfPreparer: 'Người lập phiếu',
+    pdfDocumentDate: 'Ngày lập phiếu',
+    pdfUnitPrice: 'Đơn giá',
+    pdfAmount: 'Thành tiền',
+    pdfTotal: 'Cộng',
+    pdfDeliveredBy: 'Người giao hàng',
+    pdfReceivedBy: 'Người nhận hàng',
+    pdfReason: 'Lý do xuất kho',
+    pdfDocRef: 'Theo chứng từ số/ngày',
+    pdfCommitteeMembers: 'Ban kiểm kê',
+    pdfCommitteeName: 'Họ tên',
+    pdfCommitteeRole: 'Chức vụ',
+    pdfAddMember: '+ Thêm thành viên',
+    pdfRemoveMember: 'Xóa',
+    pdfProposal: 'Ý kiến đề xuất',
+    pdfCancel: 'Hủy',
+    pdfConfirmExport: 'Xuất PDF',
+    pdfMissingPriceWarn: 'Vui lòng nhập đơn giá cho tất cả các dòng.',
+    pdfExportSuccess: 'Đã xuất PDF thành công.',
+    pdfExportFail: 'Xuất PDF thất bại, vui lòng thử lại.',
   },
 
   receipt: {

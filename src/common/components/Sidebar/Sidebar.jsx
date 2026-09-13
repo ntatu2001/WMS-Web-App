@@ -5,7 +5,8 @@ import { AiOutlineRight, AiOutlineLeft } from 'react-icons/ai';
 import MenuItem from '../MenuItem/MenuItem';
 import clsx from 'clsx';
 import styles from './Sidebar.module.scss';
-import BKlogo from '../../../assets/bk_logo.png';
+import CompanyLogo from '../../../assets/truong_nguyen_logo.png';
+import { COMPANY_INFO } from '../../config/companyInfo.js';
 import { menuItems, isMenuItemVisible } from '../../config/menuConfig.js';
 import useTranslation from '../../hooks/useTranslation';
 import { toggleSidebarCollapsed } from '../../../store/slices/uiSlice';
@@ -66,9 +67,12 @@ const Sidebar = ({ isMobile = false, isMobileNavOpen = false }) => {
       {/* Logo and Title */}
       <div className={clsx(styles.sidebarHeader)}>
         <div className={clsx(styles.sidebarLogo)}>
-          <img src={BKlogo} alt="BK Logo" className={clsx(styles.sidebarImg)} />
+          <img src={CompanyLogo} alt="Trường Nguyên Logo" className={clsx(styles.sidebarImg)} />
         </div>
-        <h1 className={clsx(styles.sidebarTitle)}>{t('menu.portal')}</h1>
+        <div className={clsx(styles.sidebarTitleGroup)}>
+          <h1 className={clsx(styles.sidebarTitle)}>{t('menu.portal')}</h1>
+          <p className={clsx(styles.sidebarSubtitle)}>{COMPANY_INFO.shortNameEn}</p>
+        </div>
       </div>
 
       {/* Menu Items */}

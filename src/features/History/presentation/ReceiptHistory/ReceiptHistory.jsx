@@ -18,8 +18,13 @@ import styles from './ReceiptHistory.module.scss';
 import ReceiptApi from '../../../../api/ReceiptApi.js';
 import supplierApi from '../../../../api/supplierApi.js';
 import { ClipLoader } from 'react-spinners';
+import { AiOutlineFilePdf } from 'react-icons/ai';
 import { WORKFLOW_STATUS, STATUS_COLOR, SPINNER_COLOR, SPINNER_ON_ACCENT } from '../../../../common/constants/statusColors.js';
 import useTranslation from '../../../../common/hooks/useTranslation';
+import PdfExportFieldsModal from '../../../../common/components/Modal/PdfExportFieldsModal/PdfExportFieldsModal.jsx';
+import { exportReceiptToPdf } from '../../../GoodReceipt/utils/exportReceiptPdf.js';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const statusMapping = WORKFLOW_STATUS;
 
@@ -52,6 +57,7 @@ const ReceiptHistory = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   useEffect(() => {
     const fetchSuppliers = async () => {
@@ -135,6 +141,25 @@ const ReceiptHistory = () => {
   };
 
   const totalQuantity = listReceiptStorage.reduce((sum, item) => sum + (Number(item.importedQuantity) || 0), 0);
+
+  const pdfLineItems = listReceiptStorage.map((item) => ({
+    id: item.id,
+    materialName: item.materialName,
+    materialId: item.materialId,
+    unitOfMeasure: item.unitOfMeasure,
+    quantity: item.importedQuantity,
+  }));
+
+  const handleExportPdf = async (formValues) => {
+    try {
+      await exportReceiptToPdf(selectedItem, pdfLineItems, formValues);
+      toast.success(t('history.pdfExportSuccess'), { position: 'top-right', autoClose: 3000 });
+      setShowPdfModal(false);
+    } catch (error) {
+      console.error('Export receipt PDF error:', error);
+      toast.error(t('history.pdfExportFail'), { position: 'top-right', autoClose: 3000 });
+    }
+  };
 
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "20px" }}>
@@ -259,7 +284,17 @@ const ReceiptHistory = () => {
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "20px 0 12px" }}>
               <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>{t('history.locationTable')}</SectionTitle>
-              <Tag variant="accent">{t('history.totalReceived', { count: totalQuantity })}</Tag>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Tag variant="accent">{t('history.totalReceived', { count: totalQuantity })}</Tag>
+                <ActionButton
+                  variant="secondary"
+                  onClick={() => setShowPdfModal(true)}
+                  disabled={isDetailLoading || pdfLineItems.length === 0}
+                  style={{ margin: 0, width: 'auto', padding: '8px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <AiOutlineFilePdf size={16} /> {t('history.exportPdf')}
+                </ActionButton>
+              </div>
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -297,6 +332,15 @@ const ReceiptHistory = () => {
           </>
         )}
       </ListSection>
+
+      <PdfExportFieldsModal
+        docType="receipt"
+        isOpen={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        items={pdfLineItems}
+        initialPreparerName={selectedItem?.personName}
+        onExport={handleExportPdf}
+      />
     </div>
   );
 };

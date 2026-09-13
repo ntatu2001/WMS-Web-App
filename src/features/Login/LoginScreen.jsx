@@ -8,7 +8,8 @@ import authApi, { decodeRoles, decodeEmployeeId } from '../../api/authApi';
 import { getApiErrorMessage } from '../../api/apiError';
 import { getDefaultRouteForRoles } from '../../common/config/menuConfig.js';
 import useTranslation from '../../common/hooks/useTranslation';
-import bkLogo from '../../assets/bk_logo.png';
+import companyLogo from '../../assets/truong_nguyen_logo.png';
+import { COMPANY_INFO } from '../../common/config/companyInfo.js';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const BG = styled.div`
@@ -194,9 +195,9 @@ const LoginScreen = () => {
     <BG>
       <LoginForm onSubmit={handleSubmit}>
         <LogoBox>
-          <LogoImg style={{height: "100px"}} src={bkLogo} alt="BK Logo" />
+          <LogoImg style={{height: "100px"}} src={companyLogo} alt="Trường Nguyên Logo" />
           <MainTitle>{t('login.systemName')}</MainTitle>
-
+          <SubTitle>{COMPANY_INFO.nameEn}</SubTitle>
         </LogoBox>
         <div style={{ width: '100%', marginBottom: 18 }}>
           <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '1.35rem', textAlign: 'center', letterSpacing: 1, marginBottom: 18 }}>

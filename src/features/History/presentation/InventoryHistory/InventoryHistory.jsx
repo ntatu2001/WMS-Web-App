@@ -16,8 +16,13 @@ import clsx from 'clsx';
 import styles from './InventoryHistory.module.scss';
 import InventoryApi from '../../../../api/inventoryApi.js';
 import { ClipLoader } from 'react-spinners';
+import { AiOutlineFilePdf } from 'react-icons/ai';
 import { WORKFLOW_STATUS, STATUS_COLOR, SPINNER_COLOR, SPINNER_ON_ACCENT } from '../../../../common/constants/statusColors.js';
 import useTranslation from '../../../../common/hooks/useTranslation';
+import PdfExportFieldsModal from '../../../../common/components/Modal/PdfExportFieldsModal/PdfExportFieldsModal.jsx';
+import { exportStockTakeToPdf } from '../../../LotAdjustment/utils/exportStockTakePdf.js';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const statusMapping = WORKFLOW_STATUS;
 
@@ -48,13 +53,14 @@ const InventoryHistory = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   const mapAdjustmentEntriesToStorageRows = (entries) =>
-    entries.flatMap((item) => {
+    entries.flatMap((item, index) => {
       const sublotData = item.stockTakeSubLotDTOs || [];
       if (sublotData.length === 0) {
         return [{
-          id: 1,
+          id: `${index + 1}.1`,
           materialName: item.materialName || "--",
           materialId: item.materialId || "--",
           unitOfMeasure: item.unitOfMeasure || "--",
@@ -65,7 +71,7 @@ const InventoryHistory = () => {
         }];
       }
       return sublotData.map((subItemDetail, subIndex) => ({
-        id: subIndex + 1,
+        id: `${index + 1}.${subIndex + 1}`,
         materialName: item.materialName || "--",
         materialId: item.materialId || "--",
         unitOfMeasure: item.unitOfMeasure || "--",
@@ -134,6 +140,25 @@ const InventoryHistory = () => {
       setListInventoryStorage([]);
     } finally {
       setIsDetailLoading(false);
+    }
+  };
+
+  const pdfLineItems = listInventoryStorage.map((item) => ({
+    id: item.id,
+    materialName: item.materialName,
+    materialId: item.materialId,
+    unitOfMeasure: item.unitOfMeasure,
+    quantity: item.realAdjustmentQuantity,
+  }));
+
+  const handleExportPdf = async (formValues) => {
+    try {
+      await exportStockTakeToPdf(selectedItem, listInventoryStorage, formValues);
+      toast.success(t('history.pdfExportSuccess'), { position: 'top-right', autoClose: 3000 });
+      setShowPdfModal(false);
+    } catch (error) {
+      console.error('Export stock take PDF error:', error);
+      toast.error(t('history.pdfExportFail'), { position: 'top-right', autoClose: 3000 });
     }
   };
 
@@ -240,7 +265,17 @@ const InventoryHistory = () => {
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "20px 0 12px" }}>
               <SectionTitle style={{ fontSize: "16px", marginBottom: 0 }}>{t('history.inventoryTable')}</SectionTitle>
-              <Tag variant="accent">{t('history.locationsCount', { count: listInventoryStorage.length })}</Tag>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Tag variant="accent">{t('history.locationsCount', { count: listInventoryStorage.length })}</Tag>
+                <ActionButton
+                  variant="secondary"
+                  onClick={() => setShowPdfModal(true)}
+                  disabled={isDetailLoading || pdfLineItems.length === 0}
+                  style={{ margin: 0, width: 'auto', padding: '8px 16px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <AiOutlineFilePdf size={16} /> {t('history.exportPdf')}
+                </ActionButton>
+              </div>
             </div>
 
             <div style={{ overflowX: "auto" }}>
@@ -282,6 +317,15 @@ const InventoryHistory = () => {
           </>
         )}
       </ListSection>
+
+      <PdfExportFieldsModal
+        docType="stocktake"
+        isOpen={showPdfModal}
+        onClose={() => setShowPdfModal(false)}
+        items={pdfLineItems}
+        initialPreparerName={selectedItem?.personName}
+        onExport={handleExportPdf}
+      />
     </div>
   );
 };
