@@ -31,9 +31,18 @@ export default [
     },
   },
   {
-    files: ['vitest.config.js', 'playwright.config.js'],
+    files: ['vitest.config.js', 'playwright.config.js', 'vite.config.js'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  {
+    // Spec/fixture chạy trong Node (Playwright test runner) nhưng cũng viết callback
+    // page.evaluate() thực thi trong browser (window/localStorage) ngay trong cùng file,
+    // nên cần cả 2 bộ global thay vì chỉ node.
+    files: ['e2e/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
   {
