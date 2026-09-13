@@ -71,7 +71,7 @@ const InCompleteIssue = ({ onButtonClick, onWarehouseChange, isComingFromViewRes
     }, [selectedWarehouse, onWarehouseChange]);
 
     // Function to fetch issue detail scheduling
-    const fetchIssueDetailScheduling = async(skipAPICall = false) => {
+    const fetchIssueDetailScheduling = async() => {
         if (!selectedWarehouse) return;
 
         const warehouseId = selectedWarehouse;

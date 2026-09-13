@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 
 const InventoryApi = {
-    getAllAdjustment(lotNumber, supplierId = "", startTime = "", endTime = "") {
+    getAllAdjustment(lotNumber, startTime = "", endTime = "") {
         const params = new URLSearchParams();
 
         params.append("lotNumber", lotNumber || "");

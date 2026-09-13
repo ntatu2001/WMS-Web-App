@@ -97,7 +97,7 @@ const InCompleteReceipt = ({ onButtonClick, onWarehouseChange, isComingFromViewR
     }, [selectedWarehouse, onWarehouseChange]);
 
     // Function to fetch receipt detail scheduling
-    const fetchReceiptDetailScheduling = async(skipAPICall = false) => {
+    const fetchReceiptDetailScheduling = async() => {
         if (!selectedWarehouse) return;
 
         const warehouseId = selectedWarehouse;
