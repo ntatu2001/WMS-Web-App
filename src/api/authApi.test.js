@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { decodeRoles, decodeEmployeeId } from './authApi';
 
 const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
@@ -8,6 +8,18 @@ function buildFakeJwt(payload) {
   const body = btoa(JSON.stringify(payload));
   return `${header}.${body}.fake-signature`;
 }
+
+// decodeRoles/decodeEmployeeId cố tình console.error khi token sai định dạng (xem
+// catch block trong authApi.js) — các case dưới đây chủ động test đúng nhánh đó,
+// nên tắt console.error trong lúc chạy để output test không bị nhiễu bởi log
+// tưởng như lỗi nhưng thực chất là hành vi mong đợi.
+let consoleErrorSpy;
+beforeEach(() => {
+  consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterEach(() => {
+  consoleErrorSpy.mockRestore();
+});
 
 describe('decodeRoles', () => {
   it('trả về mảng 1 phần tử khi claim role là string', () => {
