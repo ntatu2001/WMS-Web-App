@@ -7,9 +7,13 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
+/blob-report
 
 # production
 /build
+/dist
 
 # User Guide
 UserGuide

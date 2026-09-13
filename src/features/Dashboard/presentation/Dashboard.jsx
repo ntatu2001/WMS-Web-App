@@ -14,14 +14,8 @@ import useTranslation from "../../../common/hooks/useTranslation.js"
 import { buildChartTheme, mergeChartOptions } from "../../../common/utils/chartTheme.js"
 import {
     listTodayEnter,
-    listMonthyEnter,
-    listWeekyEnter,
     listTodayExport,
-    listWeekyExport,
-    listMonthyExport,
     listTodayCheck,
-    listMonthyCheck,
-    listWeekyCheck,
 } from "../../../app/mockData/InventoryReceiptData.js"
 // import { data } from "autoprefixer"
 // import Chart from "react-apexcharts"
@@ -55,14 +49,12 @@ const REALTIME_STATUS_META = {
 }
 
 const Dashboard = () => {
-    const [togleButtonPieChart, setTogleButtonPieChart] = useState([true, false, false, false])
     const [togleButtonColumnChart, setTogleButtonColumnChart] = useState([true, false, false, false])
     const [dataEnter, setDataEnter] = useState(listTodayEnter)
     const [filterDataEnter, setFilterDataEnter] = useState([])
     const [dataExport, setDataExport] = useState(listTodayExport)
     const [filterDataExport, setFilterDataExport] = useState([])
     const [dataCheck, setDataCheck] = useState(listTodayCheck)
-    const [filterDataCheck, setFilterDataCheck] = useState([])
     // const [dataTotal, setDataTotal] = useState(listTodayCheck)
     const [filterDataTotal, setFilterDataTotal] = useState([])
     const [overviewData, setOverviewData] = useState({
@@ -99,17 +91,6 @@ const Dashboard = () => {
         setFilterDataExport(() => {
             const value = [0, 0]
             dataExport.forEach((item) => {
-                if (item.status === "Hoàn thành") {
-                    value[1]++
-                } else {
-                    value[0]++
-                }
-            })
-            return value
-        })
-        setFilterDataCheck(() => {
-            const value = [0, 0]
-            dataCheck.forEach((item) => {
                 if (item.status === "Hoàn thành") {
                     value[1]++
                 } else {
@@ -200,10 +181,6 @@ const Dashboard = () => {
                             : { ...item, status: "Khác" }
                     )
             )
-            setFilterDataCheck([
-                (data.stockTakeOverview?.totalStockTakes || 0) - (data.stockTakeOverview?.periodicStockTakes || 0),
-                data.stockTakeOverview?.periodicStockTakes || 0,
-            ])
             // Thống kê chung
             setFilterDataTotal([
                 data.totalOverview?.totalReceipts || 0,
@@ -516,10 +493,7 @@ const Dashboard = () => {
                         fontSize: "12px",
                         backgroundColor: overviewType === "Today" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
-                    onClick={() => {
-                        setOverviewType("Today")
-                        setTogleButtonPieChart([true, false, false, false])
-                    }}
+                    onClick={() => setOverviewType("Today")}
                 >
                     {t('dashboard.today')}
                 </ActionButton>
@@ -536,10 +510,7 @@ const Dashboard = () => {
                         fontSize: "12px",
                         backgroundColor: overviewType === "ThisWeek" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
-                    onClick={() => {
-                        setOverviewType("ThisWeek")
-                        setTogleButtonPieChart([false, true, false, false])
-                    }}
+                    onClick={() => setOverviewType("ThisWeek")}
                 >
                     {t('dashboard.thisWeek')}
                 </ActionButton>
@@ -556,10 +527,7 @@ const Dashboard = () => {
                         fontSize: "12px",
                         backgroundColor: overviewType === "ThisMonth" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
-                    onClick={() => {
-                        setOverviewType("ThisMonth")
-                        setTogleButtonPieChart([false, false, true, false])
-                    }}
+                    onClick={() => setOverviewType("ThisMonth")}
                 >
                     {t('dashboard.thisMonth')}
                 </ActionButton>
@@ -576,10 +544,7 @@ const Dashboard = () => {
                         fontSize: "12px",
                         backgroundColor: overviewType === "ThisYear" ? "var(--btn-toggle-on)" : "var(--btn-toggle-off)",
                     }}
-                    onClick={() => {
-                        setOverviewType("ThisYear")
-                        setTogleButtonPieChart([false, false, false, true])
-                    }}
+                    onClick={() => setOverviewType("ThisYear")}
                 >
                     {t('dashboard.thisYear')}
                 </ActionButton>
