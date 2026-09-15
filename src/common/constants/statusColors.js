@@ -17,6 +17,7 @@ export const STATUS_COLOR = {
 export const WORKFLOW_STATUS = {
   Pending: { labelKey: 'status.pending', color: STATUS_COLOR.neutral },
   InProgress: { labelKey: 'status.inProgress', color: STATUS_COLOR.info },
+  InTransit: { labelKey: 'status.inTransit', color: STATUS_COLOR.info },
   Done: { labelKey: 'status.done', color: STATUS_COLOR.success },
   Cancelled: { labelKey: 'status.cancelled', color: STATUS_COLOR.error },
   HoldOn: { labelKey: 'status.holdOn', color: STATUS_COLOR.warning },

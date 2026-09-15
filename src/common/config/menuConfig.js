@@ -11,6 +11,7 @@ import {
   AiOutlineUser,
   AiOutlineLogout,
   AiOutlineBgColors,
+  AiOutlineSwap,
 } from 'react-icons/ai';
 
 // Nguồn dữ liệu menu dùng chung cho Sidebar và cho việc tính route mặc định theo role.
@@ -22,6 +23,7 @@ export const menuItems = [
   { id: 3, titleKey: 'menu.receipt', icon: AiOutlineImport, path: '/goodreceipt' },
   { id: 4, titleKey: 'menu.issue', icon: AiOutlineExport, path: '/goodissue' },
   { id: 5, titleKey: 'menu.inventory', icon: AiOutlineCheckSquare, path: '/inventory' },
+  { id: 9, titleKey: 'menu.transfer', icon: AiOutlineSwap, path: '/transfer', roles: ['Manager', 'Admin'] },
   { id: 6, titleKey: 'menu.history', icon: AiOutlineHistory, path: '/history', roles: ['Manager', 'Admin'] },
   { id: 7, titleKey: 'menu.catalogue', icon: AiOutlineUnorderedList, path: '/catalogue', roles: ['Manager', 'Admin'] },
   {

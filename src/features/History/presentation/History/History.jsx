@@ -9,9 +9,10 @@ import Separator from '../../../../common/components/Header/Separator.jsx';
 import ReceiptHistory from '../ReceiptHistory/ReceiptHistory.jsx';
 import IssueHistory from '../IssueHistory/IssueHistory.jsx';
 import InventoryHistory from '../InventoryHistory/InventoryHistory.jsx';
+import TransferHistory from '../TransferHistory/TransferHistory.jsx';
 import useTranslation from '../../../../common/hooks/useTranslation';
 
-const VALID_TABS = ['receipt', 'issue', 'inventory'];
+const VALID_TABS = ['receipt', 'issue', 'inventory', 'transfer'];
 
 const History = () => {
   const { t } = useTranslation();
@@ -27,7 +28,8 @@ const History = () => {
     setSearchParams({ tab }, { replace: true });
   };
   const headerText = activeTab === 'receipt' ? t('history.tabReceipt') :
-                     activeTab === 'issue' ? t('history.tabIssue') : t('history.tabInventory');
+                     activeTab === 'issue' ? t('history.tabIssue') :
+                     activeTab === 'inventory' ? t('history.tabInventory') : t('history.tabTransfer');
 
   return (
     <div style={{ padding: 0, backgroundColor: 'var(--color-bg)' }}>
@@ -56,10 +58,17 @@ const History = () => {
         >
           {t('history.tabInventory')}
         </TabButton>
+        <TabButton
+          active={activeTab === 'transfer'}
+          onClick={() => setActiveTab('transfer')}
+        >
+          {t('history.tabTransfer')}
+        </TabButton>
       </TabContainer>
 
       {activeTab === 'receipt' ? <ReceiptHistory /> :
-       activeTab === 'issue' ? <IssueHistory /> : <InventoryHistory/>}
+       activeTab === 'issue' ? <IssueHistory /> :
+       activeTab === 'inventory' ? <InventoryHistory/> : <TransferHistory />}
     </div>
   );
 };

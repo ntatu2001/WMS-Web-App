@@ -24,6 +24,7 @@ import UserManagement from "./features/Setting/presentation/UserManagement/UserM
 import Account from "./features/Setting/presentation/Account/Account.jsx";
 import Appearance from "./features/Setting/presentation/Appearance/Appearance.jsx";
 import LotAdjustment from "./features/LotAdjustment/presentation/LotAdjustment/LotAdjustment.jsx";
+import WarehouseTransfer from "./features/WarehouseTransfer/presentation/WarehouseTransfer/WarehouseTransfer.jsx";
 import { getDefaultRouteForRoles } from "./common/config/menuConfig.js";
 import useApplyTheme, { useResolvedTheme } from "./common/hooks/useApplyTheme.js";
 import useApplyLanguage from "./common/hooks/useApplyLanguage.js";
@@ -96,6 +97,7 @@ function App() {
             <Route path="/goodreceipt" element={<GoodReceipt />} />
             <Route path="/goodissue" element={<GoodIssue />} />
             <Route path="/inventory" element={<LotAdjustment />} />
+            <Route path="/transfer" element={<RequireRole roles={["Manager", "Admin"]}><WarehouseTransfer /></RequireRole>} />
             <Route path="/history" element={<RequireRole roles={["Manager", "Admin"]}><History /></RequireRole>} />
             <Route path="/catalogue" element={<RequireRole roles={["Manager", "Admin"]}><Catalogue /></RequireRole>} />
             <Route
@@ -112,6 +114,8 @@ function App() {
                     <GoodIssue />
                   ) : lastAccessedRoute.sidebarContent === "/inventory" ? (
                     <LotAdjustment />
+                  ) : lastAccessedRoute.sidebarContent === "/transfer" ? (
+                    <WarehouseTransfer />
                   ) : lastAccessedRoute.sidebarContent === "/history" ? (
                     <History />
                   ) : lastAccessedRoute.sidebarContent === "/catalogue" ? (

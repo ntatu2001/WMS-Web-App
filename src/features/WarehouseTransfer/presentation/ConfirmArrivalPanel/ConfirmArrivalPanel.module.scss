@@ -1,0 +1,9 @@
+@use '../../../../common/styles/variables' as v;
+
+.tableWrap {
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 12px 0;
+    border: 1px solid v.$color-border;
+    border-radius: v.$radius-sm;
+}

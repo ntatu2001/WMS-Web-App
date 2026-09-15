@@ -183,6 +183,29 @@
   overflow-y: auto;
   overflow-x: visible;
   min-height: 0;
+
+  // Thanh cuộn mảnh, trong suốt, hoà theo nền tối của sidebar thay vì thanh cuộn
+  // mặc định của trình duyệt (trắng, vuông, lộ liễu). Firefox dùng scrollbar-width/-color;
+  // Chromium/Safari/Edge dùng các pseudo-element ::-webkit-scrollbar-*.
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-scrollbar-thumb) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--sidebar-scrollbar-thumb);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--sidebar-scrollbar-thumb-hover);
+  }
 }
 
 .sidebarIcon {
