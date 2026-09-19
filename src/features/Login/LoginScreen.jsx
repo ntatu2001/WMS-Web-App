@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { loginSuccess } from '../../store/slices/authSlice';
 import ActionButton from '../../common/components/Button/ActionButton/ActionButton';
 import authApi, { decodeRoles, decodeEmployeeId } from '../../api/authApi';
@@ -12,9 +12,42 @@ import companyLogo from '../../assets/truong_nguyen_logo.png';
 import { COMPANY_INFO } from '../../common/config/companyInfo.js';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
+// Style thanh cuộn của <html>/<body> khi đang ở trang Login — chỉ bật khi component này
+// mounted (xem useEffect gắn class "loginPageScroll" bên dưới), để không ảnh hưởng tới
+// scrollbar mặc định/đã style riêng ở các trang khác trong app.
+const GlobalScrollbarStyle = createGlobalStyle`
+  html.loginPageScroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  }
+
+  html.loginPageScroll::-webkit-scrollbar,
+  html.loginPageScroll body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  html.loginPageScroll::-webkit-scrollbar-track,
+  html.loginPageScroll body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html.loginPageScroll::-webkit-scrollbar-thumb,
+  html.loginPageScroll body::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+  }
+
+  html.loginPageScroll::-webkit-scrollbar-thumb:hover,
+  html.loginPageScroll body::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+`;
+
 const BG = styled.div`
   min-height: 100vh;
-  width: 100vw;
+  /* width: 100% thay vì 100vw — 100vw tính luôn cả bề rộng thanh cuộn dọc của trình
+     duyệt nên rộng hơn viewport thực tế, gây ra thanh cuộn ngang thừa (bug kinh điển). */
+  width: 100%;
   background: var(--login-bg);
   display: flex;
   flex-direction: column;
@@ -168,6 +201,11 @@ const LoginScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    document.documentElement.classList.add('loginPageScroll');
+    return () => document.documentElement.classList.remove('loginPageScroll');
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -193,6 +231,7 @@ const LoginScreen = () => {
 
   return (
     <BG>
+      <GlobalScrollbarStyle />
       <LoginForm onSubmit={handleSubmit}>
         <LogoBox>
           <LogoImg style={{height: "100px"}} src={companyLogo} alt="Trường Nguyên Logo" />
